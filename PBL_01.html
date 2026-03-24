@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrices, Complexes et Arithmétique - Solutions Détaillées</title>
+    
+    <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$']],
+        displayMath: [['$$', '$$']]
+      }
+    };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            background-color: #f9f9f9;
+        }
+        .container {
+            background-color: #fff;
+            padding: 2.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 0.5rem;
+            text-align: center;
+        }
+        h2 {
+            color: #2980b9;
+            margin-top: 2rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.3rem;
+        }
+        .context-box {
+            background-color: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0 4px 4px 0;
+        }
+        .canvas-container {
+            text-align: center;
+            margin-top: 2rem;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            background-color: #fafafa;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        /* Styles pour les boutons et les modales */
+        .btn-solution {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 10px 0 20px 0;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .btn-solution:hover {
+            background-color: #2ecc71;
+        }
+        
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.5); 
+            animation: fadeIn 0.3s;
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto; 
+            padding: 2rem;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-btn:hover,
+        .close-btn:focus {
+            color: #333;
+            text-decoration: none;
+        }
+        
+        .theorem-box {
+            background-color: #fcf8e3;
+            border-left: 4px solid #f1c40f;
+            padding: 10px;
+            margin: 10px 0;
+            font-style: italic;
+        }
+        
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Exercice d'entraînement - Maths Expertes</h1>
+    <p style="text-align: center;"><strong>Terminale générale | Durée: 50 minutes</strong></p>
+
+    <div class="context-box">
+        <strong>Contexte :</strong> On étudie une transformation géométrique du plan complexe définie par une matrice, dont les coefficients dépendent d'un paramètre entier. L'objectif est de déterminer pour quelles valeurs de ce paramètre la transformation possède des propriétés particulières, en utilisant simultanément l'arithmétique modulaire, l'algèbre linéaire et la géométrie complexe.
+    </div>
+
+    <p><strong>Notations :</strong> On note $\mathbb{U}=\{z\in\mathbb{C}:|z|=1\}$ le cercle unité. Pour $n\in\mathbb{N}^{*}$ on considère la matrice :
+    $$M_{n}=\begin{pmatrix}1&n\\ n&1\end{pmatrix}$$</p>
+
+    <h2>Partie A : Arithmétique et préliminaires</h2>
+    
+    <p><strong>Question 1.a)</strong> Déterminer, suivant les valeurs de $n\in\mathbb{N}^{*}$, le reste de la division euclidienne de $n^{2}$ par 4.</p>
+    <button class="btn-solution" onclick="openModal('sol-1a')">Voir la solution</button>
+
+    <p><strong>Question 1.b)</strong> En déduire que $\det(M_{n})\equiv1 \pmod 4$ si $n$ est pair, et $\det(M_{n})\equiv0 \pmod 4$ si $n$ est impair.</p>
+    <button class="btn-solution" onclick="openModal('sol-1b')">Voir la solution</button>
+
+    <p><strong>Question 1.c)</strong> Étudier la divisibilité de $\det(M_{n})$ par 3.</p>
+    <button class="btn-solution" onclick="openModal('sol-1c')">Voir la solution</button>
+
+
+    <h2>Partie B : Étude de la transformation complexe</h2>
+    <p>On associe à $M_{n}$ l'application $f_{n}:\mathbb{C}\rightarrow\mathbb{C}$ définie par : Si $z=x+iy$ avec $(x,y)\in\mathbb{R}^{2}$ alors
+    $$f_{n}(z)=z^{\prime}=x^{\prime}+iy^{\prime} \text{ où } \begin{pmatrix}x^{\prime}\\ y^{\prime}\end{pmatrix}=M_{n}\begin{pmatrix}x\\ y\end{pmatrix}$$</p>
+
+    <p><strong>Question 2.a)</strong> Exprimer $f_{n}(z)$ en fonction de $z$ et $\bar{z}$.</p>
+    <button class="btn-solution" onclick="openModal('sol-2a')">Voir la solution</button>
+
+    <p><strong>Question 2.b)</strong> Montrer que $f_{n}$ n'est pas $\mathbb{C}$-linéaire, mais est $\mathbb{R}$-linéaire.</p>
+    <button class="btn-solution" onclick="openModal('sol-2b')">Voir la solution</button>
+
+    <p><strong>Question 2.c)</strong> Déterminer l'ensemble des points fixes de $f_{n}$.</p>
+    <button class="btn-solution" onclick="openModal('sol-2c')">Voir la solution</button>
+
+    <p><strong>Question 3.a)</strong> Soit $z\in\mathbb{U}$. Montrer que $|f_{n}(z)|^{2}=1+n^{2}+2n\Im(z^{2})$.</p>
+    <button class="btn-solution" onclick="openModal('sol-3a')">Voir la solution</button>
+
+    <p><strong>Question 3.b)</strong> En déduire que $f_{n}(\mathbb{U})\subseteq\mathbb{U}$ si et seulement si : $n^{2}+2n\Im(z^{2})=0$ pour tout $z\in\mathbb{U}$.</p>
+    <button class="btn-solution" onclick="openModal('sol-3b')">Voir la solution</button>
+
+    <p><strong>Question 3.c et 3.d)</strong> Montrer que cela équivaut à une impossibilité et conclure qu'il n'existe aucun $n\in\mathbb{N}^{*}$ tel que $f_{n}(\mathbb{U})\subseteq\mathbb{U}$.</p>
+    <button class="btn-solution" onclick="openModal('sol-3cd')">Voir la solution</button>
+
+
+    <h2>Partie C : Restriction à un sous-groupe fini</h2>
+    <p>Soit $\omega=e^{2i\pi/3}$ et $G=\{1,\omega,\omega^{2}\}$ le groupe des racines cubiques de l'unité.</p>
+    
+    <p><strong>Question 4.a, b, c et d)</strong> Étude de la stabilité du groupe $G$ par $f_n$ et relation de congruence matricielle.</p>
+    <button class="btn-solution" onclick="openModal('sol-4')">Voir la solution détaillée (Partie C complète)</button>
+
+
+    <h2>Partie D : Connexion arithmétique approfondie</h2>
+    <p><strong>Question 5.</strong> On s'intéresse à l'équation matricielle $M_{n}^{k}\equiv I_{2} \pmod p$ où $p$ est premier et $k\ge1$.</p>
+    <button class="btn-solution" onclick="openModal('sol-5')">Voir la solution détaillée (Partie D complète)</button>
+
+
+    <h2>Partie E : Synthèse géométrique</h2>
+    <p><strong>Question 6.</strong> Interprétation géométrique, éléments propres et calcul d'aire.</p>
+    <button class="btn-solution" onclick="openModal('sol-6')">Voir la solution détaillée (Partie E complète)</button>
+
+    <div class="canvas-container">
+        <h3>Illustration géométrique (Question 6.c pour n=1)</h3>
+        <p>Le carré initial est en bleu, et sa transformation (un segment confondu, soit un losange aplati d'aire nulle) est en rouge.</p>
+        <canvas id="geometryCanvas" width="400" height="400"></canvas>
+    </div>
+
+</div>
+
+<div id="sol-1a" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('sol-1a')">&times;</span>
+        <h2>Solution Q1.a</h2>
+        <div class="theorem-box">
+            <strong>Théorème de la division euclidienne :</strong> Pour tout entier $a$ et tout entier naturel non nul $b$, il existe un unique couple d'entiers $(q, r)$ tel que $a = bq + r$ avec $0 \le r < b$.
+        </div>
+        <p>Nous raisonnons par disjonction de cas selon la parité de $n$ :</p>
+        <ul>
+            <li><strong>Cas 1 : $n$ est pair.</strong> Par définition, il existe un entier $k$ tel que $n = 2k$. En élevant au carré, on obtient $n^2 = (2k)^2 = 4k^2$. Ainsi, $n^2 = 4 \times (k^2) + 0$. Puisque $k^2$ est un entier, le reste de la division euclidienne de $n^2$ par 4 est <strong>0</strong>. Autrement dit, $n^2 \equiv 0 \pmod 4$.</li>
+            <li><strong>Cas 2 : $n$ est impair.</strong> Par définition, il existe un entier $k$ tel que $n = 2k + 1$. En élevant au carré, $n^2 = (2k+1)^2 = 4k^2 + 4k + 1 = 4(k^2 + k) + 1$. Le nombre $k^2+k$ étant un entier, on identifie directement le quotient $q = k^2+k$ et le reste $r = 1$ (qui vérifie bien $0 \le 1 < 4$). Le reste est donc <strong>1</strong>. Autrement dit, $n^2 \equiv 1 \pmod 4$.</li>
+        </ul>
+    </div>
+</div>
+
+<div id="sol-1b" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('sol-1b')">&times;</span>
+        <h2>Solution Q1.b</h2>
+        <div class="theorem-box">
+            <strong>Définition (Déterminant d'une matrice $2\times2$) :</strong> Le déterminant de la matrice $A = \begin{pmatrix}a&b\\ c&d\end{pmatrix}$ est le scalaire $\det(A) = ad - bc$.
+            <br><br>
+            <strong>Règle de compatibilité des congruences :</strong> Si $a \equiv b \pmod m$ et $c \equiv d \pmod m$, alors $a-c \equiv b-d \pmod m$.
+        </div>
+        <p>Calculons d'abord le déterminant de la matrice $M_n$ :
+        $$\det(M_n) = (1 \times 1) - (n \times n) = 1 - n^2$$</p>
+        <p>En exploitant les résultats de la question 1.a et la compatibilité de la soustraction avec les congruences modulo 4 :</p>
+        <ul>
+            <li>Si <strong>$n$ est pair</strong>, nous avons prouvé que $n^2 \equiv 0 \pmod 4$. Dès lors :
+            $$\det(M_n) = 1 - n^2 \equiv 1 - 0 \equiv 1 \pmod 4$$</li>
+            <li>Si <strong>$n$ est impair</strong>, nous avons prouvé que $n^2 \equiv 1 \pmod 4$. Ainsi :
+            $$\det(M_n) = 1 - n^2 \equiv 1 - 1 \equiv 0 \pmod 4$$</li>
+        </ul>
+        <p>Ceci démontre parfaitement la proposition demandée.</p>
+    </div>
+</div>
+
+<div id="sol-1c" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('sol-1c')">&times;</span>
+        <h2>Solution Q1.c</h2>
+        <p>On cherche à savoir quand $\det(M_n)$ est divisible par 3, c'est-à-dire quand $1 - n^2 \equiv 0 \pmod 3$, ce qui équivaut à $n^2 \equiv 1 \pmod 3$.</p>
+        <p>Raisonnons par disjonction des cas sur les restes possibles de $n$ modulo 3 (Tableau de congruences) :</p>
+        <table style="width:100%; text-align:center; border-collapse: collapse; margin-bottom:1rem;" border="1">
+            <tr>
+                <th style="padding:8px;">$n \pmod 3$</th>
+                <th style="padding:8px;">$n^2 \pmod 3$</th>
+                <th style="padding:8px;">$1 - n^2 \pmod 3$</th>
+            </tr>
+            <tr><td>0</td><td>0</td><td>1</td></tr>
+            <tr><td>1</td><td>1</td><td>0</td></tr>
+            <tr><td>2</td><td>4 $\equiv$ 1</td><td>0</td></tr>
+        </table>
+        <p><strong>Conclusion :</strong> Le déterminant $\det(M_n)$ est congru à 0 modulo 3 si et seulement si $n \equiv 1 \pmod 3$ ou $n \equiv 2 \pmod 3$. En termes d'arithmétique pure : <strong>$\det(M_n)$ est divisible par 3 si et seulement si $n$ n'est pas un multiple de 3</strong>.</p>
+    </div>
+</div>
+
+<div id="sol-2a" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('sol-2a')">&times;</span>
+        <h2>Solution Q2.a</h2>
+        <div class="theorem-box">
+            <strong>Définition (Conjugué) :</strong> Pour tout nombre complexe $z = x + iy$ (avec $x,y \in \mathbb{R}$), son conjugué est $\bar{z} = x - iy$. On en déduit les relations d'Euler : $x = \frac{z+\bar{z}}{2}$ et $y = \frac{z-\bar{z}}{2i}$.
+        </div>
+        <p>La transformation matricielle nous donne le système :
+        $$\begin{pmatrix}x^{\prime}\\ y^{\prime}\end{pmatrix}=\begin{pmatrix}1&n\\ n&1\end{pmatrix}\begin{pmatrix}x\\ y\end{pmatrix} \implies \begin{cases} x^{\prime} = x + ny \\ y^{\prime} = nx + y \end{cases}$$</p>
+        <p>L'affixe de l'image est $z^{\prime} = f_n(z) = x^{\prime} + iy^{\prime}$. Remplaçons par les expressions ci-dessus :
+        $$f_n(z) = (x + ny) + i(nx + y) = x + iy + n(y + ix)$$</p>
+        <p>On remarque que $x + iy = z$. Pour le terme en facteur de $n$, factorisons par $i$ :
+        $$y + ix = i(-iy + x) = i(x - iy) = i\bar{z}$$</p>
+        <p>Ainsi, on obtient la très belle formule compacte :
+        $$f_n(z) = z + in\bar{z}$$</p>
+    </div>
+</div>
+
+<div id="sol-2b" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('sol-2b')">&times;</span>
+        <h2>Solution Q2.b</h2>
+        <div class="theorem-box">
+            <strong>Définition (Linéarité) :</strong> Une application $f : E \to F$ entre deux $\mathbb{K}$-espaces vectoriels est $\mathbb{K}$-linéaire si $\forall \lambda, \mu \in \mathbb{K}$ et $\forall u, v \in E$, $f(\lambda u + \mu v) = \lambda f(u) + \mu f(v)$.
+        </div>
+        <p><strong>1. Preuve de la $\mathbb{R}$-linéarité :</strong><br>
+        Soient $z_1, z_2 \in \mathbb{C}$ et $\lambda, \mu \in \mathbb{R}$. La conjugaison vérifie $\overline{\lambda z_1 + \mu z_2} = \lambda \bar{z}_1 + \mu \bar{z}_2$ car $\lambda$ et $\mu$ sont réels ($\bar{\lambda} = \lambda$).
+        $$f_n(\lambda z_1 + \mu z_2) = (\lambda z_1 + \mu z_2) + in(\overline{\lambda z_1 + \mu z_2})$$
+        $$= \lambda z_1 + \mu z_2 + in(\lambda \bar{z}_1 + \mu \bar{z}_2) = \lambda(z_1 + in\bar{z}_1) + \mu(z_2 + in\bar{z}_2) = \lambda f_n(z_1) + \mu f_n(z_2)$$
+        L'application respecte les combinaisons linéaires à coefficients réels, elle est donc $\mathbb{R}$-linéaire.</p>
+        
+        <p><strong>2. Preuve de la non $\mathbb{C}$-linéarité :</strong><br>
+        Il suffit de trouver un contre-exemple. Évaluons $f_n(i \times z)$ par rapport à $i \times f_n(z)$ en prenant $z=1$ :
+        $$f_n(i \times 1) = f_n(i) = i + in(\bar{i}) = i + in(-i) = i - i^2n = n + i$$
+        D'autre part :
+        $$i \times f_n(1) = i \times (1 + in\bar{1}) = i(1 + in) = i + i^2n = -n + i$$
+        Puisque $n \in \mathbb{N}^*$, $n \neq -n$, donc $f_n(i) \neq i f_n(1)$. L'application ne préserve pas la multiplication par un scalaire complexe non réel, elle n'est donc pas $\mathbb{C}$-linéaire.</p>
+    </div>
+</div>
+
+<div id="sol-2c" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('sol-2c')">&times;</span>
+        <h2>Solution Q2.c</h2>
+        <p>Un point $M$ d'affixe $z$ est dit fixe (ou invariant) par $f_n$ si et seulement si son image est le point lui-même, soit $f_n(z) = z$.</p>
+        <p>Résolvons l'équation :
+        $$f_n(z) = z \iff z + in\bar{z} = z \iff in\bar{z} = 0$$</p>
+        <p>Puisque $i \neq 0$ et $n \neq 0$ (car $n \in \mathbb{N}^*$), par intégrité du corps des complexes, on déduit nécessairement que :
+        $$\bar{z} = 0$$</p>
+        <div class="theorem-box">
+            <strong>Propriété élémentaire :</strong> Le conjugué d'un nombre complexe est nul si et seulement si ce nombre complexe est nul ($\bar{z} = 0 \iff z = 0$).
+        </div>
+        <p>Par conséquent, $z=0$. L'ensemble des points fixes de la transformation $f_n$ se réduit à un unique point : l'origine du repère $O$ d'affixe 0.</p>
+    </div>
+</div>
+
+<div id="sol-3a" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('sol-3a')">&times;</span>
+        <h2>Solution Q3.a</h2>
+        <div class="theorem-box">
+            <strong>Lemmes fondamentaux sur les modules :</strong> 
+            <ol>
+                <li>Pour tout $Z \in \mathbb{C}$, le module au carré est donné par $|Z|^2 = Z\bar{Z}$.</li>
+                <li>Pour tout $Z \in \mathbb{C}$, $Z - \bar{Z} = 2i\Im(Z)$.</li>
+            </ol>
+        </div>
+        <p>Soit $z \in \mathbb{U}$. Par définition, $|z| = 1$, ce qui implique $|z|^2 = z\bar{z} = 1$, et donc $|\bar{z}|^2 = 1$.</p>
+        <p>Évaluons le module au carré de l'image :
+        $$|f_n(z)|^2 = f_n(z)\overline{f_n(z)} = (z + in\bar{z})\overline{(z + in\bar{z})}$$
+        En appliquant les propriétés de la conjugaison ($\overline{a+b} = \bar{a}+\bar{b}$, $\overline{in} = -in$, $\overline{\bar{z}} = z$) :
+        $$|f_n(z)|^2 = (z + in\bar{z})(\bar{z} - in z)$$
+        Développons l'expression :
+        $$= z\bar{z} - in z^2 + in\bar{z}^2 - i^2 n^2 \bar{z} z$$
+        Puisque $z\bar{z} = 1$ et $i^2 = -1$ :
+        $$= 1 - in(z^2 - \bar{z}^2) + n^2(1) = 1 + n^2 - in(z^2 - \bar{z}^2)$$
+        Posons $Z = z^2$. L'expression devient $- in(Z - \bar{Z})$. D'après le lemme 2, $Z - \bar{Z} = 2i\Im(Z) = 2i\Im(z^2)$. Substituons cela :
+        $$= 1 + n^2 - in(2i\Im(z^2)) = 1 + n^2 - 2i^2 n \Im(z^2) = 1 + n^2 + 2n\Im(z^2)$$</p>
+        <p>La formule est parfaitement démontrée.</p>
+    </div>
+</div>
+
+<div id="sol-3b" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('sol-3b')">&times;</span>
+        <h2>Solution Q3.b</h2>
+        <p>La notation $f_n(\mathbb{U}) \subseteq \mathbb{U}$ signifie géométriquement que l'image de tout point du cercle unité reste sur le cercle unité. De façon analytique, cela équivaut à la proposition logique :
+        $$\forall z \in \mathbb{C}, \quad (|z| = 1 \implies |f_n(z)| = 1)$$</p>
+        <p>Travailler avec les modules au carré est équivalent car le module est un réel positif : $|f_n(z)| = 1 \iff |f_n(z)|^2 = 1$.</p>
+        <p>En remplaçant par l'expression obtenue à la question 3.a :
+        $$\forall z \in \mathbb{U}, \quad 1 + n^2 + 2n\Im(z^2) = 1$$
+        En soustrayant 1 de chaque côté, on obtient immédiatement l'équivalence :
+        $$\forall z \in \mathbb{U}, \quad n^2 + 2n\Im(z^2) = 0$$</p>
+    </div>
+</div>
+
+<div id="sol-3cd" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('sol-3cd')">&times;</span>
+        <h2>Solution Q3.c et Q3.d</h2>
+        <p><strong>Reprise de la condition (Q3.c) :</strong><br>
+        Nous avons la condition : $\forall z \in \mathbb{U}, \quad n^2 + 2n\Im(z^2) = 0$.<br>
+        En factorisant par l'entier $n$, cela donne : $n \left(n + 2\Im(z^2)\right) = 0$.</p>
+        <div class="theorem-box">
+            <strong>Règle du produit nul :</strong> Dans un corps (ou un anneau intègre), un produit de facteurs est nul si et seulement si au moins l'un des facteurs est nul.
+        </div>
+        <p>Puisque la proposition est vraie pour <strong>tout</strong> $z \in \mathbb{U}$, on a deux possibilités :
+        <br>Soit $n = 0$ (exclu par l'énoncé qui pose $n \in \mathbb{N}^*$).
+        <br>Soit $\forall z \in \mathbb{U}, \quad n + 2\Im(z^2) = 0$, ce qui équivaut à la condition :
+        $$\Im(z^2) = -\frac{n}{2} \quad \text{pour tout } z \in \mathbb{U}$$</p>
+
+        <p><strong>Conclusion sur l'existence (Q3.d) :</strong><br>
+        Étudions la fonction $z \mapsto \Im(z^2)$ sur le cercle unité. Posons $z = e^{i\theta}$. Alors $z^2 = e^{2i\theta} = \cos(2\theta) + i\sin(2\theta)$.
+        Donc $\Im(z^2) = \sin(2\theta)$.<br>
+        La condition devient : la fonction $\theta \mapsto \sin(2\theta)$ doit être identiquement égale à la constante $-n/2$ pour tout $\theta \in \mathbb{R}$.
+        Ceci est manifestement absurde car la fonction sinus est variable (elle prend toutes les valeurs de $[-1, 1]$).</p>
+        <p>L'hypothèse initiale mène à une absurdité. On conclut rigoureusement qu'<strong>il n'existe aucun $n \in \mathbb{N}^*$ tel que le cercle unité soit invariant par $f_n$.</strong></p>
+    </div>
+</div>
+
+<div id="sol-4" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('sol-4')">&times;</span>
+        <h2>Solution Partie C</h2>
+        <p><strong>a) Stabilité et table de multiplication du groupe G</strong><br>
+        Rappelons que $\omega = e^{2i\pi/3}$. D'après la formule de Moivre, $\omega^3 = e^{2i\pi} = 1$. Le groupe est engendré par $\omega$. Le produit de deux éléments $\omega^a$ et $\omega^b$ est $\omega^{a+b \pmod 3}$. Le produit reste donc dans $G$.<br>
+        Table :
+        </p>
+        <table style="margin:0 auto; text-align:center;" border="1" cellpadding="5">
+            <tr><th>$\times$</th><th>$1$</th><th>$\omega$</th><th>$\omega^2$</th></tr>
+            <tr><th>$1$</th><td>$1$</td><td>$\omega$</td><td>$\omega^2$</td></tr>
+            <tr><th>$\omega$</th><td>$\omega$</td><td>$\omega^2$</td><td>$1$</td></tr>
+            <tr><th>$\omega^2$</th><td>$\omega^2$</td><td>$1$</td><td>$\omega$</td></tr>
+        </table>
+
+        <p><br><strong>b) Calcul des images</strong><br>
+        En utilisant $f_n(z) = z + in\bar{z}$ :
+        <ul>
+            <li>$f_n(1) = 1 + in\bar{1} = 1 + in$</li>
+            <li>$f_n(\omega) = \omega + in\bar{\omega} = \omega + in\omega^2$ (car $\bar{\omega} = \omega^2$ sur le cercle unité)</li>
+            <li>$f_n(\omega^2) = \omega^2 + in\overline{\omega^2} = \omega^2 + in\omega$</li>
+        </ul></p>
+
+        <p><strong>c) Valeurs de $n$ pour $f_n(G) \subseteq G$</strong><br>
+        Si l'image de $G$ est incluse dans $G$, cela signifie notamment que l'image de 1 doit appartenir à $G$. Or, $G$ est constitué de complexes de module strictement égal à 1 (puisque ce sont des racines de l'unité).
+        Calculons le module au carré de $f_n(1)$ :
+        $$|f_n(1)|^2 = |1 + in|^2 = 1^2 + n^2 = 1 + n^2$$
+        Pour que $f_n(1) \in G$, il est impératif que $|f_n(1)|^2 = 1$. Cela impose $1 + n^2 = 1 \implies n^2 = 0 \implies n = 0$.<br>
+        Puisque l'énoncé recherche des valeurs $n \in \{1, 2, 3, 4, 5, 6\}$, on conclut que <strong>pour aucune de ces valeurs</strong> on a $f_n(G) \subseteq G$. 
+        L'ensemble solution est vide.</p>
+
+        <p><strong>d) Évaluation de la congruence matricielle</strong><br>
+        Bien que l'ensemble précédent soit vide, procédons à l'exercice calculatoire indépendamment pour vérifier $M_n^2 \equiv I_2 \pmod 3$.<br>
+        Calculons le carré matriciel :
+        $$M_n^2 = \begin{pmatrix}1&n\\ n&1\end{pmatrix}\begin{pmatrix}1&n\\ n&1\end{pmatrix} = \begin{pmatrix}1 + n^2 & 2n \\ 2n & 1 + n^2\end{pmatrix}$$
+        Pour que $M_n^2 \equiv I_2 \pmod 3$, on doit satisfaire le système de congruences, coefficient par coefficient :
+        $$\begin{cases} 1+n^2 \equiv 1 \pmod 3 \\ 2n \equiv 0 \pmod 3 \end{cases}$$
+        La seconde équation implique $n \equiv 0 \pmod 3$ (puisque 2 et 3 sont premiers entre eux, Lemme de Gauss). Si $n$ est un multiple de 3, la première équation donne $1 + 0 \equiv 1 \pmod 3$, ce qui est consistant.<br>
+        Les valeurs de $n \in \{1, 2, ..., 6\}$ qui vérifient cette propriété matricielle sont donc <strong>$n=3$ et $n=6$</strong>.</p>
+    </div>
+</div>
+
+<div id="sol-5" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('sol-5')">&times;</span>
+        <h2>Solution Partie D</h2>
+        
+        <p><strong>a) Décomposition et propriété de J</strong><br>
+        On a $\begin{pmatrix}1&n\\ n&1\end{pmatrix} = \begin{pmatrix}1&0\\ 0&1\end{pmatrix} + \begin{pmatrix}0&n\\ n&0\end{pmatrix} = I_2 + n\begin{pmatrix}0&1\\ 1&0\end{pmatrix} = I_2 + nJ$.<br>
+        Vérification pour $J$ (matrice de permutation) :
+        $$J^2 = \begin{pmatrix}0&1\\ 1&0\end{pmatrix}\begin{pmatrix}0&1\\ 1&0\end{pmatrix} = \begin{pmatrix}0\times0+1\times1 & 0\times1+1\times0 \\ 1\times0+0\times1 & 1\times1+0\times0\end{pmatrix} = \begin{pmatrix}1&0\\ 0&1\end{pmatrix} = I_2$$
+        </p>
+
+        <p><strong>b) Démonstration par récurrence</strong><br>
+        <div class="theorem-box"><strong>Principe de récurrence :</strong> Pour prouver qu'une propriété $P(k)$ est vraie pour tout $k \ge 1$, on prouve l'initialisation $P(1)$, puis on suppose $P(k)$ vraie pour un entier $k$ fixé et on démontre $P(k+1)$.</div>
+        <em>Initialisation :</em> Pour $k=1$, $M_n^1 = I_2 + nJ$. En posant $a_1=1$ et $b_1=n$, on a bien $M_n^1 = a_1 I_2 + b_1 J$.<br>
+        <em>Hérédité :</em> Supposons $M_n^k = a_k I_2 + b_k J$. Calculons $M_n^{k+1}$ :
+        $$M_n^{k+1} = M_n^k \times M_n = (a_k I_2 + b_k J)(I_2 + nJ)$$
+        On développe en utilisant la distributivité matricielle et la commutativité de $I_2$ avec $J$ :
+        $$= a_k I_2^2 + a_k n I_2 J + b_k J I_2 + b_k n J^2$$
+        Puisque $I_2^2 = I_2$, $I_2 J = J I_2 = J$, et $J^2 = I_2$ :
+        $$= a_k I_2 + a_k n J + b_k J + b_k n I_2 = (a_k + n b_k) I_2 + (n a_k + b_k) J$$
+        On pose alors $a_{k+1} = a_k + nb_k$ et $b_{k+1} = na_k + b_k$. La propriété est héréditaire, donc démontrée.</p>
+
+        <p><strong>c) Combinaisons linéaires des suites</strong><br>
+        Calculons la somme $a_{k+1} + b_{k+1}$ :
+        $$a_{k+1} + b_{k+1} = (a_k + nb_k) + (na_k + b_k) = (1+n)a_k + (1+n)b_k = (1+n)(a_k + b_k)$$
+        La suite $(a_k + b_k)$ est une suite géométrique de raison $(1+n)$ et de premier terme $a_1 + b_1 = 1+n$. Son terme général est donc :
+        $$a_k + b_k = (1+n) \times (1+n)^{k-1} = (1+n)^k$$
+        Calculons la différence $a_{k+1} - b_{k+1}$ :
+        $$a_{k+1} - b_{k+1} = (a_k + nb_k) - (na_k + b_k) = (1-n)a_k - (1-n)b_k = (1-n)(a_k - b_k)$$
+        La suite $(a_k - b_k)$ est une suite géométrique de raison $(1-n)$ et de premier terme $a_1 - b_1 = 1-n$. D'où :
+        $$a_k - b_k = (1-n) \times (1-n)^{k-1} = (1-n)^k$$
+        </p>
+
+        <p><strong>d) Condition de congruence de l'exposant matriciel</strong><br>
+        En additionnant et soustrayant les résultats de c), on trouve les formules explicites (qui s'apparentent aux identités de polarisation) :
+        $$a_k = \frac{(1+n)^k + (1-n)^k}{2} \quad \text{et} \quad b_k = \frac{(1+n)^k - (1-n)^k}{2}$$
+        L'équation matricielle est $M_n^k \equiv I_2 \pmod p$. Or $M_n^k = a_k I_2 + b_k J$. Par identification dans la base $(I_2, J)$ de l'espace des matrices symétriques correspondantes, cela équivaut à :
+        $$a_k \equiv 1 \pmod p \quad \text{et} \quad b_k \equiv 0 \pmod p$$
+        En multipliant ces congruences par 2 (ce qui conserve l'équivalence si le nombre premier $p$ est différent de 2, ce qui est le cas implicite de l'énoncé de par le fait que 2 divise le dénominateur de la fraction explicite, sinon pour $p=2$, l'analyse diffère), on obtient le système :
+        $$\begin{cases} 2a_k \equiv 2 \pmod p \\ 2b_k \equiv 0 \pmod p \end{cases} \implies \begin{cases} (1+n)^k + (1-n)^k \equiv 2 \pmod p \\ (1+n)^k - (1-n)^k \equiv 0 \pmod p \end{cases}$$
+        </p>
+
+        <p><strong>e) Application numérique (p=5, n=2)</strong><br>
+        Remplaçons $n$ et $p$ dans le système obtenu :
+        $$\begin{cases} (1+2)^k + (1-2)^k \equiv 2 \pmod 5 \\ (1+2)^k - (1-2)^k \equiv 0 \pmod 5 \end{cases} \implies \begin{cases} 3^k + (-1)^k \equiv 2 \pmod 5 \\ 3^k - (-1)^k \equiv 0 \pmod 5 \end{cases}$$
+        La seconde équation impose $3^k \equiv (-1)^k \pmod 5$. 
+        Multiplions par $(-1)^k$ de chaque côté (qui est son propre inverse) : $(-3)^k \equiv 1 \pmod 5$.
+        Or $-3 \equiv 2 \pmod 5$, donc l'équation devient :
+        $$2^k \equiv 1 \pmod 5$$
+        <div class="theorem-box"><strong>Petit théorème de Fermat / Ordre multiplicatif :</strong> Si $p$ est premier et $a$ non divisible par $p$, $a^{p-1} \equiv 1 \pmod p$. L'ordre de $a$ (le plus petit entier $k>0$ vérifiant $a^k \equiv 1$) divise $p-1$.</div>
+        Ici $p-1=4$. Testons les puissances de 2 modulo 5 :
+        $2^1 \equiv 2$; $2^2 = 4 \equiv 4$; $2^3 = 8 \equiv 3$; $2^4 = 16 \equiv 1$.
+        Le plus petit entier cherché est donc <strong>$k=4$</strong>.
+        (Vérifions la 1ère équation avec $k=4$ : $3^4 + (-1)^4 = 81 + 1 = 82 = 5 \times 16 + 2 \equiv 2 \pmod 5$. Le résultat est validé).
+        </p>
+    </div>
+</div>
+
+<div id="sol-6" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('sol-6')">&times;</span>
+        <h2>Solution Partie E</h2>
+        
+        <p><strong>a) Interprétation géométrique de f_n</strong><br>
+        La matrice $M_n$ est symétrique à coefficients réels. D'après le <strong>théorème spectral</strong>, elle est diagonalisable dans une base orthonormée. La transformation associée est une affinité orthogonale combinée avec une homothétie (déterminée par les valeurs propres).</p>
+
+        <p><strong>b) Éléments propres de M_n</strong><br>
+        Pour trouver les valeurs propres $\lambda$, on résout l'équation caractéristique $\det(M_n - \lambda I_2) = 0$ :
+        $$\begin{vmatrix} 1-\lambda & n \\ n & 1-\lambda \end{vmatrix} = 0 \implies (1-\lambda)^2 - n^2 = 0 \implies (1-\lambda - n)(1-\lambda + n) = 0$$
+        Les valeurs propres sont $\lambda_1 = 1+n$ et $\lambda_2 = 1-n$.<br>
+        Pour trouver les vecteurs propres associés :
+        - Pour $\lambda_1 = 1+n$ : $M_n \vec{v_1} = (1+n)\vec{v_1}$ conduit à l'équation $x+ny = (1+n)x \implies ny = nx \implies y=x$. Un vecteur propre est $\vec{u_1}(1, 1)$.<br>
+        - Pour $\lambda_2 = 1-n$ : $M_n \vec{v_2} = (1-n)\vec{v_2}$ conduit à $x+ny = (1-n)x \implies ny = -nx \implies y=-x$. Un vecteur propre est $\vec{u_2}(1, -1)$.<br>
+        Les vecteurs $\vec{u_1}$ et $\vec{u_2}$ sont orthogonaux (leur produit scalaire est $1\times1 + 1\times(-1) = 0$). Dans cette base, la transformation agit comme une élongation/contraction le long de ces deux axes.</p>
+
+        <p><strong>c) Cas n=1 sur le carré unité</strong><br>
+        Pour $n=1$, la matrice devient $M_1 = \begin{pmatrix}1&1\\ 1&1\end{pmatrix}$. L'image du point $(x,y)$ est le point $(x+y, x+y)$. Les images des sommets du carré sont :
+        - $(0,0) \to (0,0)$
+        - $(1,0) \to (1,1)$
+        - $(1,1) \to (2,2)$
+        - $(0,1) \to (1,1)$
+        Tous les points atterrissent sur la droite d'équation $y=x$. Le carré est écrasé sur un segment de droite. Un segment de droite est un polygone aplati dont l'aire est nulle. L'aire de cette figure est donc <strong>0</strong>.</p>
+
+        <p><strong>d) Vérification avec la formule du déterminant</strong><br>
+        <div class="theorem-box"><strong>Formule de l'aire sous transformation linéaire :</strong> Si une transformation géométrique du plan est représentée par une matrice $M$, alors l'aire de l'image d'un domaine $D$ est donnée par $\text{Aire}(f(D)) = |\det(M)| \times \text{Aire}(D)$.</div>
+        Calculons l'aire par la formule :
+        $\det(M_1) = 1\times1 - 1\times1 = 0$.<br>
+        L'aire du carré unité initial est de 1.
+        Ainsi : $\text{Aire image} = |0| \times 1 = 0$.
+        Nous retrouvons bien le même résultat de façon immédiate et analytique.</p>
+    </div>
+</div>
+
+<script>
+    // Fonctions pour gérer les fenêtres modales
+    function openModal(id) {
+        document.getElementById(id).style.display = "block";
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).style.display = "none";
+    }
+
+    // Fermer la modale si l'utilisateur clique en dehors de la zone de contenu
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = "none";
+        }
+    }
+
+    // Script de tracé Canvas (inchangé depuis la version précédente)
+    window.onload = function() {
+        const canvas = document.getElementById('geometryCanvas');
+        if (canvas.getContext) {
+            const ctx = canvas.getContext('2d');
+            const scale = 100;
+            const offsetX = 100;
+            const offsetY = 300; 
+
+            function drawAxes() {
+                ctx.beginPath();
+                ctx.strokeStyle = '#aaa';
+                ctx.moveTo(0, offsetY);
+                ctx.lineTo(400, offsetY);
+                ctx.moveTo(offsetX, 0);
+                ctx.lineTo(offsetX, 400);
+                ctx.stroke();
+            }
+
+            const square = [
+                {x: 0, y: 0},
+                {x: 1, y: 0},
+                {x: 1, y: 1},
+                {x: 0, y: 1}
+            ];
+
+            const transformedSquare = square.map(p => ({
+                x: p.x + p.y,
+                y: p.x + p.y
+            }));
+
+            drawAxes();
+            
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(52, 152, 219, 0.8)';
+            ctx.fillStyle = 'rgba(52, 152, 219, 0.2)';
+            ctx.moveTo(offsetX + square[0].x * scale, offsetY - square[0].y * scale);
+            for(let i=1; i<square.length; i++) {
+                ctx.lineTo(offsetX + square[i].x * scale, offsetY - square[i].y * scale);
+            }
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(231, 76, 60, 0.9)';
+            ctx.lineWidth = 3;
+            ctx.moveTo(offsetX + transformedSquare[0].x * scale, offsetY - transformedSquare[0].y * scale);
+            for(let i=1; i<transformedSquare.length; i++) {
+                ctx.lineTo(offsetX + transformedSquare[i].x * scale, offsetY - transformedSquare[i].y * scale);
+            }
+            ctx.closePath();
+            ctx.stroke();
+        }
+    };
+</script>
+
+</body>
+</html>
