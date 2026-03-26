@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Étude arithmétique et matricielle du nombre cyclique 142 857</title>
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        h1, h2, h3 { color: #2c3e50; }
+        h1 { text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        .author-date { text-align: center; font-style: italic; color: #7f8c8d; margin-bottom: 30px; }
+        .context { background-color: #e8f4f8; padding: 15px; border-left: 5px solid #3498db; margin-bottom: 20px; }
+        .question { margin-bottom: 20px; }
+        .sub-question { margin-left: 20px; margin-bottom: 15px; }
+        
+        table { border-collapse: collapse; margin: 15px 0; }
+        table, th, td { border: 1px solid #333; }
+        th, td { padding: 10px; text-align: center; }
+
+        .btn {
+            background-color: #3498db; color: white; border: none;
+            padding: 8px 15px; cursor: pointer; border-radius: 4px;
+            font-size: 0.9em; margin-top: 10px; transition: background 0.3s;
+        }
+        .btn:hover { background-color: #2980b9; }
+
+        /* Modal Styles */
+        .modal {
+            display: none; position: fixed; z-index: 1000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            overflow: auto; background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #fff; margin: 10% auto; padding: 25px;
+            border-left: 6px solid #2ecc71; width: 80%; max-width: 700px;
+            border-radius: 5px; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .close {
+            color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;
+        }
+        .close:hover, .close:focus { color: #000; text-decoration: none; cursor: pointer; }
+        .solution-title { color: #27ae60; margin-top: 0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Sujet de Mathématiques Expertes<br><small>Étude arithmétique et matricielle du nombre cyclique $142\,857$</small></h1>
+    <div class="author-date">Classe de Terminale</div>
+
+    <div class="context">
+        <strong>Contexte :</strong><br>
+        Le nombre $N = 142\,857$ est connu sous le nom de <em>nombre cyclique</em>. Lorsqu'on le multiplie par $1, 2, 3, 4, 5$ ou $6$, le résultat est formé des mêmes chiffres, décalés circulairement. L'objectif de ce problème est de percer le mystère arithmétique de ce nombre en utilisant les outils du programme de Mathématiques Expertes.
+    </div>
+
+    <h2>Partie A : Arithmétique modulaire et origine du nombre</h2>
+    
+    <div class="question">
+        <strong>1. Étude des puissances de 10 modulo 7</strong>
+        <div class="sub-question">
+            a) Énoncer le petit théorème de Fermat.
+            <br><button class="btn" onclick="openModal('solA1a')">Voir la solution</button>
+        </div>
+        <div class="sub-question">
+            b) Justifier que $10^6 \equiv 1 \pmod 7$.
+            <br><button class="btn" onclick="openModal('solA1b')">Voir la solution</button>
+        </div>
+        <div class="sub-question">
+            c) Recopier et compléter le tableau de congruences suivant, en donnant les restes modulo 7 :
+            <table>
+                <tr>
+                    <th>$k$</th>
+                    <td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td>
+                </tr>
+                <tr>
+                    <th>$10^k \equiv \dots \pmod 7$</th>
+                    <td></td><td></td><td></td><td></td><td></td><td></td>
+                </tr>
+            </table>
+            <button class="btn" onclick="openModal('solA1c')">Voir la solution</button>
+        </div>
+    </div>
+
+    <div class="question">
+        <strong>2. Lien avec le nombre $N$</strong>
+        <div class="sub-question">
+            a) Déduire de la question 1.b) que 7 divise $999\,999$.
+            <br><button class="btn" onclick="openModal('solA2a')">Voir la solution</button>
+        </div>
+        <div class="sub-question">
+            b) Poser et effectuer la division euclidienne de $999\,999$ par $7$. On note $N$ le quotient obtenu. Vérifier que $N = 142\,857$.
+            <br><button class="btn" onclick="openModal('solA2b')">Voir la solution</button>
+        </div>
+        <div class="sub-question">
+            c) En déduire l'égalité fondamentale : $7N = 10^6 - 1$.
+            <br><button class="btn" onclick="openModal('solA2c')">Voir la solution</button>
+        </div>
+    </div>
+
+    <h2>Partie B : La magie du décalage circulaire</h2>
+    
+    <div class="question">
+        <strong>1. Le multiplicateur 3</strong>
+        <div class="sub-question">
+            a) En utilisant le tableau de la Partie A, donner le reste de la division euclidienne de $10^1$ par $7$. Écrire l'égalité correspondante (de la forme $10 = 7q + r$).
+            <br><button class="btn" onclick="openModal('solB1a')">Voir la solution</button>
+        </div>
+        <div class="sub-question">
+            b) En multipliant cette égalité par $N$, et sachant que $7N = 999\,999$, démontrer que : $10 \times N = 999\,999 + 3N$
+            <br><button class="btn" onclick="openModal('solB1b')">Voir la solution</button>
+        </div>
+        <div class="sub-question">
+            c) Sachant que $10 \times N = 1\,428\,570$, en déduire la valeur de $3N$.
+            <br><button class="btn" onclick="openModal('solB1c')">Voir la solution</button>
+        </div>
+        <div class="sub-question">
+            d) Expliquer en quoi l'opération $10N - 999\,999$ correspond, sur les chiffres de $N$, à un décalage circulaire vers la gauche.
+            <br><button class="btn" onclick="openModal('solB1d')">Voir la solution</button>
+        </div>
+    </div>
+
+    <div class="question">
+        <strong>2. Généralisation</strong><br>
+        Soit $p \in \{1, 2, 3, 4, 5\}$. On note $r_p$ le reste de la division euclidienne de $10^p$ par $7$.
+        <div class="sub-question">
+            a) Exprimer $10^p$ en fonction de $7$ et de $r_p$.
+            <br><button class="btn" onclick="openModal('solB2a')">Voir la solution</button>
+        </div>
+        <div class="sub-question">
+            b) En déduire que $10^p \times N = q_p \times 999\,999 + r_p \times N$, où $q_p$ est un entier que l'on précisera.
+            <br><button class="btn" onclick="openModal('solB2b')">Voir la solution</button>
+        </div>
+        <div class="sub-question">
+            c) <em>Question de synthèse :</em> Expliquer pourquoi les multiplications de $N$ par $1, 2, 3, 4, 5$ et $6$ ne font que décaler circulairement les chiffres de $142\,857$.
+            <br><button class="btn" onclick="openModal('solB2c')">Voir la solution</button>
+        </div>
+    </div>
+
+    <h2>Partie C : Représentation par un graphe</h2>
+    <p>On s'intéresse à la dynamique des restes des puissances de 10 modulo 7, étudiée dans la Partie A. On définit un graphe orienté $\mathcal{G}$ dont les sommets sont les entiers de $1$ à $6$. Pour tout couple de sommets $(i, j)$, on trace un arc orienté de $i$ vers $j$ si et seulement si : $j \equiv 10 \times i \pmod 7$</p>
+
+    <div class="question">
+        <div class="sub-question">
+            1. Représenter ce graphe orienté $\mathcal{G}$. Comment appelle-t-on ce type de chemin particulier qui passe par tous les sommets avant de revenir à son point de départ ?
+            <br><button class="btn" onclick="openModal('solC1')">Voir la solution</button>
+        </div>
+        <div class="sub-question">
+            2. On note $M$ la matrice d'adjacence associée à ce graphe (en ordonnant les sommets de 1 à 6). Écrire la matrice $M$.
+            <br><button class="btn" onclick="openModal('solC2')">Voir la solution</button>
+        </div>
+        <div class="sub-question">
+            3. Sans faire de calculs à la calculatrice, et en justifiant à l'aide de la définition de $\mathcal{G}$, que vaut la matrice $M^6$ ?
+            <br><button class="btn" onclick="openModal('solC3')">Voir la solution</button>
+        </div>
+        <div class="sub-question">
+            4. En quoi ce résultat matriciel illustre-t-il la propriété du nombre cyclique $142\,857$ ?
+            <br><button class="btn" onclick="openModal('solC4')">Voir la solution</button>
+        </div>
+    </div>
+</div>
+
+<div id="solA1a" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('solA1a')">&times;</span>
+        <h3 class="solution-title">Solution - Partie A.1.a</h3>
+        <p><strong>Théorème (Petit théorème de Fermat) :</strong> Si $p$ est un nombre premier et si $a$ est un entier non divisible par $p$, alors $a^{p-1} \equiv 1 \pmod p$.</p>
+    </div>
+</div>
+
+<div id="solA1b" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('solA1b')">&times;</span>
+        <h3 class="solution-title">Solution - Partie A.1.b</h3>
+        <p>On applique le petit théorème de Fermat. Ici, $p = 7$ est un nombre premier. L'entier $a = 10$ n'est pas divisible par $7$ (puisque $10 = 7 \times 1 + 3$). Par conséquent, d'après le théorème, on a $10^{7-1} \equiv 1 \pmod 7$, ce qui donne bien $10^6 \equiv 1 \pmod 7$.</p>
+    </div>
+</div>
+
+<div id="solA1c" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('solA1c')">&times;</span>
+        <h3 class="solution-title">Solution - Partie A.1.c</h3>
+        <p>Calculons les restes successifs des puissances de 10 modulo 7 :</p>
+        <ul>
+            <li>$10^1 \equiv 3 \pmod 7$</li>
+            <li>$10^2 \equiv 10 \times 10 \equiv 3 \times 3 \equiv 9 \equiv 2 \pmod 7$</li>
+            <li>$10^3 \equiv 10^2 \times 10 \equiv 2 \times 3 \equiv 6 \pmod 7$</li>
+            <li>$10^4 \equiv 10^3 \times 10 \equiv 6 \times 3 \equiv 18 \equiv 4 \pmod 7$</li>
+            <li>$10^5 \equiv 10^4 \times 10 \equiv 4 \times 3 \equiv 12 \equiv 5 \pmod 7$</li>
+            <li>$10^6 \equiv 10^5 \times 10 \equiv 5 \times 3 \equiv 15 \equiv 1 \pmod 7$</li>
+        </ul>
+        <p>Le tableau complété est donc : 3, 2, 6, 4, 5, 1.</p>
+    </div>
+</div>
+
+<div id="solA2a" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('solA2a')">&times;</span>
+        <h3 class="solution-title">Solution - Partie A.2.a</h3>
+        <p>D'après la question 1.b, $10^6 \equiv 1 \pmod 7$. Par définition de la congruence, cela signifie que $10^6 - 1$ est un multiple de 7. Or, $10^6 - 1 = 1\,000\,000 - 1 = 999\,999$. Donc, 7 divise $999\,999$.</p>
+    </div>
+</div>
+
+<div id="solA2b" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('solA2b')">&times;</span>
+        <h3 class="solution-title">Solution - Partie A.2.b</h3>
+        <p>En posant la division euclidienne, on obtient :<br>
+        $999\,999 = 7 \times 142\,857 + 0$.<br>
+        Le reste est bien nul, et le quotient $N$ est bien égal à $142\,857$.</p>
+    </div>
+</div>
+
+<div id="solA2c" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('solA2c')">&times;</span>
+        <h3 class="solution-title">Solution - Partie A.2.c</h3>
+        <p>On vient de voir que $7 \times 142\,857 = 999\,999$. Or $N = 142\,857$ et $999\,999 = 10^6 - 1$. Par substitution, on obtient directement l'égalité fondamentale : $7N = 10^6 - 1$.</p>
+    </div>
+</div>
+
+<div id="solB1a" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('solB1a')">&times;</span>
+        <h3 class="solution-title">Solution - Partie B.1.a</h3>
+        <p>D'après le tableau de la partie A, le reste de la division euclidienne de $10^1$ par $7$ est $3$. L'égalité s'écrit donc : $10 = 7 \times 1 + 3$.</p>
+    </div>
+</div>
+
+<div id="solB1b" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('solB1b')">&times;</span>
+        <h3 class="solution-title">Solution - Partie B.1.b</h3>
+        <p>Partons de l'égalité $10 = 7 \times 1 + 3$ et multiplions les deux membres par $N$ :<br>
+        $10 \times N = (7 \times 1 + 3) \times N$<br>
+        $10N = 7N + 3N$<br>
+        Or, on sait par la partie A que $7N = 999\,999$. En remplaçant, on obtient :<br>
+        $10N = 999\,999 + 3N$.</p>
+    </div>
+</div>
+
+<div id="solB1c" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('solB1c')">&times;</span>
+        <h3 class="solution-title">Solution - Partie B.1.c</h3>
+        <p>De l'équation précédente, on isole $3N$ :<br>
+        $3N = 10N - 999\,999$<br>
+        Sachant que $10N = 1\,428\,570$, on calcule :<br>
+        $3N = 1\,428\,570 - 999\,999$<br>
+        $3N = 428\,571$.</p>
+    </div>
+</div>
+
+<div id="solB1d" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('solB1d')">&times;</span>
+        <h3 class="solution-title">Solution - Partie B.1.d</h3>
+        <p>L'opération $10N$ consiste à ajouter un zéro à la fin de $N$ (décalage de tous les chiffres vers la gauche d'une position). Le chiffre des centaines de milliers (ici le 1 de 142857) passe à la position des millions, donnant $1\,428\,570$.</p>
+        <p>Soustraire $999\,999$ revient mathématiquement à soustraire $1\,000\,000$ et ajouter $1$. Soustraire $1\,000\,000$ retire le 1 en tête, et ajouter 1 le replace à la fin (aux unités). Ainsi, le chiffre de poids fort est retiré et réinséré en position de poids faible : c'est l'essence même d'un décalage circulaire vers la gauche.</p>
+    </div>
+</div>
+
+<div id="solB2a" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('solB2a')">&times;</span>
+        <h3 class="solution-title">Solution - Partie B.2.a</h3>
+        <p>La division euclidienne de $10^p$ par $7$ s'écrit par définition :<br>
+        $10^p = 7 \times q_p + r_p$, où $q_p$ est le quotient entier et $0 \le r_p < 7$.</p>
+    </div>
+</div>
+
+<div id="solB2b" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('solB2b')">&times;</span>
+        <h3 class="solution-title">Solution - Partie B.2.b</h3>
+        <p>On multiplie l'égalité précédente par $N$ :<br>
+        $10^p \times N = (7q_p + r_p) \times N$<br>
+        $10^p N = q_p(7N) + r_p N$<br>
+        En remplaçant $7N$ par $999\,999$, on obtient :<br>
+        $10^p N = q_p \times 999\,999 + r_p N$.<br>
+        Le quotient $q_p$ est la partie entière de $10^p / 7$.</p>
+    </div>
+</div>
+
+<div id="solB2c" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('solB2c')">&times;</span>
+        <h3 class="solution-title">Solution - Partie B.2.c</h3>
+        <p>D'après la question précédente, $r_p \times N = 10^p N - q_p \times 999\,999$.<br>
+        Multiplier $N$ par $10^p$ ajoute $p$ zéros à la fin, décalant ses chiffres de $p$ positions vers la gauche. Soustraire $q_p \times 999\,999$ revient à soustraire $q_p(10^6 - 1) = q_p \times 10^6 - q_p$. Cela enlève les chiffres qui "débordent" au-delà de la 6ème position et les réinjecte aux unités. <br>
+        Comme les restes $r_p$ de $10^p$ modulo 7 parcourent exactement l'ensemble $\{1, 2, 3, 4, 5, 6\}$ (voir tableau A), multiplier $N$ par ces entiers équivaut à effectuer ces décalages circulaires de longueur $p$. C'est ce qui génère toutes les permutations circulaires de $142\,857$.</p>
+    </div>
+</div>
+
+<div id="solC1" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('solC1')">&times;</span>
+        <h3 class="solution-title">Solution - Partie C.1</h3>
+        <p>Le graphe relie chaque sommet $i$ au sommet $j$ tel que $j \equiv 10i \equiv 3i \pmod 7$. Calculons les arêtes :</p>
+        <ul>
+            <li>Pour $i=1$ : $1 \times 3 \equiv 3 \pmod 7 \implies 1 \to 3$</li>
+            <li>Pour $i=3$ : $3 \times 3 = 9 \equiv 2 \pmod 7 \implies 3 \to 2$</li>
+            <li>Pour $i=2$ : $2 \times 3 = 6 \equiv 6 \pmod 7 \implies 2 \to 6$</li>
+            <li>Pour $i=6$ : $6 \times 3 = 18 \equiv 4 \pmod 7 \implies 6 \to 4$</li>
+            <li>Pour $i=4$ : $4 \times 3 = 12 \equiv 5 \pmod 7 \implies 4 \to 5$</li>
+            <li>Pour $i=5$ : $5 \times 3 = 15 \equiv 1 \pmod 7 \implies 5 \to 1$</li>
+        </ul>
+        <p>On obtient l'unique cycle : $1 \to 3 \to 2 \to 6 \to 4 \to 5 \to 1$. Ce type de graphe décrit un <strong>cycle hamiltonien</strong> (car il visite tous les sommets du graphe exactement une fois avant de revenir au départ) orienté.</p>
+    </div>
+</div>
+
+<div id="solC2" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('solC2')">&times;</span>
+        <h3 class="solution-title">Solution - Partie C.2</h3>
+        <p>La matrice d'adjacence $M = (m_{i,j})$ de dimension $6 \times 6$ comporte des 1 s'il y a un arc de $i$ vers $j$, et 0 sinon. D'après le cycle, les coefficients non nuls sont $m_{1,3}, m_{2,6}, m_{3,2}, m_{4,5}, m_{5,1}, m_{6,4}$.</p>
+        <p>$$M = \begin{pmatrix} 
+        0 & 0 & 1 & 0 & 0 & 0 \\
+        0 & 0 & 0 & 0 & 0 & 1 \\
+        0 & 1 & 0 & 0 & 0 & 0 \\
+        0 & 0 & 0 & 0 & 1 & 0 \\
+        1 & 0 & 0 & 0 & 0 & 0 \\
+        0 & 0 & 0 & 1 & 0 & 0 
+        \end{pmatrix}$$</p>
+    </div>
+</div>
+
+<div id="solC3" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('solC3')">&times;</span>
+        <h3 class="solution-title">Solution - Partie C.3</h3>
+        <p>La matrice $M^k$ donne le nombre de chemins de longueur $k$ reliant un sommet à un autre. Ici, notre graphe est constitué d'un seul et unique cycle de longueur 6. Par conséquent, en partant de n'importe quel sommet $i$ et en avançant de 6 étapes, on revient obligatoirement au sommet $i$, et ce par un chemin unique. Ainsi, $M^6$ est la matrice identité $I_6$ :</p>
+        <p>$$M^6 = \begin{pmatrix} 1 & 0 & 0 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 & 0 & 0 \\ 0 & 0 & 1 & 0 & 0 & 0 \\ 0 & 0 & 0 & 1 & 0 & 0 \\ 0 & 0 & 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 0 & 0 & 1 \end{pmatrix}$$</p>
+    </div>
+</div>
+
+<div id="solC4" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('solC4')">&times;</span>
+        <h3 class="solution-title">Solution - Partie C.4</h3>
+        <p>Ce résultat matriciel ($M^6 = I_6$) traduit formellement la périodicité modulo 7 des puissances de 10 (vu à la question A.1.b où $10^6 \equiv 1 \pmod 7$). Chaque multiplication par 10 (matérialisée par un pas dans le graphe ou la multiplication par $M$) engendre un décalage des restes modulo 7, tout comme elle engendre un décalage des chiffres de $142\,857$. Au bout de 6 multiplications, la matrice redevient Identité, les restes reviennent à leur point de départ, et les chiffres reprennent leur position initiale. Cela prouve le caractère cyclique complet et d'ordre 6 du nombre $142\,857$.</p>
+    </div>
+</div>
+
+<script>
+    function openModal(id) {
+        document.getElementById(id).style.display = "block";
+        // Tell MathJax to typeset the newly visible content just in case
+        if (window.MathJax) {
+            MathJax.typesetPromise([document.getElementById(id)]).catch(function (err) {
+                console.log('MathJax typeset failed: ' + err.message);
+            });
+        }
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).style.display = "none";
+    }
+
+    // Close modal when clicking outside of it
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = "none";
+        }
+    }
+</script>
+
+</body>
+</html>
