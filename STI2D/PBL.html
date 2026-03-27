@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synthèse Ingénierie - Red Bull Sky & Dirt</title>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --rb-red: #DB0A40;
+            --rb-dark: #1a1a2e;
+            --rb-blue: #1E3A8A;
+            --rb-gold: #F59E0B;
+            --bg-primary: #f8fafc;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--bg-primary);
+            color: #1e293b;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(219, 10, 64, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(30, 58, 138, 0.06) 0%, transparent 50%),
+                linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(219, 10, 64, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(219, 10, 64, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        header {
+            position: relative;
+            padding: 60px 20px;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(219, 10, 64, 0.95) 0%, rgba(180, 20, 60, 0.98) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 50% 100%, 0 90%);
+            margin-bottom: 40px;
+            box-shadow: 0 10px 40px rgba(219, 10, 64, 0.3);
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.4;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+            margin-bottom: 15px;
+            color: white;
+        }
+
+        header p {
+            font-size: 1.3rem;
+            font-weight: 500;
+            letter-spacing: 2px;
+            opacity: 0.95;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 60px;
+        }
+
+        .graph-section {
+            margin-bottom: 50px;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: var(--rb-red);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-title::before {
+            content: '▶';
+            color: var(--rb-gold);
+            font-size: 1rem;
+        }
+
+        .canvas-container {
+            position: relative;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(219, 10, 64, 0.15);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            min-height: 500px;
+        }
+
+        /* IMPORTANT: Hauteur explicite pour le canvas */
+        #graphCanvas {
+            width: 100%;
+            height: 500px !important;
+            border-radius: 10px;
+            cursor: pointer;
+            background: #fafafa;
+            display: block;
+        }
+
+        .canvas-hint {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #64748b;
+            font-style: italic;
+        }
+
+        /* Popup moderne */
+        .node-popup {
+            position: absolute;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            min-width: 280px;
+            max-width: 350px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(219, 10, 64, 0.2);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px) scale(0.95);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+
+        .node-popup.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .node-popup::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid white;
+        }
+
+        .popup-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .popup-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .popup-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--rb-blue);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .popup-content {
+            font-size: 0.95rem;
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        .popup-content ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .popup-content li {
+            padding: 6px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .popup-content li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--rb-red);
+            font-weight: bold;
+        }
+
+        .popup-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 15px;
+            padding: 8px 16px;
+            background: var(--rb-red);
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .popup-link:hover {
+            background: #b91c1c;
+            transform: translateX(3px);
+        }
+
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(219, 10, 64, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.06);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--rb-red), var(--rb-gold));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: var(--rb-red);
+            box-shadow: 0 15px 35px rgba(219, 10, 64, 0.15);
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card-number {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            font-weight: 900;
+            color: rgba(219, 10, 64, 0.08);
+            line-height: 1;
+        }
+
+        .card h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            color: var(--rb-blue);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .card p {
+            color: #475569;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .formula {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            border-left: 3px solid var(--rb-red);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+
+        .card ul {
+            list-style: none;
+            margin: 15px 0;
+        }
+
+        .card ul li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            color: #475569;
+        }
+
+        .card ul li::before {
+            content: '⚡';
+            position: absolute;
+            left: 0;
+            color: var(--rb-gold);
+        }
+
+        .doc-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 15px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, var(--rb-red) 0%, #b91c1c 100%);
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(219, 10, 64, 0.3);
+        }
+
+        .doc-link::after {
+            content: '→';
+            transition: transform 0.3s ease;
+        }
+
+        .doc-link:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(219, 10, 64, 0.4);
+        }
+
+        .doc-link:hover::after {
+            transform: translateX(5px);
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            header p { font-size: 1rem; }
+            .cards-grid { grid-template-columns: 1fr; }
+            .node-popup { max-width: 280px; min-width: 250px; }
+            #graphCanvas { height: 400px !important; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            animation: fadeInUp 0.6s ease forwards;
+            opacity: 0;
+        }
+
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+    </style>
+<base target="_blank">
+</head>
+<body>
+
+<div class="bg-animation"></div>
+
+<header>
+    <h1>Red Bull Sky & Dirt Challenge</h1>
+    <p>Dossier de Synthèse Technique — 1ère STI2D</p>
+</header>
+
+<div class="main-container">
+
+    <section class="graph-section">
+        <h2 class="section-title">Graphe d'Interdépendance des Documents</h2>
+        <div class="canvas-container" id="canvasContainer">
+            <canvas id="graphCanvas" width="1000" height="500"></canvas>
+            <p class="canvas-hint">Survolez les nœuds pour voir les détails, cliquez pour ouvrir le document</p>
+
+            <div class="node-popup" id="nodePopup">
+                <div class="popup-header">
+                    <div class="popup-icon" id="popupIcon">📄</div>
+                    <div class="popup-title" id="popupTitle">Titre</div>
+                </div>
+                <div class="popup-content" id="popupContent">
+                    Contenu
+                </div>
+                <a class="popup-link" id="popupLink" href="#" target="_blank">
+                    Ouvrir le document →
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <div class="cards-grid">
+        <div class="card">
+            <span class="card-number">01</span>
+            <h2>Trajectoires & Sécurité</h2>
+            <p>Analyse des fonctions de saut et calcul de collision pour assurer la sécurité des pilotes.</p>
+            <div class="formula">
+                $$P(S_1 \cap R) \le 45\% \text{ (Condition C)}$$
+            </div>
+            <a class="doc-link" href="LIAISONS_PARTIES.pdf">Voir Liaisons Parties</a>
+        </div>
+
+        <div class="card">
+            <span class="card-number">02</span>
+            <h2>Captation & Trigonométrie</h2>
+            <p>Validation des angles de vue optimaux par produit scalaire pour la captation vidéo.</p>
+            <div class="formula">
+                $$\cos(\theta) = \frac{\vec{u} \cdot \vec{v}}{||\vec{u}|| \times ||\vec{v}||}$$
+            </div>
+            <a class="doc-link" href="TRIGONOMETRIE_TABLEAU_BILAN.pdf">Référentiel Trigo</a>
+        </div>
+
+        <div class="card">
+            <span class="card-number">03</span>
+            <h2>Optimisation Énergétique</h2>
+            <p>Suites numériques pour garantir l'autonomie complète du show (15 minutes).</p>
+            <ul>
+                <li>Moto : Suite Arithmétique</li>
+                <li>Drone : Suite Géométrique</li>
+            </ul>
+            <a class="doc-link" href="PYTHON_V2.pdf">Script Python HSD()</a>
+        </div>
+
+        <div class="card">
+            <span class="card-number">04</span>
+            <h2>Verdict Final</h2>
+            <p>Validation globale du projet basée sur les conditions A (Carburant), B (Batterie) et C (Sécurité).</p>
+            <ul>
+                <li>Condition A : Carburant suffisant</li>
+                <li>Condition B : Batterie drone OK</li>
+                <li>Condition C : Sécurité validée</li>
+            </ul>
+            <a class="doc-link" href="DOSSIER_SYNTHESE.pdf">Dossier Final</a>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('canvasContainer');
+        const popup = document.getElementById('nodePopup');
+        const popupIcon = document.getElementById('popupIcon');
+        const popupTitle = document.getElementById('popupTitle');
+        const popupContent = document.getElementById('popupContent');
+        const popupLink = document.getElementById('popupLink');
+
+        // Forcer la taille du canvas
+        function resizeCanvas() {
+            const containerWidth = container.clientWidth - 40;
+            canvas.width = containerWidth;
+            canvas.height = 500;
+            canvas.style.width = containerWidth + 'px';
+            canvas.style.height = '500px';
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Données des nœuds avec contenu détaillé pour le popup
+        const nodes = [
+            { 
+                x: 0.12, y: 0.5, 
+                label: 'Sujet (V2)', 
+                file: 'RED_BULL_SKY_AND_DIRT_CHALLENGE_V2.pdf', 
+                color: '#DB0A40',
+                icon: '📋',
+                details: [
+                    'Contexte du projet PBL',
+                    'Contraintes techniques (moto + drone)',
+                    'Objectifs de performance',
+                    'Cadre réglementaire',
+                    'Livrables attendus'
+                ]
+            },
+            { 
+                x: 0.35, y: 0.2, 
+                label: 'Fiche Synthèse', 
+                file: 'FICHE_SYNTHESE.pdf', 
+                color: '#F59E0B',
+                icon: '📝',
+                details: [
+                    'Récapitulatif des données',
+                    'Paramètres du système',
+                    'Hypothèses de travail',
+                    'Notations utilisées',
+                    'Références techniques'
+                ]
+            },
+            { 
+                x: 0.35, y: 0.8, 
+                label: 'Liaisons', 
+                file: 'LIAISONS_DOCUMENTS.pdf', 
+                color: '#F59E0B',
+                icon: '🔗',
+                details: [
+                    'Architecture fonctionnelle',
+                    'Diagramme FAST',
+                    "Chaînes d'information",
+                    "Chaînes d'énergie",
+                    'Interfaces système'
+                ]
+            },
+            { 
+                x: 0.65, y: 0.2, 
+                label: 'Sous-Groupes', 
+                file: 'DOSSIER_SYNTHESE_SOUS_GROUPE.pdf', 
+                color: '#1E3A8A',
+                icon: '👥',
+                details: [
+                    'Répartition des tâches',
+                    'Organisation du travail',
+                    'Avancement par équipe',
+                    'Points de vigilance',
+                    'Synthèse collaborative'
+                ]
+            },
+            { 
+                x: 0.65, y: 0.8, 
+                label: 'Python HSD', 
+                file: 'PYTHON_V2.pdf', 
+                color: '#1E3A8A',
+                icon: '🐍',
+                details: [
+                    'Algorithme de calcul HSD()',
+                    'Simulation trajectoires',
+                    'Optimisation énergétique',
+                    'Validation conditions A/B/C',
+                    'Code source commenté'
+                ]
+            },
+            { 
+                x: 0.88, y: 0.5, 
+                label: 'Verdict Final', 
+                file: 'DOSSIER_SYNTHESE.pdf', 
+                color: '#DB0A40',
+                icon: '✅',
+                details: [
+                    'Validation Condition A (Carburant)',
+                    'Validation Condition B (Batterie)',
+                    'Validation Condition C (Sécurité 45%)',
+                    'Conclusion technique',
+                    'Recommandations finales'
+                ]
+            }
+        ];
+
+        const links = [
+            [0, 1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 5]
+        ];
+
+        let hoveredNode = null;
+        let animationProgress = 0;
+
+        function getAbsolutePosition(node) {
+            return {
+                x: node.x * canvas.width,
+                y: node.y * canvas.height
+            };
+        }
+
+        function drawRoundedRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Fond
+            ctx.fillStyle = '#fafafa';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Dessin des liens
+            links.forEach((link) => {
+                const start = getAbsolutePosition(nodes[link[0]]);
+                const end = getAbsolutePosition(nodes[link[1]]);
+
+                ctx.strokeStyle = 'rgba(219, 10, 64, 0.3)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.lineDashOffset = -animationProgress * 0.5;
+
+                ctx.beginPath();
+                ctx.moveTo(start.x, start.y);
+                ctx.lineTo(end.x, end.y);
+                ctx.stroke();
+            });
+
+            ctx.setLineDash([]);
+
+            // Dessin des nœuds
+            nodes.forEach((node, index) => {
+                const pos = getAbsolutePosition(node);
+                const isHovered = hoveredNode === index;
+
+                ctx.font = 'bold 13px Rajdhani';
+                const textWidth = ctx.measureText(node.label).width;
+                const paddingX = 20;
+                const paddingY = 12;
+                const rectWidth = Math.max(textWidth + paddingX * 2, 100);
+                const rectHeight = 40;
+
+                const rectX = pos.x - rectWidth / 2;
+                const rectY = pos.y - rectHeight / 2;
+
+                // Ombre
+                if (isHovered) {
+                    ctx.shadowColor = node.color;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 4;
+                } else {
+                    ctx.shadowColor = 'rgba(0,0,0,0.1)';
+                    ctx.shadowBlur = 8;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 2;
+                }
+
+                // Fond
+                const gradient = ctx.createLinearGradient(rectX, rectY, rectX, rectY + rectHeight);
+                if (isHovered) {
+                    gradient.addColorStop(0, node.color);
+                    gradient.addColorStop(1, adjustColor(node.color, -20));
+                } else {
+                    gradient.addColorStop(0, '#ffffff');
+                    gradient.addColorStop(1, '#f8fafc');
+                }
+
+                ctx.fillStyle = gradient;
+                drawRoundedRect(ctx, rectX, rectY, rectWidth, rectHeight, 8);
+                ctx.fill();
+
+                // Bordure
+                ctx.shadowBlur = 0;
+                ctx.strokeStyle = isHovered ? 'transparent' : node.color;
+                ctx.lineWidth = 2;
+                drawRoundedRect(ctx, rectX, rectY, rectWidth, rectHeight, 8);
+                ctx.stroke();
+
+                // Texte
+                ctx.fillStyle = isHovered ? 'white' : '#1e293b';
+                ctx.font = 'bold 13px Rajdhani';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(node.label, pos.x, pos.y);
+
+                // Points de connexion
+                if (index < nodes.length - 1) {
+                    ctx.fillStyle = node.color;
+                    ctx.beginPath();
+                    ctx.arc(rectX + rectWidth, pos.y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                if (index > 0) {
+                    ctx.fillStyle = node.color;
+                    ctx.beginPath();
+                    ctx.arc(rectX, pos.y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+        }
+
+        function adjustColor(color, amount) {
+            const num = parseInt(color.replace('#', ''), 16);
+            const r = Math.max(0, Math.min(255, (num >> 16) + amount));
+            const g = Math.max(0, Math.min(255, ((num >> 8) & 0x00FF) + amount));
+            const b = Math.max(0, Math.min(255, (num & 0x0000FF) + amount));
+            return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+        }
+
+        function animate() {
+            animationProgress += 1;
+            draw();
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // Gestion du popup
+        function showPopup(node, x, y) {
+            popupIcon.textContent = node.icon;
+            popupIcon.style.background = node.color + '20';
+            popupIcon.style.color = node.color;
+            popupTitle.textContent = node.label;
+            popupLink.href = node.file;
+
+            const detailsHtml = '<ul>' + node.details.map(d => '<li>' + d + '</li>').join('') + '</ul>';
+            popupContent.innerHTML = detailsHtml;
+
+            const containerRect = container.getBoundingClientRect();
+            const popupX = x - containerRect.left;
+            const popupY = y - containerRect.top - 20;
+
+            popup.style.left = Math.max(10, Math.min(popupX - 140, container.offsetWidth - 300)) + 'px';
+            popup.style.top = (popupY - popup.offsetHeight) + 'px';
+
+            popup.classList.add('active');
+        }
+
+        function hidePopup() {
+            popup.classList.remove('active');
+        }
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            let foundNode = null;
+            nodes.forEach((node, index) => {
+                const pos = getAbsolutePosition(node);
+                ctx.font = 'bold 13px Rajdhani';
+                const textWidth = ctx.measureText(node.label).width;
+                const rectWidth = Math.max(textWidth + 40, 100);
+                const rectHeight = 40;
+                const rectX = pos.x - rectWidth / 2;
+                const rectY = pos.y - rectHeight / 2;
+
+                if (mouseX >= rectX && mouseX <= rectX + rectWidth &&
+                    mouseY >= rectY && mouseY <= rectY + rectHeight) {
+                    foundNode = index;
+                }
+            });
+
+            if (foundNode !== hoveredNode) {
+                hoveredNode = foundNode;
+                if (foundNode !== null) {
+                    canvas.style.cursor = 'pointer';
+                    showPopup(nodes[foundNode], e.clientX, e.clientY);
+                } else {
+                    canvas.style.cursor = 'default';
+                    hidePopup();
+                }
+            } else if (foundNode !== null) {
+                showPopup(nodes[foundNode], e.clientX, e.clientY);
+            }
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            hoveredNode = null;
+            hidePopup();
+        });
+
+        canvas.addEventListener('click', (e) => {
+            if (hoveredNode !== null) {
+                window.open(nodes[hoveredNode].file, '_blank');
+            }
+        });
+
+        popup.addEventListener('mouseleave', () => {
+            hidePopup();
+            hoveredNode = null;
+        });
+    });
+</script>
+
+</body>
+</html>
