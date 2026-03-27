@@ -136,7 +136,6 @@
             min-height: 500px;
         }
 
-        /* IMPORTANT: Hauteur explicite pour le canvas */
         #graphCanvas {
             width: 100%;
             height: 500px !important;
@@ -154,7 +153,7 @@
             font-style: italic;
         }
 
-        /* Popup moderne */
+        /* Popup moderne pour le canvas */
         .node-popup {
             position: absolute;
             background: white;
@@ -394,12 +393,175 @@
             transform: translateX(5px);
         }
 
+        /* BOUTON DROITS D'AUTEUR */
+        .copyright-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--rb-dark);
+            color: white;
+            border: 1px solid var(--rb-gold);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            z-index: 900;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .copyright-btn:hover {
+            background: var(--rb-gold);
+            color: var(--rb-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+        }
+
+        /* MODALE DROITS D'AUTEUR */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
+        }
+
+        .modal-box {
+            background-color: white;
+            padding: 35px;
+            border-radius: 15px;
+            max-width: 650px;
+            width: 90%;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border-top: 5px solid var(--rb-red);
+            transform: translateY(-30px);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.show .modal-box {
+            transform: translateY(0);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            color: #94a3b8;
+            font-size: 32px;
+            line-height: 1;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .close-modal:hover {
+            color: var(--rb-red);
+        }
+
+        .modal-box h2 {
+            color: var(--rb-dark);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            padding-right: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-box p {
+            color: #475569;
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+        }
+
+        .modal-box .author-line {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--rb-blue);
+            margin-bottom: 20px;
+        }
+
+        .modal-box h3 {
+            color: var(--rb-red);
+            font-size: 1.2rem;
+            margin: 25px 0 15px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .modal-box h4 {
+            color: var(--rb-dark);
+            font-size: 1.1rem;
+            margin: 20px 0 10px 0;
+        }
+
+        .modal-box ul {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+
+        .modal-box li {
+            position: relative;
+            padding: 10px 0 10px 30px;
+            color: #475569;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .modal-box li:last-child {
+            border-bottom: none;
+        }
+
+        .modal-box li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--rb-gold);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .modal-box li strong {
+            color: var(--rb-blue);
+        }
+
+        .modal-box a {
+            color: var(--rb-red);
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .modal-box a:hover {
+            text-decoration: underline;
+        }
+
         @media (max-width: 768px) {
             h1 { font-size: 2rem; }
             header p { font-size: 1rem; }
             .cards-grid { grid-template-columns: 1fr; }
             .node-popup { max-width: 280px; min-width: 250px; }
             #graphCanvas { height: 400px !important; }
+            .modal-box { padding: 25px 20px; }
         }
 
         @keyframes fadeInUp {
@@ -504,8 +666,34 @@
 
 </div>
 
+<button id="copyrightBtn" class="copyright-btn">⚖️ Droits d'auteur</button>
+
+<div id="copyrightModal" class="modal-overlay">
+    <div class="modal-box">
+        <span class="close-modal" id="closeCopyrightModal">&times;</span>
+        <h2>⚖️ Droits d'Auteur et Licence d'Utilisation</h2>
+        
+        <div class="author-line">
+            <p style="margin-bottom:0;"><strong>Auteur :</strong> Yann Merdy (<a href="mailto:yann.merdy@gmail.com">yann.merdy@gmail.com</a>) - Janvier 2026</p>
+        </div>
+        
+        <h3>Licence d'Utilisation Non Commerciale</h3>
+        <p>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application <enter><i><p><b>PBL : Red Bull Sky & Dirt Challenge</b></p><p>Défi Ingénierie : Trajectoires, Risques et Optimisation</p></i></center> ainsi que tous les documents PDF vers lesquels elles pointent, sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
+        
+        <h4>Conditions :</h4>
+        <ul>
+            <li><strong>Utilisation Privée et Éducative (Autorisée) :</strong> Vous êtes autorisé.e à utiliser, copier, modifier et distribuer ce code et son contenu ainsi que les fichiers PDF liés uniquement à des fins personnelles, éducatives et non lucratives.</li>
+            <li><strong>Utilisation Commerciale (Interdite) :</strong> Toute utilisation, distribution, intégration ou reproduction du code ou du contenu (total ou partiel) à des fins commerciales, lucratives ou professionnelles est strictement interdite sans un accord écrit préalable et explicite de l'auteur.</li>
+            <li><strong>Attribution :</strong> Toute reproduction ou modification doit conserver la mention de l'auteur originale (Yann Merdy) et la présente notice de droits d'auteur.</li>
+        </ul>
+        
+        <p>Pour toute demande d'utilisation commerciale ou de licence spécifique, veuillez contacter l'auteur à l'adresse indiquée ci-dessus.</p>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // --- LOGIQUE DU GRAPHE ---
         const canvas = document.getElementById('graphCanvas');
         const ctx = canvas.getContext('2d');
         const container = document.getElementById('canvasContainer');
@@ -515,7 +703,6 @@
         const popupContent = document.getElementById('popupContent');
         const popupLink = document.getElementById('popupLink');
 
-        // Forcer la taille du canvas
         function resizeCanvas() {
             const containerWidth = container.clientWidth - 40;
             canvas.width = containerWidth;
@@ -527,7 +714,6 @@
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        // Données des nœuds avec contenu détaillé pour le popup
         const nodes = [
             { 
                 x: 0.12, y: 0.5, 
@@ -646,11 +832,9 @@
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Fond
             ctx.fillStyle = '#fafafa';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Dessin des liens
             links.forEach((link) => {
                 const start = getAbsolutePosition(nodes[link[0]]);
                 const end = getAbsolutePosition(nodes[link[1]]);
@@ -668,7 +852,6 @@
 
             ctx.setLineDash([]);
 
-            // Dessin des nœuds
             nodes.forEach((node, index) => {
                 const pos = getAbsolutePosition(node);
                 const isHovered = hoveredNode === index;
@@ -683,7 +866,6 @@
                 const rectX = pos.x - rectWidth / 2;
                 const rectY = pos.y - rectHeight / 2;
 
-                // Ombre
                 if (isHovered) {
                     ctx.shadowColor = node.color;
                     ctx.shadowBlur = 15;
@@ -696,7 +878,6 @@
                     ctx.shadowOffsetY = 2;
                 }
 
-                // Fond
                 const gradient = ctx.createLinearGradient(rectX, rectY, rectX, rectY + rectHeight);
                 if (isHovered) {
                     gradient.addColorStop(0, node.color);
@@ -710,21 +891,18 @@
                 drawRoundedRect(ctx, rectX, rectY, rectWidth, rectHeight, 8);
                 ctx.fill();
 
-                // Bordure
                 ctx.shadowBlur = 0;
                 ctx.strokeStyle = isHovered ? 'transparent' : node.color;
                 ctx.lineWidth = 2;
                 drawRoundedRect(ctx, rectX, rectY, rectWidth, rectHeight, 8);
                 ctx.stroke();
 
-                // Texte
                 ctx.fillStyle = isHovered ? 'white' : '#1e293b';
                 ctx.font = 'bold 13px Rajdhani';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(node.label, pos.x, pos.y);
 
-                // Points de connexion
                 if (index < nodes.length - 1) {
                     ctx.fillStyle = node.color;
                     ctx.beginPath();
@@ -756,7 +934,6 @@
 
         animate();
 
-        // Gestion du popup
         function showPopup(node, x, y) {
             popupIcon.textContent = node.icon;
             popupIcon.style.background = node.color + '20';
@@ -830,6 +1007,35 @@
         popup.addEventListener('mouseleave', () => {
             hidePopup();
             hoveredNode = null;
+        });
+
+        // --- LOGIQUE DE LA MODALE DES DROITS D'AUTEUR ---
+        const copyrightModal = document.getElementById("copyrightModal");
+        const copyrightBtn = document.getElementById("copyrightBtn");
+        const closeCopyrightModal = document.getElementById("closeCopyrightModal");
+
+        copyrightBtn.addEventListener("click", () => {
+            copyrightModal.style.display = "flex";
+            // Timeout pour laisser le display: flex s'appliquer avant l'animation d'opacité
+            setTimeout(() => {
+                copyrightModal.classList.add("show");
+            }, 10);
+        });
+
+        function closeMyModal() {
+            copyrightModal.classList.remove("show");
+            setTimeout(() => {
+                copyrightModal.style.display = "none";
+            }, 300); // Correspond à la durée de la transition CSS
+        }
+
+        closeCopyrightModal.addEventListener("click", closeMyModal);
+
+        // Fermer la modale si on clique à l'extérieur du contenu
+        window.addEventListener("click", (event) => {
+            if (event.target === copyrightModal) {
+                closeMyModal();
+            }
         });
     });
 </script>
