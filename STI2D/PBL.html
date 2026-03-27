@@ -96,6 +96,30 @@
             letter-spacing: 2px;
             opacity: 0.95;
             color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 15px;
+        }
+
+        /* Lien d'accueil dans le header */
+        .header-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--rb-gold);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 10;
+        }
+
+        .header-link:hover {
+            background: rgba(0, 0, 0, 0.4);
+            color: white;
+            transform: translateY(-2px);
         }
 
         .main-container {
@@ -153,7 +177,6 @@
             font-style: italic;
         }
 
-        /* Popup moderne pour le canvas */
         .node-popup {
             position: absolute;
             background: white;
@@ -263,7 +286,6 @@
             transform: translateX(3px);
         }
 
-        /* Cards Grid */
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -393,7 +415,6 @@
             transform: translateX(5px);
         }
 
-        /* BOUTON DROITS D'AUTEUR */
         .copyright-btn {
             position: fixed;
             bottom: 20px;
@@ -419,7 +440,6 @@
             box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
         }
 
-        /* MODALE DROITS D'AUTEUR */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -594,6 +614,7 @@
 <header>
     <h1>Red Bull Sky & Dirt Challenge</h1>
     <p>Dossier de Synthèse Technique — 1ère STI2D</p>
+    <a href="https://ldv78100ym-hub.github.io/HOME/" class="header-link">🔗 https://ldv78100ym-hub.github.io/HOME/</a>
 </header>
 
 <div class="main-container">
@@ -674,15 +695,15 @@
         <h2>⚖️ Droits d'Auteur et Licence d'Utilisation</h2>
         
         <div class="author-line">
-            <p style="margin-bottom:0;"><strong>Auteur :</strong> Yann Merdy (<a href="mailto:yann.merdy@gmail.com">yann.merdy@gmail.com</a>) - Mars 2026</p>
+            <p style="margin-bottom:0;"><strong>Auteur :</strong> Yann Merdy (<a href="mailto:yann.merdy@gmail.com">yann.merdy@gmail.com</a>) - Janvier 2026</p>
         </div>
         
         <h3>Licence d'Utilisation Non Commerciale</h3>
-        <p>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application <enter><i><p><b>PBL : Red Bull Sky & Dirt Challenge</b></p><p>Défi Ingénierie : Trajectoires, Risques et Optimisation</p></i></center> ainsi que tous les documents PDF vers lesquels elles pointent, sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
+        <p>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ("Cours et Exercices Dynamiques : Nombres Complexes") sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
         
         <h4>Conditions :</h4>
         <ul>
-            <li><strong>Utilisation Privée et Éducative (Autorisée) :</strong> Vous êtes autorisé.e à utiliser, copier, modifier et distribuer ce code et son contenu ainsi que les fichiers PDF liés uniquement à des fins personnelles, éducatives et non lucratives.</li>
+            <li><strong>Utilisation Privée et Éducative (Autorisée) :</strong> Vous êtes autorisé.e à utiliser, copier, modifier et distribuer ce code et son contenu uniquement à des fins personnelles, éducatives et non lucratives.</li>
             <li><strong>Utilisation Commerciale (Interdite) :</strong> Toute utilisation, distribution, intégration ou reproduction du code ou du contenu (total ou partiel) à des fins commerciales, lucratives ou professionnelles est strictement interdite sans un accord écrit préalable et explicite de l'auteur.</li>
             <li><strong>Attribution :</strong> Toute reproduction ou modification doit conserver la mention de l'auteur originale (Yann Merdy) et la présente notice de droits d'auteur.</li>
         </ul>
@@ -1016,7 +1037,6 @@
 
         copyrightBtn.addEventListener("click", () => {
             copyrightModal.style.display = "flex";
-            // Timeout pour laisser le display: flex s'appliquer avant l'animation d'opacité
             setTimeout(() => {
                 copyrightModal.classList.add("show");
             }, 10);
@@ -1026,12 +1046,11 @@
             copyrightModal.classList.remove("show");
             setTimeout(() => {
                 copyrightModal.style.display = "none";
-            }, 300); // Correspond à la durée de la transition CSS
+            }, 300); 
         }
 
         closeCopyrightModal.addEventListener("click", closeMyModal);
 
-        // Fermer la modale si on clique à l'extérieur du contenu
         window.addEventListener("click", (event) => {
             if (event.target === copyrightModal) {
                 closeMyModal();
