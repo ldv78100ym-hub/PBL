@@ -15,6 +15,7 @@
             --rb-blue: #1E3A8A;
             --rb-gold: #F59E0B;
             --bg-primary: #f8fafc;
+            --text-color: #0A0A0A;
         }
 
         * {
@@ -26,10 +27,29 @@
         body {
             font-family: 'Rajdhani', sans-serif;
             background: var(--bg-primary);
-            color: #1e293b;
+            color: var(--text-color);
             line-height: 1.6;
             overflow-x: hidden;
+            transition: all 0.3s ease;
         }
+
+        /* --- MODE ACCESSIBILITÉ DYS / MALVOYANTS --- */
+        body.accessible-mode {
+            font-family: 'Comic Sans MS', 'Open-Dyslexic', 'Arial', sans-serif;
+            font-size: 1.15rem; 
+            letter-spacing: 0.06em; 
+            word-spacing: 0.15em;
+        }
+
+        .accessible-mode h1, 
+        .accessible-mode .section-title, 
+        .accessible-mode .card h2, 
+        .accessible-mode .popup-title,
+        .accessible-mode .modal-box h2 {
+            font-family: 'Comic Sans MS', 'Open-Dyslexic', 'Arial', sans-serif;
+            letter-spacing: normal;
+        }
+        /* ------------------------------------------- */
 
         .bg-animation {
             position: fixed;
@@ -88,6 +108,7 @@
             position: relative;
             margin-bottom: 15px;
             color: white;
+            transition: all 0.3s ease;
         }
 
         header p {
@@ -99,7 +120,6 @@
             margin-bottom: 15px;
         }
 
-        /* Lien d'accueil dans le header */
         .header-link {
             display: inline-flex;
             align-items: center;
@@ -116,10 +136,12 @@
             z-index: 10;
         }
 
-        .header-link:hover {
+        .header-link:hover, .header-link:focus {
             background: rgba(0, 0, 0, 0.4);
             color: white;
             transform: translateY(-2px);
+            outline: 3px dashed var(--rb-gold);
+            outline-offset: 4px;
         }
 
         .main-container {
@@ -142,6 +164,7 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            transition: all 0.3s ease;
         }
 
         .section-title::before {
@@ -155,7 +178,7 @@
             background: white;
             border-radius: 15px;
             padding: 20px;
-            border: 1px solid rgba(219, 10, 64, 0.15);
+            border: 2px solid var(--text-color);
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             min-height: 500px;
         }
@@ -172,9 +195,9 @@
         .canvas-hint {
             text-align: center;
             margin-top: 10px;
-            font-size: 0.9rem;
-            color: #64748b;
-            font-style: italic;
+            font-size: 1rem;
+            color: #333333;
+            font-weight: bold;
         }
 
         .node-popup {
@@ -184,7 +207,7 @@
             padding: 20px;
             min-width: 280px;
             max-width: 350px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(219, 10, 64, 0.2);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 2px var(--text-color);
             z-index: 1000;
             opacity: 0;
             visibility: hidden;
@@ -197,19 +220,7 @@
             opacity: 1;
             visibility: visible;
             transform: translateY(0) scale(1);
-        }
-
-        .node-popup::before {
-            content: '';
-            position: absolute;
-            top: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 8px solid transparent;
-            border-right: 8px solid transparent;
-            border-bottom: 8px solid white;
+            pointer-events: auto;
         }
 
         .popup-header {
@@ -218,7 +229,7 @@
             gap: 12px;
             margin-bottom: 15px;
             padding-bottom: 12px;
-            border-bottom: 2px solid #f1f5f9;
+            border-bottom: 2px solid #333333;
         }
 
         .popup-icon {
@@ -233,16 +244,17 @@
 
         .popup-title {
             font-family: 'Orbitron', sans-serif;
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: var(--rb-blue);
             text-transform: uppercase;
             letter-spacing: 1px;
+            transition: all 0.3s ease;
         }
 
         .popup-content {
-            font-size: 0.95rem;
-            color: #475569;
+            font-size: 1.05rem;
+            color: var(--text-color);
             line-height: 1.6;
         }
 
@@ -275,15 +287,17 @@
             background: var(--rb-red);
             color: white;
             text-decoration: none;
-            font-weight: 600;
-            font-size: 0.85rem;
+            font-weight: bold;
+            font-size: 1rem;
             border-radius: 20px;
             transition: all 0.2s ease;
         }
 
-        .popup-link:hover {
+        .popup-link:hover, .popup-link:focus {
             background: #b91c1c;
             transform: translateX(3px);
+            outline: 3px dashed var(--text-color);
+            outline-offset: 3px;
         }
 
         .cards-grid {
@@ -296,7 +310,7 @@
             background: white;
             border-radius: 15px;
             padding: 25px;
-            border: 1px solid rgba(219, 10, 64, 0.1);
+            border: 2px solid var(--text-color);
             position: relative;
             overflow: hidden;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -309,20 +323,20 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 3px;
+            height: 4px;
             background: linear-gradient(90deg, var(--rb-red), var(--rb-gold));
             transform: scaleX(0);
             transform-origin: left;
             transition: transform 0.4s ease;
         }
 
-        .card:hover {
+        .card:hover, .card:focus-within {
             transform: translateY(-8px);
             border-color: var(--rb-red);
             box-shadow: 0 15px 35px rgba(219, 10, 64, 0.15);
         }
 
-        .card:hover::before {
+        .card:hover::before, .card:focus-within::before {
             transform: scaleX(1);
         }
 
@@ -333,34 +347,36 @@
             font-family: 'Orbitron', sans-serif;
             font-size: 3rem;
             font-weight: 900;
-            color: rgba(219, 10, 64, 0.08);
+            color: rgba(219, 10, 64, 0.15);
             line-height: 1;
         }
 
         .card h2 {
             font-family: 'Orbitron', sans-serif;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             color: var(--rb-blue);
             margin-bottom: 15px;
             text-transform: uppercase;
             letter-spacing: 2px;
+            transition: all 0.3s ease;
         }
 
         .card p {
-            color: #475569;
+            color: var(--text-color);
             margin-bottom: 15px;
-            font-size: 1rem;
-            line-height: 1.5;
+            font-weight: 500;
         }
 
         .formula {
             background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-            border-left: 3px solid var(--rb-red);
+            border-left: 4px solid var(--rb-red);
             padding: 15px;
             border-radius: 0 8px 8px 0;
             margin: 15px 0;
             font-family: 'Courier New', monospace;
             overflow-x: auto;
+            color: var(--text-color);
+            font-weight: bold;
         }
 
         .card ul {
@@ -372,7 +388,8 @@
             padding: 8px 0;
             padding-left: 25px;
             position: relative;
-            color: #475569;
+            color: var(--text-color);
+            font-weight: bold;
         }
 
         .card ul li::before {
@@ -406,26 +423,29 @@
             transition: transform 0.3s ease;
         }
 
-        .doc-link:hover {
+        .doc-link:hover, .doc-link:focus {
             transform: scale(1.05);
             box-shadow: 0 8px 25px rgba(219, 10, 64, 0.4);
+            outline: 3px dashed var(--text-color);
+            outline-offset: 4px;
         }
 
         .doc-link:hover::after {
             transform: translateX(5px);
         }
 
+        /* BOUTON DROITS D'AUTEUR (Droite) */
         .copyright-btn {
             position: fixed;
             bottom: 20px;
             right: 20px;
             background: var(--rb-dark);
             color: white;
-            border: 1px solid var(--rb-gold);
+            border: 2px solid var(--rb-gold);
             padding: 12px 24px;
             border-radius: 30px;
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 1rem;
+            font-family: inherit;
+            font-size: 1.1rem;
             font-weight: 700;
             cursor: pointer;
             z-index: 900;
@@ -433,11 +453,42 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
-        .copyright-btn:hover {
+        .copyright-btn:hover, .copyright-btn:focus {
             background: var(--rb-gold);
             color: var(--rb-dark);
             transform: translateY(-3px);
             box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+            outline: 3px dashed var(--text-color);
+            outline-offset: 4px;
+        }
+
+        /* BOUTON ACCESSIBILITÉ (Gauche) */
+        .a11y-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: var(--rb-blue);
+            color: white;
+            border: 2px solid #ffffff;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-family: inherit;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            z-index: 900;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .a11y-btn:hover, .a11y-btn:focus {
+            background: #ffffff;
+            color: var(--rb-blue);
+            border-color: var(--rb-blue);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(30, 58, 138, 0.4);
+            outline: 3px dashed var(--text-color);
+            outline-offset: 4px;
         }
 
         .modal-overlay {
@@ -448,7 +499,7 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(15, 23, 42, 0.7);
+            background-color: rgba(10, 10, 10, 0.85);
             backdrop-filter: blur(5px);
             opacity: 0;
             transition: opacity 0.3s ease;
@@ -465,11 +516,12 @@
             background-color: white;
             padding: 35px;
             border-radius: 15px;
-            max-width: 650px;
+            max-width: 750px;
             width: 90%;
             position: relative;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            border-top: 5px solid var(--rb-red);
+            border: 4px solid var(--text-color);
+            border-top: 8px solid var(--rb-red);
             transform: translateY(-30px);
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             max-height: 90vh;
@@ -484,16 +536,17 @@
             position: absolute;
             top: 15px;
             right: 20px;
-            color: #94a3b8;
-            font-size: 32px;
+            color: #AA0000;
+            font-size: 38px;
             line-height: 1;
             font-weight: bold;
             cursor: pointer;
             transition: color 0.2s ease;
         }
 
-        .close-modal:hover {
-            color: var(--rb-red);
+        .close-modal:hover, .close-modal:focus {
+            color: #FF0000;
+            outline: 3px dashed var(--text-color);
         }
 
         .modal-box h2 {
@@ -505,12 +558,14 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            transition: all 0.3s ease;
         }
 
         .modal-box p {
-            color: #475569;
+            color: var(--text-color);
             margin-bottom: 15px;
-            font-size: 1.05rem;
+            font-size: 1.1rem;
+            font-weight: bold;
         }
 
         .modal-box .author-line {
@@ -523,16 +578,10 @@
 
         .modal-box h3 {
             color: var(--rb-red);
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             margin: 25px 0 15px 0;
             text-transform: uppercase;
             letter-spacing: 1px;
-        }
-
-        .modal-box h4 {
-            color: var(--rb-dark);
-            font-size: 1.1rem;
-            margin: 20px 0 10px 0;
         }
 
         .modal-box ul {
@@ -544,8 +593,9 @@
         .modal-box li {
             position: relative;
             padding: 10px 0 10px 30px;
-            color: #475569;
-            border-bottom: 1px solid #f1f5f9;
+            color: var(--text-color);
+            border-bottom: 2px solid #f1f5f9;
+            font-weight: bold;
         }
 
         .modal-box li:last-child {
@@ -558,11 +608,7 @@
             left: 0;
             color: var(--rb-gold);
             font-weight: bold;
-            font-size: 1.2rem;
-        }
-
-        .modal-box li strong {
-            color: var(--rb-blue);
+            font-size: 1.4rem;
         }
 
         .modal-box a {
@@ -571,8 +617,9 @@
             font-weight: bold;
         }
         
-        .modal-box a:hover {
+        .modal-box a:hover, .modal-box a:focus {
             text-decoration: underline;
+            outline: 2px dashed var(--text-color);
         }
 
         @media (max-width: 768px) {
@@ -582,24 +629,15 @@
             .node-popup { max-width: 280px; min-width: 250px; }
             #graphCanvas { height: 400px !important; }
             .modal-box { padding: 25px 20px; }
+            .a11y-btn { bottom: 80px; right: 20px; left: auto; } /* Empilement sur mobile */
         }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .card {
-            animation: fadeInUp 0.6s ease forwards;
-            opacity: 0;
-        }
-
+        .card { animation: fadeInUp 0.6s ease forwards; opacity: 0; }
         .card:nth-child(1) { animation-delay: 0.1s; }
         .card:nth-child(2) { animation-delay: 0.2s; }
         .card:nth-child(3) { animation-delay: 0.3s; }
@@ -622,8 +660,8 @@
     <section class="graph-section">
         <h2 class="section-title">Graphe d'Interdépendance des Documents</h2>
         <div class="canvas-container" id="canvasContainer">
-            <canvas id="graphCanvas" width="1000" height="500"></canvas>
-            <p class="canvas-hint">Survolez les nœuds pour voir les détails, cliquez pour ouvrir le document</p>
+            <canvas id="graphCanvas" width="1000" height="500" aria-label="Graphe interactif des documents du projet"></canvas>
+            <p class="canvas-hint">Survolez les nœuds pour voir les détails, cliquez pour ouvrir le document.</p>
 
             <div class="node-popup" id="nodePopup">
                 <div class="popup-header">
@@ -687,19 +725,20 @@
 
 </div>
 
-<button id="copyrightBtn" class="copyright-btn">⚖️ Droits d'auteur</button>
+<button id="a11yBtn" class="a11y-btn" tabindex="0" aria-pressed="false">👁️ Accessibilité Dys/Malvoyants</button>
+<button id="copyrightBtn" class="copyright-btn" tabindex="0">⚖️ Droits d'auteur</button>
 
 <div id="copyrightModal" class="modal-overlay">
     <div class="modal-box">
-        <span class="close-modal" id="closeCopyrightModal">&times;</span>
+        <span class="close-modal" id="closeCopyrightModal" tabindex="0">&times;</span>
         <h2>⚖️ Droits d'Auteur et Licence d'Utilisation</h2>
         
         <div class="author-line">
-            <p style="margin-bottom:0;"><strong>Auteur :</strong> Yann Merdy (<a href="mailto:yann.merdy@gmail.com">yann.merdy@gmail.com</a>) - Janvier 2026</p>
+            <p style="margin-bottom:0;"><strong>Auteur :</strong> Yann Merdy (<a href="mailto:yann.merdy@gmail.com">yann.merdy@gmail.com</a>) - Mars 2026</p>
         </div>
         
         <h3>Licence d'Utilisation Non Commerciale</h3>
-        <p>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ("Cours et Exercices Dynamiques : Nombres Complexes") sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
+        <p>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ('Red Bull Sky & Dirt Challenge') sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
         
         <h4>Conditions :</h4>
         <ul>
@@ -714,6 +753,27 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // --- LOGIQUE D'ACCESSIBILITÉ ---
+        const a11yBtn = document.getElementById('a11yBtn');
+        let isAccessibleMode = false;
+
+        a11yBtn.addEventListener('click', () => {
+            isAccessibleMode = !isAccessibleMode;
+            document.body.classList.toggle('accessible-mode', isAccessibleMode);
+            a11yBtn.setAttribute('aria-pressed', isAccessibleMode);
+            
+            // Mise à jour visuelle du bouton pour confirmer l'état
+            if (isAccessibleMode) {
+                a11yBtn.style.background = '#ffffff';
+                a11yBtn.style.color = 'var(--rb-blue)';
+                a11yBtn.innerHTML = '👁️ Mode Standard';
+            } else {
+                a11yBtn.style.background = 'var(--rb-blue)';
+                a11yBtn.style.color = '#ffffff';
+                a11yBtn.innerHTML = '👁️ Accessibilité Dys/Malvoyants';
+            }
+        });
+
         // --- LOGIQUE DU GRAPHE ---
         const canvas = document.getElementById('graphCanvas');
         const ctx = canvas.getContext('2d');
@@ -819,11 +879,41 @@
                     'Conclusion technique',
                     'Recommandations finales'
                 ]
+            },
+            { 
+                x: 0.12, y: 0.8, 
+                label: 'Rôles PBL', 
+                file: 'COMMUNICATION_PREPARATOIRE_VERS_ELEVES_ET_ENSEIGNANTS.pdf', 
+                color: '#1E3A8A',
+                icon: '🗣️',
+                details: [
+                    'Méthode Apprentissage Par Problèmes',
+                    'Rôles des élèves (Scribe, Gardien...)',
+                    'Posture des enseignants (Facilitateurs)',
+                    'Autonomie et collaboration',
+                    'Contrat de confiance'
+                ]
+            },
+            { 
+                x: 0.88, y: 0.2, 
+                label: 'Grille Éval', 
+                file: 'CRITERES_EVALUATION_V2.html', 
+                color: '#F59E0B',
+                icon: '📊',
+                details: [
+                    'Analyse des trajectoires (CA/RE)',
+                    'Probabilités et évitement (RA/CA)',
+                    'Angles et Trigonométrie (MO/RE)',
+                    'Optimisation énergétique (MO/CA)',
+                    'Compétences STI2D validées'
+                ]
             }
         ];
 
         const links = [
-            [0, 1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 5]
+            [0, 1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 5], 
+            [0, 6], 
+            [5, 7]  
         ];
 
         let hoveredNode = null;
@@ -852,7 +942,6 @@
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
             ctx.fillStyle = '#fafafa';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -860,9 +949,9 @@
                 const start = getAbsolutePosition(nodes[link[0]]);
                 const end = getAbsolutePosition(nodes[link[1]]);
 
-                ctx.strokeStyle = 'rgba(219, 10, 64, 0.3)';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([5, 5]);
+                ctx.strokeStyle = '#666666'; 
+                ctx.lineWidth = 3;
+                ctx.setLineDash([6, 6]);
                 ctx.lineDashOffset = -animationProgress * 0.5;
 
                 ctx.beginPath();
@@ -877,26 +966,26 @@
                 const pos = getAbsolutePosition(node);
                 const isHovered = hoveredNode === index;
 
-                ctx.font = 'bold 13px Rajdhani';
+                // On maintient une police par défaut simple pour le canvas pour éviter des bugs de rendu selon l'OS
+                ctx.font = 'bold 15px sans-serif'; 
                 const textWidth = ctx.measureText(node.label).width;
-                const paddingX = 20;
-                const paddingY = 12;
-                const rectWidth = Math.max(textWidth + paddingX * 2, 100);
-                const rectHeight = 40;
+                const paddingX = 22;
+                const rectWidth = Math.max(textWidth + paddingX * 2, 110);
+                const rectHeight = 44;
 
                 const rectX = pos.x - rectWidth / 2;
                 const rectY = pos.y - rectHeight / 2;
 
                 if (isHovered) {
                     ctx.shadowColor = node.color;
-                    ctx.shadowBlur = 15;
+                    ctx.shadowBlur = 18;
                     ctx.shadowOffsetX = 0;
                     ctx.shadowOffsetY = 4;
                 } else {
-                    ctx.shadowColor = 'rgba(0,0,0,0.1)';
-                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                    ctx.shadowBlur = 6;
                     ctx.shadowOffsetX = 0;
-                    ctx.shadowOffsetY = 2;
+                    ctx.shadowOffsetY = 3;
                 }
 
                 const gradient = ctx.createLinearGradient(rectX, rectY, rectX, rectY + rectHeight);
@@ -905,7 +994,7 @@
                     gradient.addColorStop(1, adjustColor(node.color, -20));
                 } else {
                     gradient.addColorStop(0, '#ffffff');
-                    gradient.addColorStop(1, '#f8fafc');
+                    gradient.addColorStop(1, '#f1f5f9');
                 }
 
                 ctx.fillStyle = gradient;
@@ -913,27 +1002,27 @@
                 ctx.fill();
 
                 ctx.shadowBlur = 0;
-                ctx.strokeStyle = isHovered ? 'transparent' : node.color;
-                ctx.lineWidth = 2;
+                ctx.strokeStyle = isHovered ? '#000' : node.color;
+                ctx.lineWidth = 3;
                 drawRoundedRect(ctx, rectX, rectY, rectWidth, rectHeight, 8);
                 ctx.stroke();
 
-                ctx.fillStyle = isHovered ? 'white' : '#1e293b';
-                ctx.font = 'bold 13px Rajdhani';
+                ctx.fillStyle = isHovered ? 'white' : '#0A0A0A';
+                ctx.font = 'bold 15px sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(node.label, pos.x, pos.y);
 
-                if (index < nodes.length - 1) {
+                if (index < nodes.length - 2 && index !== 0) {
                     ctx.fillStyle = node.color;
                     ctx.beginPath();
-                    ctx.arc(rectX + rectWidth, pos.y, 4, 0, Math.PI * 2);
+                    ctx.arc(rectX + rectWidth, pos.y, 5, 0, Math.PI * 2);
                     ctx.fill();
                 }
                 if (index > 0) {
                     ctx.fillStyle = node.color;
                     ctx.beginPath();
-                    ctx.arc(rectX, pos.y, 4, 0, Math.PI * 2);
+                    ctx.arc(rectX, pos.y, 5, 0, Math.PI * 2);
                     ctx.fill();
                 }
             });
@@ -987,10 +1076,10 @@
             let foundNode = null;
             nodes.forEach((node, index) => {
                 const pos = getAbsolutePosition(node);
-                ctx.font = 'bold 13px Rajdhani';
+                ctx.font = 'bold 15px sans-serif';
                 const textWidth = ctx.measureText(node.label).width;
-                const rectWidth = Math.max(textWidth + 40, 100);
-                const rectHeight = 40;
+                const rectWidth = Math.max(textWidth + 44, 110);
+                const rectHeight = 44;
                 const rectX = pos.x - rectWidth / 2;
                 const rectY = pos.y - rectHeight / 2;
 
@@ -1040,16 +1129,24 @@
             setTimeout(() => {
                 copyrightModal.classList.add("show");
             }, 10);
+            closeCopyrightModal.focus();
         });
 
         function closeMyModal() {
             copyrightModal.classList.remove("show");
             setTimeout(() => {
                 copyrightModal.style.display = "none";
+                copyrightBtn.focus();
             }, 300); 
         }
 
         closeCopyrightModal.addEventListener("click", closeMyModal);
+        
+        closeCopyrightModal.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                closeMyModal();
+            }
+        });
 
         window.addEventListener("click", (event) => {
             if (event.target === copyrightModal) {
