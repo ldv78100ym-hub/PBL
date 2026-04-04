@@ -173,7 +173,7 @@
 
         .canvas-container {
             position: relative;
-            background: linear-gradient(145deg, #e6e9f0 0%, #eef1f5 100%); /* Effet de profondeur de fond */
+            background: linear-gradient(145deg, #e6e9f0 0%, #eef1f5 100%);
             border-radius: 15px;
             padding: 20px;
             border: 2px solid var(--text-color);
@@ -185,7 +185,6 @@
             overflow: hidden;
         }
 
-        /* Texture de fond 3D subtile */
         .canvas-container::before {
             content: '';
             position: absolute;
@@ -820,9 +819,9 @@
         let width, height;
         let animationProgress = 0;
         let hideTimeout = null;
-        let pathAnimation = 0; // Pour l'animation du chemin
+        let pathAnimation = 0;
         
-        // Les 12 nœuds avec élévation Z pour l'effet 3D (0 = normal, 1 = surélevé/bosse, -1 = creux)
+        // Les 12 nœuds avec élévation Z pour l'effet 3D
         const nodesData = [
             { id: 0, x: 0.12, y: 0.50, z: 1, label: "ÉNONCÉ DU PROBLÈME", file: "RED_BULL_SKY_AND_DIRT_CHALLENGE_V2.pdf", color: '#DB0A40', icon: '🏁', details: ['Mission complète du PBL (4 parties)', 'Trajectoires paraboliques et cubiques', 'Probabilités de collision', 'Optimisation énergétique (15 min)', 'Verdict final et recommandations'] },
             { id: 1, x: 0.35, y: 0.15, z: 1, label: "FICHE SYNTHÈSE", file: "FICHE_SYNTHESE.pdf", color: '#F59E0B', icon: '📝', details: ['Récapitulatif des données clés', 'Espace de résolution par partie', 'Paramètres du système moto+drone', 'Tableaux de calculs à compléter', 'Base pour le rapport final'] },
@@ -852,7 +851,7 @@
         ];
 
         // Chemin logique principal (relief prononcé)
-        const criticalPath = [0, 1, 3, 11, 5]; // Énoncé -> Fiche -> Sous-groupes -> Synthèse Python -> Final
+        const criticalPath = [0, 1, 3, 11, 5];
 
         let nodes = [];
         let hoveredNode = null;
@@ -875,7 +874,8 @@
                     pixelX: n.x * width,
                     pixelY: n.y * height,
                     baseRadius: 35,
-                    currentZ: n.z
+                    currentZ: n.z,
+                    labelAbove: false // Initialiser la position du label
                 }));
             } else {
                 nodes.forEach((n, i) => {
@@ -886,7 +886,6 @@
         }
 
         function drawShadow(ctx, x, y, radius, elevation) {
-            // Ombre portée en fonction de l'élévation (effet 3D)
             const shadowOffset = elevation * 8;
             const shadowBlur = Math.abs(elevation) * 10 + 5;
             const alpha = Math.min(0.4, Math.abs(elevation) * 0.15 + 0.1);
@@ -897,7 +896,6 @@
             ctx.shadowOffsetX = shadowOffset;
             ctx.shadowOffsetY = shadowOffset;
             
-            // Dessiner l'ombre sous forme d'ellipse aplatie
             ctx.beginPath();
             ctx.ellipse(x + shadowOffset, y + shadowOffset, radius * 0.8, radius * 0.4, 0, 0, Math.PI * 2);
             ctx.fillStyle = `rgba(0, 0, 0, ${alpha * 0.5})`;
@@ -911,10 +909,10 @@
             const elevation = isHovered ? node.currentZ + 0.5 : node.currentZ;
             const radius = node.baseRadius + (elevation * 3);
             
-            // 1. Dessiner l'ombre portée (effet de relief)
+            // 1. Dessiner l'ombre portée
             drawShadow(ctx, x, y, radius, elevation);
             
-            // 2. Dessiner le "côté" du bouton (effet d'épaisseur 3D)
+            // 2. Dessiner le côté 3D
             if (elevation > 0) {
                 const depth = elevation * 6;
                 const gradientSide = ctx.createLinearGradient(x, y, x + depth, y + depth);
@@ -927,25 +925,22 @@
                 ctx.fill();
             }
             
-            // 3. Dessiner la face supérieure (sphère/bouton)
+            // 3. Dessiner la face supérieure
             const gradientTop = ctx.createRadialGradient(
                 x - radius/3, y - radius/3, radius/10,
                 x, y, radius
             );
             
             if (elevation > 0) {
-                // Effet "bosse" - lumière venant du haut-gauche
                 gradientTop.addColorStop(0, '#ffffff');
                 gradientTop.addColorStop(0.3, adjustColor(node.color, 30));
                 gradientTop.addColorStop(0.7, node.color);
                 gradientTop.addColorStop(1, adjustColor(node.color, -20));
             } else if (elevation < 0) {
-                // Effet "creux" - plus sombre
                 gradientTop.addColorStop(0, adjustColor(node.color, -10));
                 gradientTop.addColorStop(0.5, node.color);
                 gradientTop.addColorStop(1, adjustColor(node.color, -40));
             } else {
-                // Niveau normal
                 gradientTop.addColorStop(0, adjustColor(node.color, 20));
                 gradientTop.addColorStop(1, node.color);
             }
@@ -955,7 +950,7 @@
             ctx.fillStyle = gradientTop;
             ctx.fill();
             
-            // Bordure brillante en haut (effet de lumière)
+            // Effets de lumière
             if (elevation >= 0) {
                 ctx.beginPath();
                 ctx.arc(x, y, radius, Math.PI * 1.1, Math.PI * 1.9);
@@ -964,105 +959,108 @@
                 ctx.stroke();
             }
             
-            // Ombre interne en bas (effet de profondeur)
             ctx.beginPath();
             ctx.arc(x, y, radius, Math.PI * 0.1, Math.PI * 0.9);
             ctx.strokeStyle = 'rgba(0,0,0,0.2)';
             ctx.lineWidth = 2;
             ctx.stroke();
             
-            // Texte avec ombre pour lisibilité
-            ctx.fillStyle = elevation > 0 ? 'white' : (elevation < 0 ? 'rgba(255,255,255,0.9)' : 'white');
-            ctx.font = `bold ${12 + elevation}px sans-serif`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.shadowColor = 'rgba(0,0,0,0.5)';
-            ctx.shadowBlur = 4;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 1;
-            ctx.fillText(node.label, x, y);
-            ctx.shadowBlur = 0;
+            // === POSITIONNEMENT INTELLIGENT DU LABEL ===
             
-            // Indication visuelle du chemin critique (anneau doré)
+            // Calculer si le label doit être au-dessus ou en-dessous
+            // en fonction de la position relative aux voisins connectés
+            const connectedNeighbors = edges
+                .filter(e => e.from === node.id || e.to === node.id)
+                .map(e => {
+                    const neighborId = e.from === node.id ? e.to : e.from;
+                    return nodes.find(n => n.id === neighborId);
+                })
+                .filter(n => n);
+            
+            let labelAbove = false;
+            
+            if (connectedNeighbors.length > 0) {
+                // Calculer la position moyenne Y des voisins
+                const avgNeighborY = connectedNeighbors.reduce((sum, n) => sum + n.pixelY, 0) / connectedNeighbors.length;
+                // Si le nœud est AU-DESSUS de la moyenne (plus petit Y), mettre le label EN HAUT
+                // Sinon, mettre le label EN BAS pour éviter les superpositions
+                labelAbove = y < avgNeighborY;
+            } else {
+                // Si isolé, utiliser la position sur le canvas
+                labelAbove = y > height / 2;
+            }
+            
+            // Configuration du texte avec la police du thème
+            ctx.font = `bold ${11 + Math.abs(elevation) * 0.5}px 'Rajdhani', sans-serif`;
+            ctx.textAlign = 'center';
+            
+            // Calculer les dimensions du texte
+            const textMetrics = ctx.measureText(node.label);
+            const textWidth = textMetrics.width;
+            const padding = 10;
+            const boxHeight = 24;
+            const lineHeight = 3; // Espace entre le nœud et le label
+            
+            // Position Y du label
+            const labelY = labelAbove ? y - radius - lineHeight - boxHeight/2 : y + radius + lineHeight + boxHeight/2;
+            
+            // Dessiner le fond pill avec ombre
+            ctx.save();
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.shadowBlur = 6;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 3;
+            
+            // Fond arrondi (pill shape)
+            ctx.beginPath();
+            const cornerRadius = 12;
+            const boxX = x - textWidth/2 - padding;
+            const boxY = labelY - boxHeight/2;
+            
+            ctx.roundRect(boxX, boxY, textWidth + padding*2, boxHeight, cornerRadius);
+            
+            // Couleur de fond adaptée à l'élévation
+            if (elevation > 0) {
+                ctx.fillStyle = 'rgba(255,255,255,0.95)';
+            } else if (elevation < 0) {
+                ctx.fillStyle = 'rgba(26,26,46,0.95)';
+            } else {
+                ctx.fillStyle = 'rgba(255,255,255,0.9)';
+            }
+            ctx.fill();
+            ctx.restore();
+            
+            // Bordure colorée
+            ctx.beginPath();
+            ctx.roundRect(boxX, boxY, textWidth + padding*2, boxHeight, cornerRadius);
+            ctx.strokeStyle = node.color;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Dessiner le texte
+            ctx.fillStyle = (elevation < 0) ? '#ffffff' : (elevation > 0 ? node.color : '#1a1a2e');
+            ctx.textBaseline = 'middle';
+            ctx.fillText(node.label, x, labelY);
+            
+            // Ligne connectrice fine
+            ctx.beginPath();
+            const startY = labelAbove ? y - radius - 2 : y + radius + 2;
+            const endY = labelAbove ? boxY + boxHeight + 2 : boxY - 2;
+            ctx.moveTo(x, startY);
+            ctx.lineTo(x, endY);
+            ctx.strokeStyle = node.color;
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([3, 3]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Anneau doré pour chemin critique
             if (criticalPath.includes(node.id)) {
                 ctx.beginPath();
                 ctx.arc(x, y, radius + 4, 0, Math.PI * 2);
                 ctx.strokeStyle = 'rgba(245, 158, 11, 0.6)';
                 ctx.lineWidth = 3;
                 ctx.setLineDash([5, 5]);
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
-        }
-
-        function draw3DEdge(ctx, n1, n2, isCritical, progress) {
-            const dx = n2.pixelX - n1.pixelX;
-            const dy = n2.pixelY - n1.pixelY;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-            
-            if (isCritical) {
-                // Chemin principal : effet de "route surélevée" avec lumière
-                const gradient = ctx.createLinearGradient(n1.pixelX, n1.pixelY, n2.pixelX, n2.pixelY);
-                gradient.addColorStop(0, '#F59E0B');
-                gradient.addColorStop(0.5, '#FCD34D');
-                gradient.addColorStop(1, '#F59E0B');
-                
-                // Ombre portée du chemin
-                ctx.beginPath();
-                ctx.moveTo(n1.pixelX + 3, n1.pixelY + 3);
-                ctx.lineTo(n2.pixelX + 3, n2.pixelY + 3);
-                ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-                ctx.lineWidth = 8;
-                ctx.lineCap = 'round';
-                ctx.stroke();
-                
-                // Chemin lumineux
-                ctx.beginPath();
-                ctx.moveTo(n1.pixelX, n1.pixelY);
-                ctx.lineTo(n2.pixelX, n2.pixelY);
-                ctx.strokeStyle = gradient;
-                ctx.lineWidth = 6;
-                ctx.lineCap = 'round';
-                ctx.stroke();
-                
-                // Animation de particule sur le chemin
-                if (progress !== undefined) {
-                    const animX = n1.pixelX + dx * progress;
-                    const animY = n1.pixelY + dy * progress;
-                    
-                    // Halo lumineux
-                    ctx.beginPath();
-                    ctx.arc(animX, animY, 8, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(252, 211, 77, 0.3)';
-                    ctx.fill();
-                    
-                    // Particule centrale
-                    ctx.beginPath();
-                    ctx.arc(animX, animY, 4, 0, Math.PI * 2);
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.shadowColor = '#F59E0B';
-                    ctx.shadowBlur = 10;
-                    ctx.fill();
-                    ctx.shadowBlur = 0;
-                }
-                
-                // Bordures du chemin (effet de route)
-                ctx.beginPath();
-                ctx.moveTo(n1.pixelX, n1.pixelY);
-                ctx.lineTo(n2.pixelX, n2.pixelY);
-                ctx.strokeStyle = 'rgba(180, 83, 9, 0.3)';
-                ctx.lineWidth = 10;
-                ctx.lineCap = 'round';
-                ctx.stroke();
-            } else {
-                // Lien secondaire : simple ligne en creux
-                ctx.beginPath();
-                ctx.moveTo(n1.pixelX, n1.pixelY);
-                ctx.lineTo(n2.pixelX, n2.pixelY);
-                ctx.strokeStyle = 'rgba(148, 163, 184, 0.3)';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([5, 5]);
-                ctx.lineDashOffset = -animationProgress * 0.2;
                 ctx.stroke();
                 ctx.setLineDash([]);
             }
@@ -1076,17 +1074,81 @@
             return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
         }
 
+        function draw3DEdge(ctx, n1, n2, isCritical, progress) {
+            const dx = n2.pixelX - n1.pixelX;
+            const dy = n2.pixelY - n1.pixelY;
+            
+            if (isCritical) {
+                const gradient = ctx.createLinearGradient(n1.pixelX, n1.pixelY, n2.pixelX, n2.pixelY);
+                gradient.addColorStop(0, '#F59E0B');
+                gradient.addColorStop(0.5, '#FCD34D');
+                gradient.addColorStop(1, '#F59E0B');
+                
+                ctx.beginPath();
+                ctx.moveTo(n1.pixelX + 3, n1.pixelY + 3);
+                ctx.lineTo(n2.pixelX + 3, n2.pixelY + 3);
+                ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+                ctx.lineWidth = 8;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(n1.pixelX, n1.pixelY);
+                ctx.lineTo(n2.pixelX, n2.pixelY);
+                ctx.strokeStyle = gradient;
+                ctx.lineWidth = 6;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+                
+                if (progress !== undefined) {
+                    const animX = n1.pixelX + dx * progress;
+                    const animY = n1.pixelY + dy * progress;
+                    
+                    ctx.beginPath();
+                    ctx.arc(animX, animY, 8, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(252, 211, 77, 0.3)';
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.arc(animX, animY, 4, 0, Math.PI * 2);
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.shadowColor = '#F59E0B';
+                    ctx.shadowBlur = 10;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+                
+                ctx.beginPath();
+                ctx.moveTo(n1.pixelX, n1.pixelY);
+                ctx.lineTo(n2.pixelX, n2.pixelY);
+                ctx.strokeStyle = 'rgba(180, 83, 9, 0.3)';
+                ctx.lineWidth = 10;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+            } else {
+                ctx.beginPath();
+                ctx.moveTo(n1.pixelX, n1.pixelY);
+                ctx.lineTo(n2.pixelX, n2.pixelY);
+                ctx.strokeStyle = 'rgba(148, 163, 184, 0.3)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.lineDashOffset = -animationProgress * 0.2;
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+
         function drawNetwork() {
             ctx.clearRect(0, 0, width, height);
             
-            // Fond avec effet de profondeur (vignettage)
+            // Fond avec vignettage
             const bgGradient = ctx.createRadialGradient(width/2, height/2, 100, width/2, height/2, width);
             bgGradient.addColorStop(0, 'rgba(255,255,255,0)');
             bgGradient.addColorStop(1, 'rgba(0,0,0,0.03)');
             ctx.fillStyle = bgGradient;
             ctx.fillRect(0, 0, width, height);
             
-            // Calcul de la progression d'animation pour chaque segment du chemin critique
+            // Calcul des segments du chemin critique
             const pathSegments = [];
             for (let i = 0; i < criticalPath.length - 1; i++) {
                 const from = nodes.find(n => n.id === criticalPath[i]);
@@ -1096,7 +1158,7 @@
                 }
             }
             
-            // Dessiner les liens d'abord (par ordre de profondeur)
+            // Dessiner les liens
             edges.forEach(edge => {
                 const n1 = nodes[edge.from];
                 const n2 = nodes[edge.to];
@@ -1111,7 +1173,6 @@
                             (s.from.id === n2.id && s.to.id === n1.id)
                         );
                         if (segIndex !== -1) {
-                            // Calculer la position le long du chemin
                             const totalSegs = pathSegments.length;
                             const segProgress = (pathAnimation + segIndex) % totalSegs;
                             progress = segProgress - Math.floor(segProgress);
@@ -1122,7 +1183,7 @@
                 }
             });
             
-            // Dessiner les nœuds par ordre de profondeur Z (du plus éloigné au plus proche)
+            // Dessiner les nœuds par ordre de profondeur Z
             const sortedNodes = [...nodes].sort((a, b) => a.currentZ - b.currentZ);
             sortedNodes.forEach((node, index) => {
                 const originalIndex = nodes.indexOf(node);
@@ -1133,7 +1194,7 @@
 
         function animate() {
             animationProgress += 1;
-            pathAnimation += 0.005; // Vitesse de l'animation sur le chemin
+            pathAnimation += 0.005;
             drawNetwork();
             requestAnimationFrame(animate);
         }
@@ -1213,7 +1274,6 @@
                     draggedNode = i;
                     hasMoved = false;
                     canvas.style.cursor = 'grabbing';
-                    // Élever le nœud quand on le saisit
                     nodes[i].currentZ = nodesData[i].z + 1;
                     hidePopupDelayed();
                     break;
@@ -1248,11 +1308,9 @@
                     hoveredNode = found;
                     if (found !== null) {
                         canvas.style.cursor = 'grab';
-                        // Élever temporairement au survol
                         nodes[found].currentZ = nodesData[found].z + 0.5;
                         showPopup(nodes[found], pos.x, pos.y);
                     } else {
-                        // Réinitialiser les élévations
                         nodes.forEach((n, i) => {
                             n.currentZ = nodesData[i].z;
                         });
@@ -1271,7 +1329,6 @@
                     window.open(nodes[draggedNode].file, '_blank');
                 }
                 isDragging = false;
-                // Réinitialiser l'élévation
                 nodes[draggedNode].currentZ = nodesData[draggedNode].z;
                 draggedNode = null;
                 canvas.style.cursor = hoveredNode !== null ? 'grab' : 'default';
