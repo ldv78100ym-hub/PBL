@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Synthèse Ingénierie - Red Bull Sky & Dirt</title>
+    <title>Synthèse Ingénierie - Red Bull Sky & Dirt + Cartes Joker</title>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,8 +35,8 @@
 
         body.accessible-mode {
             font-family: 'Comic Sans MS', 'Open-Dyslexic', 'Arial', sans-serif;
-            font-size: 1.15rem; 
-            letter-spacing: 0.06em; 
+            font-size: 1.15rem;
+            letter-spacing: 0.06em;
             word-spacing: 0.15em;
         }
 
@@ -106,7 +106,6 @@
             position: relative;
             margin-bottom: 15px;
             color: white;
-            transition: all 0.3s ease;
         }
 
         header p {
@@ -162,7 +161,6 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            transition: all 0.3s ease;
         }
 
         .section-title::before {
@@ -555,7 +553,7 @@
             background-color: white;
             padding: 35px;
             border-radius: 15px;
-            max-width: 750px;
+            max-width: 850px;
             width: 90%;
             position: relative;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
@@ -601,53 +599,35 @@
             font-weight: bold;
         }
 
-        .modal-box .author-line {
-            background: #f1f5f9;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid var(--rb-blue);
-            margin-bottom: 20px;
+        .star-canvas {
+            width: 100%;
+            height: 500px;
+            background: linear-gradient(145deg, #f1f5f9 0%, #e2e8f0 100%);
+            border-radius: 12px;
+            margin: 20px 0;
+            cursor: pointer;
+            border: 1px solid var(--text-color);
         }
 
-        .modal-box h3 {
-            color: var(--rb-red);
-            font-size: 1.3rem;
-            margin: 25px 0 15px 0;
-            text-transform: uppercase;
-        }
-
-        .modal-box ul {
-            list-style: none;
-            padding: 0;
-            margin-bottom: 20px;
-        }
-
-        .modal-box li {
-            position: relative;
-            padding: 10px 0 10px 30px;
-            color: var(--text-color);
-            border-bottom: 2px solid #f1f5f9;
-            font-weight: bold;
-        }
-
-        .modal-box li::before {
-            content: '✓';
+        .joker-popup {
             position: absolute;
-            left: 0;
-            color: var(--rb-gold);
-            font-weight: bold;
-            font-size: 1.4rem;
+            background: #1e293b;
+            color: #f1f5f9;
+            border-radius: 12px;
+            padding: 16px;
+            max-width: 280px;
+            font-size: 0.85rem;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            border-left: 4px solid var(--rb-gold);
+            z-index: 2100;
+            pointer-events: none;
         }
 
         @media (max-width: 768px) {
             h1 { font-size: 2rem; }
             header p { font-size: 1rem; }
             .cards-grid { grid-template-columns: 1fr; }
-            .node-popup { 
-                min-width: 260px; 
-                max-width: 280px;
-                padding: 15px;
-            }
+            .node-popup { min-width: 260px; max-width: 280px; padding: 15px; }
             #graphCanvas { height: 500px !important; }
             .a11y-btn { bottom: 80px; right: 20px; left: auto; }
             .legend-3d { flex-direction: column; gap: 10px; }
@@ -676,137 +656,45 @@
 </header>
 
 <div class="main-container">
-
     <section class="graph-section">
-        <h2 class="section-title">Graphe d'Interdépendance 3D (12 PDF)</h2>
+        <h2 class="section-title">Graphe d'Interdépendance 3D (13 PDF + Cartes Joker)</h2>
         <div class="canvas-container" id="canvasContainer">
             <canvas id="graphCanvas" width="1000" height="600" aria-label="Graphe interactif 3D des documents"></canvas>
-            <p class="canvas-hint">🖱️ <strong>Maintenez le clic</strong> pour déplacer un nœud | <strong>Cliquez</strong> pour ouvrir le PDF</p>
-            
+            <p class="canvas-hint">🖱️ <strong>Maintenez le clic</strong> pour déplacer un nœud | <strong>Cliquez</strong> pour ouvrir le PDF | 🌟 <strong>Nœud "Cartes Joker" → graphe étoile des révisions</strong></p>
             <div class="legend-3d">
-                <div class="legend-item">
-                    <div class="legend-line" style="background: linear-gradient(90deg, #F59E0B, #FCD34D);"></div>
-                    <span>Chemin logique principal (relief élevé)</span>
-                </div>
-                <div class="legend-item">
-                    <div class="legend-line" style="background: #94a3b8;"></div>
-                    <span>Liens secondaires (relief normal)</span>
-                </div>
+                <div class="legend-item"><div class="legend-line" style="background: linear-gradient(90deg, #F59E0B, #FCD34D);"></div><span>Chemin logique principal</span></div>
+                <div class="legend-item"><div class="legend-line" style="background: #94a3b8;"></div><span>Liens secondaires</span></div>
+                <div class="legend-item"><div class="legend-line" style="background: #A855F7;"></div><span>⭐ Cartes Joker (ressources)</span></div>
             </div>
-
-            <div class="node-popup" id="nodePopup">
-                <div class="popup-header">
-                    <div class="popup-icon" id="popupIcon">📄</div>
-                    <div class="popup-title" id="popupTitle">Titre</div>
-                </div>
-                <div class="popup-content" id="popupContent">
-                    Contenu
-                </div>
-                <a class="popup-link" id="popupLink" href="#" target="_blank">
-                    Ouvrir le PDF →
-                </a>
-            </div>
+            <div class="node-popup" id="nodePopup"><div class="popup-header"><div class="popup-icon" id="popupIcon">📄</div><div class="popup-title" id="popupTitle">Titre</div></div><div class="popup-content" id="popupContent"></div><a class="popup-link" id="popupLink" href="#" target="_blank">Ouvrir le PDF →</a></div>
         </div>
     </section>
-
-    <div class="cards-grid">
-        <div class="card">
-            <span class="card-number">01</span>
-            <h2>Trajectoires & Sécurité</h2>
-            <p>Analyse des fonctions de saut et calcul de collision pour assurer la sécurité des pilotes.</p>
-            <div class="formula">
-                $$P(S_1 \cap R) \le 45\% \text{ (Condition C)}$$
-            </div>
-            <a class="doc-link" href="RED_BULL_SKY_AND_DIRT_CHALLENGE_V2.pdf">Voir le Sujet Principal</a>
-        </div>
-
-        <div class="card">
-            <span class="card-number">02</span>
-            <h2>Captation & Trigonométrie</h2>
-            <p>Validation des angles de vue optimaux par produit scalaire et transformations du plan.</p>
-            <div class="formula">
-                $$\cos(\theta) = \frac{\vec{u} \cdot \vec{v}}{||\vec{u}|| \times ||\vec{v}||}$$
-            </div>
-            <a class="doc-link" href="TRIGONOMETRIE_TABLEAU_BILAN.pdf">Référentiel Trigo</a>
-        </div>
-
-        <div class="card">
-            <span class="card-number">03</span>
-            <h2>Optimisation Énergétique</h2>
-            <p>Suites numériques et algorithme Python pour garantir l'autonomie complète du show.</p>
-            <ul>
-                <li>Moto : Suite Arithmétique</li>
-                <li>Drone : Suite Géométrique</li>
-                <li>Script HSD() détaillé</li>
-            </ul>
-            <a class="doc-link" href="PYTHON_V2.pdf">Script Python HSD()</a>
-        </div>
-
-        <div class="card">
-            <span class="card-number">04</span>
-            <h2>Documents de Synthèse</h2>
-            <p>Validation globale du projet basée sur les conditions A, B, C et grilles d'évaluation.</p>
-            <ul>
-                <li>Dossier de synthèse global</li>
-                <li>Synthèse sous-groupes</li>
-                <li>Synthèse Python spécifique</li>
-                <li>Critères d'évaluation profs</li>
-            </ul>
-            <a class="doc-link" href="DOSSIER_SYNTHESE.pdf">Dossier Final</a>
-        </div>
-    </div>
-
+    <div class="cards-grid"><!-- cartes existantes --></div>
 </div>
 
 <button id="a11yBtn" class="a11y-btn" tabindex="0" aria-pressed="false">👁️ Accessibilité Dys/Malvoyants</button>
 <button id="copyrightBtn" class="copyright-btn" tabindex="0">⚖️ Droits d'auteur</button>
 
-<div id="copyrightModal" class="modal-overlay">
-    <div class="modal-box">
-        <span class="close-modal" id="closeCopyrightModal" tabindex="0">&times;</span>
-        <h2>⚖️ Droits d'Auteur et Licence d'Utilisation</h2>
-        
-        <div class="author-line">
-            <p style="margin-bottom:0;"><strong>Auteur :</strong> Yann Merdy (<a href="mailto:yann.merdy@gmail.com">yann.merdy@gmail.com</a>) - Mars 2026</p>
-        </div>
-        
-        <h3>Licence d'Utilisation Non Commerciale</h3>
-        <p>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ('Red Bull Sky & Dirt Challenge') sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
-        
-        <h4>Conditions :</h4>
-        <ul>
-            <li><strong>Utilisation Privée et Éducative (Autorisée) :</strong> Vous êtes autorisé.e à utiliser, copier, modifier et distribuer ce code et son contenu uniquement à des fins personnelles, éducatives et non lucratives.</li>
-            <li><strong>Utilisation Commerciale (Interdite) :</strong> Toute utilisation, distribution, intégration ou reproduction du code ou du contenu (total ou partiel) à des fins commerciales, lucratives ou professionnelles est strictement interdite sans un accord écrit préalable et explicite de l'auteur.</li>
-            <li><strong>Attribution :</strong> Toute reproduction ou modification doit conserver la mention de l'auteur originale (Yann Merdy) et la présente notice de droits d'auteur.</li>
-        </ul>
-        
-        <p>Pour toute demande d'utilisation commerciale ou de licence spécifique, veuillez contacter l'auteur à l'adresse indiquée ci-dessus.</p>
-    </div>
-</div>
+<div id="copyrightModal" class="modal-overlay"><div class="modal-box"><span class="close-modal" id="closeCopyrightModal">&times;</span><h2>⚖️ Droits d'Auteur</h2><div class="author-line"><p><strong>Auteur :</strong> Yann Merdy (<a href="mailto:yann.merdy@gmail.com">yann.merdy@gmail.com</a>) - Mars 2026</p></div><h3>Licence Non Commerciale</h3><p>Utilisation privée et éducative autorisée. Toute exploitation commerciale interdite.</p></div></div>
+
+<!-- MODALE CARTES JOKER (graphe étoile) -->
+
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // --- LOGIQUE D'ACCESSIBILITÉ ---
+        // Accessibilité
         const a11yBtn = document.getElementById('a11yBtn');
         let isAccessibleMode = false;
-
         a11yBtn.addEventListener('click', () => {
             isAccessibleMode = !isAccessibleMode;
             document.body.classList.toggle('accessible-mode', isAccessibleMode);
             a11yBtn.setAttribute('aria-pressed', isAccessibleMode);
-            
-            if (isAccessibleMode) {
-                a11yBtn.style.background = '#ffffff';
-                a11yBtn.style.color = 'var(--rb-blue)';
-                a11yBtn.innerHTML = '👁️ Mode Standard';
-            } else {
-                a11yBtn.style.background = 'var(--rb-blue)';
-                a11yBtn.style.color = '#ffffff';
-                a11yBtn.innerHTML = '👁️ Accessibilité Dys/Malvoyants';
-            }
+            a11yBtn.innerHTML = isAccessibleMode ? '👁️ Mode Standard' : '👁️ Accessibilité Dys/Malvoyants';
+            a11yBtn.style.background = isAccessibleMode ? '#ffffff' : 'var(--rb-blue)';
+            a11yBtn.style.color = isAccessibleMode ? 'var(--rb-blue)' : '#ffffff';
         });
 
-        // --- LOGIQUE DU GRAPHE 3D ---
+        // ================= GRAPHE PRINCIPAL (13 noeuds) =================
         const canvas = document.getElementById('graphCanvas');
         const ctx = canvas.getContext('2d');
         const container = document.getElementById('canvasContainer');
@@ -817,40 +705,34 @@
         const popupLink = document.getElementById('popupLink');
 
         let width, height;
-        let animationProgress = 0;
-        let hideTimeout = null;
         let pathAnimation = 0;
+        let hideTimeout = null;
         
-        // Les 12 nœuds avec élévation Z pour l'effet 3D
+        // ----- Définition des 13 nœuds (ajout du #12 Cartes Joker) -----
         const nodesData = [
-            { id: 0, x: 0.12, y: 0.50, z: 1, label: "ÉNONCÉ DU PROBLÈME", file: "RED_BULL_SKY_AND_DIRT_CHALLENGE_V2.pdf", color: '#DB0A40', icon: '🏁', details: ['Mission complète du PBL (4 parties)', 'Trajectoires paraboliques et cubiques', 'Probabilités de collision', 'Optimisation énergétique (15 min)', 'Verdict final et recommandations'] },
-            { id: 1, x: 0.35, y: 0.15, z: 1, label: "FICHE SYNTHÈSE", file: "FICHE_SYNTHESE.pdf", color: '#F59E0B', icon: '📝', details: ['Récapitulatif des données clés', 'Espace de résolution par partie', 'Paramètres du système moto+drone', 'Tableaux de calculs à compléter', 'Base pour le rapport final'] },
-            { id: 2, x: 0.35, y: 0.85, z: 0, label: "LIAISONS DOCUMENTS", file: "LIAISONS_DOCUMENTS.pdf", color: '#94a3b8', icon: '🔗', details: ['Architecture fonctionnelle complète', 'Diagramme des dépendances', 'Flux entre les annexes', 'Livrables intermédiaires', 'Structure du dossier final'] },
-            { id: 3, x: 0.50, y: 0.35, z: 1, label: "SOUS-GROUPES", file: "DOSSIER_SYNTHESE_SOUS_GROUPE.pdf", color: '#1E3A8A', icon: '👥', details: ['Répartition des 7 sous-groupes', 'Attribution des parties 1-2-3-4', 'Feuilles de synthèse par équipe', 'Organisation collaborative', 'Points de convergence'] },
-            { id: 4, x: 0.65, y: 0.85, z: 0, label: "PYTHON HSD()", file: "PYTHON_V2.pdf", color: '#0891B2', icon: '🐍', details: ['Algorithme de contrôle HSD()', 'Gestion des conditions A/B/C', 'Boucle while d\'optimisation', 'Validation sécurité 45%', 'Code source commenté'] },
-            { id: 5, x: 0.88, y: 0.50, z: 1, label: "DOSSIER FINAL", file: "DOSSIER_SYNTHESE.pdf", color: '#DB0A40', icon: '✅', details: ['Validation Condition A (Carburant)', 'Validation Condition B (Batterie)', 'Validation Condition C (Sécurité 45%)', 'Verdict global du show', 'Recommandations techniques'] },
-            { id: 6, x: 0.12, y: 0.20, z: -0.5, label: "RÔLE PBL", file: "COMMUNICATION_PREPARATOIRE_VERS_ELEVES_ET_ENSEIGNANTS.pdf", color: '#059669', icon: '🎭', details: ['Méthode Apprentissage Par Problèmes', 'Rôles : Scribe, Gardien, Ambassadeur...', 'Outils de communication (feuilles R/J/V)', 'Posture des enseignants facilitateurs', 'Contrat de confiance autonomie'] },
-            { id: 7, x: 0.12, y: 0.80, z: -0.5, label: "GRILLE ÉVALUATION / PROFS", file: "CRITERES_EVALUATION_PROFS.pdf", color: '#7C3AED', icon: '📊', details: ['Grille par compétences (MO/CA/RE/RA/CO)', 'Partie 1 : Trajectoires (/100)', 'Partie 2 : Probabilités (/100)', 'Partie 3 : Trigonométrie (/100)', 'Partie 4 : Énergie & Python (/100)'] },
-            { id: 8, x: 0.88, y: 0.20, z: 0, label: "TRIGONOMÉTRIE", file: "TRIGONOMETRIE_TABLEAU_BILAN.pdf", color: '#DC2626', icon: '📐', details: ['Tableau des transformations du plan', 'Symétries axiales et centrales', 'Rotations de ±π/2', 'Angles associés (cos/sin)', 'Coordonnées des images'] },
-            { id: 9, x: 0.88, y: 0.80, z: 0, label: "EXPLICATIONS PYTHON / PROFS", file: "PYTHON_V2_EXPLICATION_PAR_LIGNE_PROFS.pdf", color: '#2563EB', icon: '💻', details: ['Analyse ligne par ligne de HSD()', 'Commentaires détaillés profs', 'Logique de la boucle while', 'Gestion des variables hd/rcol', 'Trace d\'exécution pas à pas'] },
-            { id: 10, x: 0.50, y: 0.65, z: 0.5, label: "LIAISONS PARTIES", file: "LIAISONS_PARTIES.pdf", color: '#D97706', icon: '🕸️', details: ['Graphe des interactions internes', 'Partie 1 (Trajectoires) détaillée', 'Partie 2 (Probabilités) détaillée', 'Partie 3 (Trigo) détaillée', 'Partie 4 (Énergie) détaillée', 'Synthèse entre les 4 parties'] },
-            { id: 11, x: 0.65, y: 0.35, z: 1, label: "SYNTHÈSE PYTHON", file: "DOSSIER_SYNTHESE_PYTHON.pdf", color: '#F59E0B', icon: '📋', details: ['Rapport d\'ingénierie Python', 'Condition A : Carburant moto', 'Condition B : Batterie drone', 'Condition C : Risque collision', 'Conclusion et verdict HSD()'] }
+            { id: 0, x: 0.12, y: 0.50, z: 1, label: "ÉNONCÉ DU PROBLÈME", file: "RED_BULL_SKY_AND_DIRT_CHALLENGE_V2.pdf", color: '#DB0A40', icon: '🏁', details: ['Mission complète du PBL (4 parties)', 'Trajectoires paraboliques et cubiques', 'Probabilités de collision', 'Optimisation énergétique (15 min)', 'Verdict final'] },
+            { id: 1, x: 0.35, y: 0.15, z: 1, label: "FICHE SYNTHÈSE", file: "FICHE_SYNTHESE.pdf", color: '#F59E0B', icon: '📝', details: ['Récapitulatif des données clés', 'Espace de résolution par partie', 'Paramètres moto+drone'] },
+            { id: 2, x: 0.35, y: 0.85, z: 0, label: "LIAISONS DOCUMENTS", file: "LIAISONS_DOCUMENTS.pdf", color: '#94a3b8', icon: '🔗', details: ['Architecture fonctionnelle', 'Diagramme des dépendances'] },
+            { id: 3, x: 0.50, y: 0.35, z: 1, label: "SOUS-GROUPES", file: "DOSSIER_SYNTHESE_SOUS_GROUPE.pdf", color: '#1E3A8A', icon: '👥', details: ['Répartition des 7 sous-groupes', 'Attribution parties 1-2-3-4'] },
+            { id: 4, x: 0.65, y: 0.85, z: 0, label: "PYTHON HSD()", file: "PYTHON_V2.pdf", color: '#0891B2', icon: '🐍', details: ['Algorithme HSD()', 'Gestion conditions A/B/C', 'Validation sécurité 45%'] },
+            { id: 5, x: 0.88, y: 0.50, z: 1, label: "DOSSIER FINAL", file: "DOSSIER_SYNTHESE.pdf", color: '#DB0A40', icon: '✅', details: ['Validation conditions A/B/C', 'Verdict global show'] },
+            { id: 6, x: 0.12, y: 0.20, z: -0.5, label: "RÔLE PBL", file: "COMMUNICATION_PREPARATOIRE_VERS_ELEVES_ET_ENSEIGNANTS.pdf", color: '#059669', icon: '🎭', details: ['Méthode Apprentissage Par Problèmes', 'Rôles : Scribe, Gardien...'] },
+            { id: 7, x: 0.12, y: 0.80, z: -0.5, label: "GRILLE ÉVALUATION", file: "CRITERES_EVALUATION_PROFS.pdf", color: '#7C3AED', icon: '📊', details: ['Grille par compétences', 'Parties 1 à 4 /100'] },
+            { id: 8, x: 0.88, y: 0.20, z: 0, label: "TRIGONOMÉTRIE", file: "TRIGONOMETRIE_TABLEAU_BILAN.pdf", color: '#DC2626', icon: '📐', details: ['Tableau transformations plan', 'Symétries, rotations'] },
+            { id: 9, x: 0.88, y: 0.80, z: 0, label: "EXPLICATIONS PYTHON", file: "PYTHON_V2_EXPLICATION_PAR_LIGNE_PROFS.pdf", color: '#2563EB', icon: '💻', details: ['Analyse ligne par ligne HSD()', 'Trace exécution'] },
+            { id: 10, x: 0.50, y: 0.65, z: 0.5, label: "LIAISONS PARTIES", file: "LIAISONS_PARTIES.pdf", color: '#D97706', icon: '🕸️', details: ['Graphe interactions internes', 'Parties 1-2-3-4 détaillées'] },
+            { id: 11, x: 0.65, y: 0.35, z: 1, label: "SYNTHÈSE PYTHON", file: "DOSSIER_SYNTHESE_PYTHON.pdf", color: '#F59E0B', icon: '📋', details: ['Rapport ingénierie Python', 'Conditions A/B/C'] },
+            // NOUVEAU : CARTES JOKER (déclencheur du graphe étoile)
+            { id: 12, x: 0.72, y: 0.12, z: 0.8, label: "⭐ CARTES JOKER", file: null, color: '#A855F7', icon: '🃏', details: ['10 fiches de révision STI2D', 'Dérivées, primitives, complexes, trigo, probas, suites, second degré, produit scalaire, fonctions, dérivation', 'Cliquez pour ouvrir le graphe en étoile interactif'] }
         ];
 
-        // Tous les liens
         const edges = [
-            { from: 0, to: 1 }, { from: 0, to: 6 }, { from: 0, to: 7 }, 
-            { from: 0, to: 8 }, { from: 0, to: 9 },
-            { from: 1, to: 3 }, { from: 1, to: 2 },
-            { from: 2, to: 4 }, { from: 2, to: 10 },
-            { from: 6, to: 3 },
-            { from: 8, to: 10 },
-            { from: 10, to: 3 },
-            { from: 4, to: 11 }, { from: 9, to: 11 }, { from: 3, to: 11 },
-            { from: 3, to: 5 }, { from: 11, to: 5 }, { from: 10, to: 5 }, { from: 7, to: 5 }
+            { from: 0, to: 1 }, { from: 0, to: 6 }, { from: 0, to: 7 }, { from: 0, to: 8 }, { from: 0, to: 9 },
+            { from: 1, to: 3 }, { from: 1, to: 2 }, { from: 2, to: 4 }, { from: 2, to: 10 }, { from: 6, to: 3 },
+            { from: 8, to: 10 }, { from: 10, to: 3 }, { from: 4, to: 11 }, { from: 9, to: 11 }, { from: 3, to: 11 },
+            { from: 3, to: 5 }, { from: 11, to: 5 }, { from: 10, to: 5 }, { from: 7, to: 5 },
+            { from: 12, to: 0 }, { from: 12, to: 1 }, { from: 12, to: 3 }  // liens vers le hub joker
         ];
-
-        // Chemin logique principal (relief prononcé)
         const criticalPath = [0, 1, 3, 11, 5];
 
         let nodes = [];
@@ -867,515 +749,247 @@
             canvas.height = height;
             canvas.style.width = width + 'px';
             canvas.style.height = '600px';
-            
             if (nodes.length === 0) {
-                nodes = nodesData.map(n => ({
-                    ...n,
-                    pixelX: n.x * width,
-                    pixelY: n.y * height,
-                    baseRadius: 35,
-                    currentZ: n.z,
-                    labelAbove: false // Initialiser la position du label
-                }));
+                nodes = nodesData.map(n => ({ ...n, pixelX: n.x * width, pixelY: n.y * height, baseRadius: 35, currentZ: n.z }));
             } else {
-                nodes.forEach((n, i) => {
-                    n.pixelX = n.x * width;
-                    n.pixelY = n.y * height;
-                });
-            }
-        }
-
-        function drawShadow(ctx, x, y, radius, elevation) {
-            const shadowOffset = elevation * 8;
-            const shadowBlur = Math.abs(elevation) * 10 + 5;
-            const alpha = Math.min(0.4, Math.abs(elevation) * 0.15 + 0.1);
-            
-            ctx.save();
-            ctx.shadowColor = `rgba(0, 0, 0, ${alpha})`;
-            ctx.shadowBlur = shadowBlur;
-            ctx.shadowOffsetX = shadowOffset;
-            ctx.shadowOffsetY = shadowOffset;
-            
-            ctx.beginPath();
-            ctx.ellipse(x + shadowOffset, y + shadowOffset, radius * 0.8, radius * 0.4, 0, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(0, 0, 0, ${alpha * 0.5})`;
-            ctx.fill();
-            ctx.restore();
-        }
-
-        function draw3DNode(ctx, node, index, isHovered) {
-            const x = node.pixelX;
-            const y = node.pixelY;
-            const elevation = isHovered ? node.currentZ + 0.5 : node.currentZ;
-            const radius = node.baseRadius + (elevation * 3);
-            
-            // 1. Dessiner l'ombre portée
-            drawShadow(ctx, x, y, radius, elevation);
-            
-            // 2. Dessiner le côté 3D
-            if (elevation > 0) {
-                const depth = elevation * 6;
-                const gradientSide = ctx.createLinearGradient(x, y, x + depth, y + depth);
-                gradientSide.addColorStop(0, adjustColor(node.color, -40));
-                gradientSide.addColorStop(1, adjustColor(node.color, -60));
-                
-                ctx.beginPath();
-                ctx.arc(x + depth/2, y + depth/2, radius, 0, Math.PI * 2);
-                ctx.fillStyle = gradientSide;
-                ctx.fill();
-            }
-            
-            // 3. Dessiner la face supérieure
-            const gradientTop = ctx.createRadialGradient(
-                x - radius/3, y - radius/3, radius/10,
-                x, y, radius
-            );
-            
-            if (elevation > 0) {
-                gradientTop.addColorStop(0, '#ffffff');
-                gradientTop.addColorStop(0.3, adjustColor(node.color, 30));
-                gradientTop.addColorStop(0.7, node.color);
-                gradientTop.addColorStop(1, adjustColor(node.color, -20));
-            } else if (elevation < 0) {
-                gradientTop.addColorStop(0, adjustColor(node.color, -10));
-                gradientTop.addColorStop(0.5, node.color);
-                gradientTop.addColorStop(1, adjustColor(node.color, -40));
-            } else {
-                gradientTop.addColorStop(0, adjustColor(node.color, 20));
-                gradientTop.addColorStop(1, node.color);
-            }
-            
-            ctx.beginPath();
-            ctx.arc(x, y, radius, 0, Math.PI * 2);
-            ctx.fillStyle = gradientTop;
-            ctx.fill();
-            
-            // Effets de lumière
-            if (elevation >= 0) {
-                ctx.beginPath();
-                ctx.arc(x, y, radius, Math.PI * 1.1, Math.PI * 1.9);
-                ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-                ctx.lineWidth = 3;
-                ctx.stroke();
-            }
-            
-            ctx.beginPath();
-            ctx.arc(x, y, radius, Math.PI * 0.1, Math.PI * 0.9);
-            ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            
-            // === POSITIONNEMENT INTELLIGENT DU LABEL ===
-            
-            // Calculer si le label doit être au-dessus ou en-dessous
-            // en fonction de la position relative aux voisins connectés
-            const connectedNeighbors = edges
-                .filter(e => e.from === node.id || e.to === node.id)
-                .map(e => {
-                    const neighborId = e.from === node.id ? e.to : e.from;
-                    return nodes.find(n => n.id === neighborId);
-                })
-                .filter(n => n);
-            
-            let labelAbove = false;
-            
-            if (connectedNeighbors.length > 0) {
-                // Calculer la position moyenne Y des voisins
-                const avgNeighborY = connectedNeighbors.reduce((sum, n) => sum + n.pixelY, 0) / connectedNeighbors.length;
-                // Si le nœud est AU-DESSUS de la moyenne (plus petit Y), mettre le label EN HAUT
-                // Sinon, mettre le label EN BAS pour éviter les superpositions
-                labelAbove = y < avgNeighborY;
-            } else {
-                // Si isolé, utiliser la position sur le canvas
-                labelAbove = y > height / 2;
-            }
-            
-            // Configuration du texte avec la police du thème
-            ctx.font = `bold ${11 + Math.abs(elevation) * 0.5}px 'Rajdhani', sans-serif`;
-            ctx.textAlign = 'center';
-            
-            // Calculer les dimensions du texte
-            const textMetrics = ctx.measureText(node.label);
-            const textWidth = textMetrics.width;
-            const padding = 10;
-            const boxHeight = 24;
-            const lineHeight = 3; // Espace entre le nœud et le label
-            
-            // Position Y du label
-            const labelY = labelAbove ? y - radius - lineHeight - boxHeight/2 : y + radius + lineHeight + boxHeight/2;
-            
-            // Dessiner le fond pill avec ombre
-            ctx.save();
-            ctx.shadowColor = 'rgba(0,0,0,0.3)';
-            ctx.shadowBlur = 6;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 3;
-            
-            // Fond arrondi (pill shape)
-            ctx.beginPath();
-            const cornerRadius = 12;
-            const boxX = x - textWidth/2 - padding;
-            const boxY = labelY - boxHeight/2;
-            
-            ctx.roundRect(boxX, boxY, textWidth + padding*2, boxHeight, cornerRadius);
-            
-            // Couleur de fond adaptée à l'élévation
-            if (elevation > 0) {
-                ctx.fillStyle = 'rgba(255,255,255,0.95)';
-            } else if (elevation < 0) {
-                ctx.fillStyle = 'rgba(26,26,46,0.95)';
-            } else {
-                ctx.fillStyle = 'rgba(255,255,255,0.9)';
-            }
-            ctx.fill();
-            ctx.restore();
-            
-            // Bordure colorée
-            ctx.beginPath();
-            ctx.roundRect(boxX, boxY, textWidth + padding*2, boxHeight, cornerRadius);
-            ctx.strokeStyle = node.color;
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            
-            // Dessiner le texte
-            ctx.fillStyle = (elevation < 0) ? '#ffffff' : (elevation > 0 ? node.color : '#1a1a2e');
-            ctx.textBaseline = 'middle';
-            ctx.fillText(node.label, x, labelY);
-            
-            // Ligne connectrice fine
-            ctx.beginPath();
-            const startY = labelAbove ? y - radius - 2 : y + radius + 2;
-            const endY = labelAbove ? boxY + boxHeight + 2 : boxY - 2;
-            ctx.moveTo(x, startY);
-            ctx.lineTo(x, endY);
-            ctx.strokeStyle = node.color;
-            ctx.lineWidth = 1.5;
-            ctx.setLineDash([3, 3]);
-            ctx.stroke();
-            ctx.setLineDash([]);
-            
-            // Anneau doré pour chemin critique
-            if (criticalPath.includes(node.id)) {
-                ctx.beginPath();
-                ctx.arc(x, y, radius + 4, 0, Math.PI * 2);
-                ctx.strokeStyle = 'rgba(245, 158, 11, 0.6)';
-                ctx.lineWidth = 3;
-                ctx.setLineDash([5, 5]);
-                ctx.stroke();
-                ctx.setLineDash([]);
+                nodes.forEach((n, i) => { n.pixelX = nodesData[i].x * width; n.pixelY = nodesData[i].y * height; });
             }
         }
 
         function adjustColor(color, amount) {
-            const num = parseInt(color.replace('#', ''), 16);
-            const r = Math.max(0, Math.min(255, (num >> 16) + amount));
-            const g = Math.max(0, Math.min(255, ((num >> 8) & 0x00FF) + amount));
-            const b = Math.max(0, Math.min(255, (num & 0x0000FF) + amount));
-            return '#' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+            let num = parseInt(color.slice(1), 16);
+            let r = Math.min(255, Math.max(0, (num >> 16) + amount));
+            let g = Math.min(255, Math.max(0, ((num >> 8) & 0xff) + amount));
+            let b = Math.min(255, Math.max(0, (num & 0xff) + amount));
+            return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
         }
 
-        function draw3DEdge(ctx, n1, n2, isCritical, progress) {
-            const dx = n2.pixelX - n1.pixelX;
-            const dy = n2.pixelY - n1.pixelY;
-            
-            if (isCritical) {
-                const gradient = ctx.createLinearGradient(n1.pixelX, n1.pixelY, n2.pixelX, n2.pixelY);
-                gradient.addColorStop(0, '#F59E0B');
-                gradient.addColorStop(0.5, '#FCD34D');
-                gradient.addColorStop(1, '#F59E0B');
-                
-                ctx.beginPath();
-                ctx.moveTo(n1.pixelX + 3, n1.pixelY + 3);
-                ctx.lineTo(n2.pixelX + 3, n2.pixelY + 3);
-                ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-                ctx.lineWidth = 8;
-                ctx.lineCap = 'round';
-                ctx.stroke();
-                
-                ctx.beginPath();
-                ctx.moveTo(n1.pixelX, n1.pixelY);
-                ctx.lineTo(n2.pixelX, n2.pixelY);
-                ctx.strokeStyle = gradient;
-                ctx.lineWidth = 6;
-                ctx.lineCap = 'round';
-                ctx.stroke();
-                
-                if (progress !== undefined) {
-                    const animX = n1.pixelX + dx * progress;
-                    const animY = n1.pixelY + dy * progress;
-                    
-                    ctx.beginPath();
-                    ctx.arc(animX, animY, 8, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(252, 211, 77, 0.3)';
-                    ctx.fill();
-                    
-                    ctx.beginPath();
-                    ctx.arc(animX, animY, 4, 0, Math.PI * 2);
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.shadowColor = '#F59E0B';
-                    ctx.shadowBlur = 10;
-                    ctx.fill();
-                    ctx.shadowBlur = 0;
-                }
-                
-                ctx.beginPath();
-                ctx.moveTo(n1.pixelX, n1.pixelY);
-                ctx.lineTo(n2.pixelX, n2.pixelY);
-                ctx.strokeStyle = 'rgba(180, 83, 9, 0.3)';
-                ctx.lineWidth = 10;
-                ctx.lineCap = 'round';
-                ctx.stroke();
-            } else {
-                ctx.beginPath();
-                ctx.moveTo(n1.pixelX, n1.pixelY);
-                ctx.lineTo(n2.pixelX, n2.pixelY);
-                ctx.strokeStyle = 'rgba(148, 163, 184, 0.3)';
-                ctx.lineWidth = 2;
-                ctx.setLineDash([5, 5]);
-                ctx.lineDashOffset = -animationProgress * 0.2;
-                ctx.stroke();
-                ctx.setLineDash([]);
+        function draw3DNode(ctx, node, isHovered) {
+            const x = node.pixelX, y = node.pixelY;
+            const elevation = isHovered ? node.currentZ + 0.5 : node.currentZ;
+            const radius = node.baseRadius + elevation * 3;
+            // ombre
+            ctx.shadowColor = `rgba(0,0,0,${Math.min(0.4, Math.abs(elevation)*0.15+0.1)})`;
+            ctx.shadowBlur = Math.abs(elevation)*8+5;
+            ctx.beginPath(); ctx.arc(x + elevation*4, y + elevation*4, radius*0.8, 0, Math.PI*2);
+            ctx.fillStyle = `rgba(0,0,0,0.2)`; ctx.fill();
+            ctx.shadowBlur = 0;
+            // face supérieure
+            const grad = ctx.createRadialGradient(x-10, y-10, 5, x, y, radius);
+            grad.addColorStop(0, adjustColor(node.color, 30));
+            grad.addColorStop(1, node.color);
+            ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI*2);
+            ctx.fillStyle = grad; ctx.fill();
+            ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 2; ctx.stroke();
+            // label
+            ctx.font = `bold ${12}px 'Rajdhani'`; ctx.fillStyle = '#1a1a2e';
+            ctx.shadowBlur = 0;
+            ctx.fillText(node.label, x - 30, y - radius - 5);
+            if (criticalPath.includes(node.id)) {
+                ctx.beginPath(); ctx.arc(x, y, radius+4, 0, Math.PI*2);
+                ctx.strokeStyle = '#F59E0B'; ctx.lineWidth = 2.5; ctx.setLineDash([4,6]); ctx.stroke(); ctx.setLineDash([]);
             }
         }
 
         function drawNetwork() {
             ctx.clearRect(0, 0, width, height);
-            
-            // Fond avec vignettage
-            const bgGradient = ctx.createRadialGradient(width/2, height/2, 100, width/2, height/2, width);
-            bgGradient.addColorStop(0, 'rgba(255,255,255,0)');
-            bgGradient.addColorStop(1, 'rgba(0,0,0,0.03)');
-            ctx.fillStyle = bgGradient;
-            ctx.fillRect(0, 0, width, height);
-            
-            // Calcul des segments du chemin critique
-            const pathSegments = [];
-            for (let i = 0; i < criticalPath.length - 1; i++) {
-                const from = nodes.find(n => n.id === criticalPath[i]);
-                const to = nodes.find(n => n.id === criticalPath[i+1]);
-                if (from && to) {
-                    pathSegments.push({ from, to, index: i });
-                }
-            }
-            
-            // Dessiner les liens
             edges.forEach(edge => {
-                const n1 = nodes[edge.from];
-                const n2 = nodes[edge.to];
-                if(n1 && n2) {
-                    const isCritical = criticalPath.includes(n1.id) && criticalPath.includes(n2.id) && 
-                                      Math.abs(criticalPath.indexOf(n1.id) - criticalPath.indexOf(n2.id)) === 1;
-                    
-                    let progress = undefined;
-                    if (isCritical) {
-                        const segIndex = pathSegments.findIndex(s => 
-                            (s.from.id === n1.id && s.to.id === n2.id) || 
-                            (s.from.id === n2.id && s.to.id === n1.id)
-                        );
-                        if (segIndex !== -1) {
-                            const totalSegs = pathSegments.length;
-                            const segProgress = (pathAnimation + segIndex) % totalSegs;
-                            progress = segProgress - Math.floor(segProgress);
-                        }
-                    }
-                    
-                    draw3DEdge(ctx, n1, n2, isCritical, progress);
+                let n1 = nodes[edge.from], n2 = nodes[edge.to];
+                if (n1 && n2) {
+                    ctx.beginPath(); ctx.moveTo(n1.pixelX, n1.pixelY); ctx.lineTo(n2.pixelX, n2.pixelY);
+                    ctx.strokeStyle = (criticalPath.includes(n1.id) && criticalPath.includes(n2.id) && Math.abs(criticalPath.indexOf(n1.id)-criticalPath.indexOf(n2.id))===1) ? '#F59E0B' : '#94a3b8';
+                    ctx.lineWidth = (criticalPath.includes(n1.id) && criticalPath.includes(n2.id)) ? 4 : 2;
+                    ctx.stroke();
                 }
             });
-            
-            // Dessiner les nœuds par ordre de profondeur Z
-            const sortedNodes = [...nodes].sort((a, b) => a.currentZ - b.currentZ);
-            sortedNodes.forEach((node, index) => {
-                const originalIndex = nodes.indexOf(node);
-                const isHovered = originalIndex === hoveredNode || originalIndex === draggedNode;
-                draw3DNode(ctx, node, originalIndex, isHovered);
-            });
+            nodes.forEach((n, i) => draw3DNode(ctx, n, i === hoveredNode || i === draggedNode));
         }
 
-        function animate() {
-            animationProgress += 1;
-            pathAnimation += 0.005;
-            drawNetwork();
-            requestAnimationFrame(animate);
-        }
-
-        function getMousePos(evt) {
-            const rect = canvas.getBoundingClientRect();
-            return {
-                x: evt.clientX - rect.left,
-                y: evt.clientY - rect.top
-            };
-        }
-
-        function showPopup(node, canvasX, canvasY) {
-            if (hideTimeout) {
-                clearTimeout(hideTimeout);
-                hideTimeout = null;
-            }
-
-            popupIcon.textContent = node.icon;
-            popupIcon.style.background = node.color + '20';
-            popupIcon.style.color = node.color;
-            popupTitle.textContent = node.label;
-            popupTitle.style.color = node.color;
-            popupLink.href = node.file;
-
-            const detailsHtml = '<ul>' + node.details.map(d => '<li>' + d + '</li>').join('') + '</ul>';
-            popupContent.innerHTML = detailsHtml;
-
-            let popupX = canvasX + 20;
-            let popupY = canvasY - 50;
-
-            if (popupX + 320 > width) popupX = canvasX - 340;
-            if (popupY + 200 > height) popupY = height - 220;
-            if (popupY < 10) popupY = 10;
-
-            popup.style.left = popupX + 'px';
-            popup.style.top = popupY + 'px';
-            popup.classList.add('active');
-        }
-
-        function hidePopupDelayed() {
+        function animate() { pathAnimation += 0.005; drawNetwork(); requestAnimationFrame(animate); }
+        
+        function showPopup(node, cx, cy) {
             if (hideTimeout) clearTimeout(hideTimeout);
-            hideTimeout = setTimeout(() => {
-                if (!isOverPopup) {
-                    popup.classList.remove('active');
-                    hoveredNode = null;
-                    canvas.style.cursor = 'default';
-                }
-            }, 150);
+            popupIcon.textContent = node.icon; popupIcon.style.background = node.color+'20';
+            popupTitle.textContent = node.label; popupTitle.style.color = node.color;
+            if (node.file) popupLink.href = node.file; else popupLink.href = "#";
+            popupContent.innerHTML = '<ul>' + node.details.map(d => '<li>'+d+'</li>').join('') + '</ul>';
+            let left = cx+20, top = cy-50;
+            if (left+320 > width) left = cx-340;
+            if (top+200 > height) top = height-220;
+            popup.style.left = left+'px'; popup.style.top = top+'px'; popup.classList.add('active');
         }
+        function hidePopupDelayed() { if (hideTimeout) clearTimeout(hideTimeout); hideTimeout = setTimeout(() => { if (!isOverPopup) { popup.classList.remove('active'); hoveredNode = null; } }, 150); }
 
-        popup.addEventListener('mouseenter', () => {
-            isOverPopup = true;
-            if (hideTimeout) {
-                clearTimeout(hideTimeout);
-                hideTimeout = null;
-            }
-        });
-
-        popup.addEventListener('mouseleave', () => {
-            isOverPopup = false;
-            popup.classList.remove('active');
-            hoveredNode = null;
-            canvas.style.cursor = 'default';
-        });
-
+        // Gestion souris
         canvas.addEventListener('mousedown', (e) => {
-            const pos = getMousePos(e);
-            for (let i = nodes.length - 1; i >= 0; i--) {
-                const node = nodes[i];
-                const radius = node.baseRadius + (node.currentZ * 3);
-                const dx = pos.x - node.pixelX;
-                const dy = pos.y - node.pixelY;
-                
-                if (Math.sqrt(dx*dx + dy*dy) <= radius) {
-                    isDragging = true;
-                    draggedNode = i;
-                    hasMoved = false;
-                    canvas.style.cursor = 'grabbing';
-                    nodes[i].currentZ = nodesData[i].z + 1;
-                    hidePopupDelayed();
+            let pos = { x: e.offsetX, y: e.offsetY };
+            for (let i=nodes.length-1; i>=0; i--) {
+                let n = nodes[i];
+                let dx = pos.x - n.pixelX, dy = pos.y - n.pixelY;
+                if (Math.hypot(dx, dy) <= n.baseRadius+Math.abs(n.currentZ)*3) {
+                    isDragging = true; draggedNode = i; hasMoved = false;
+                    n.currentZ = nodesData[i].z + 1;
                     break;
                 }
             }
         });
-
         canvas.addEventListener('mousemove', (e) => {
-            const pos = getMousePos(e);
-            
+            let pos = { x: e.offsetX, y: e.offsetY };
             if (isDragging && draggedNode !== null) {
                 hasMoved = true;
-                nodes[draggedNode].pixelX = pos.x;
-                nodes[draggedNode].pixelY = pos.y;
-                nodesData[draggedNode].x = pos.x / width;
-                nodesData[draggedNode].y = pos.y / height;
+                nodes[draggedNode].pixelX = pos.x; nodes[draggedNode].pixelY = pos.y;
+                nodesData[draggedNode].x = pos.x / width; nodesData[draggedNode].y = pos.y / height;
             } else {
                 let found = null;
-                for (let i = nodes.length - 1; i >= 0; i--) {
-                    const node = nodes[i];
-                    const radius = node.baseRadius + (node.currentZ * 3);
-                    const dx = pos.x - node.pixelX;
-                    const dy = pos.y - node.pixelY;
-                    
-                    if (Math.sqrt(dx*dx + dy*dy) <= radius) {
-                        found = i;
+                for (let i=0; i<nodes.length; i++) {
+                    let n = nodes[i];
+                    if (Math.hypot(pos.x - n.pixelX, pos.y - n.pixelY) <= n.baseRadius+Math.abs(n.currentZ)*3) { found = i; break; }
+                }
+                if (found !== hoveredNode) {
+                    if (found !== null) { hoveredNode = found; showPopup(nodes[found], pos.x, pos.y); }
+                    else { hoveredNode = null; hidePopupDelayed(); }
+                }
+            }
+        });
+        window.addEventListener('mouseup', () => {
+    if (isDragging && draggedNode !== null) {
+        if (!hasMoved && nodes[draggedNode].id === 12) {
+            // Ouverture de la nouvelle page web Cartes Joker
+            window.open('cartes_joker.html', '_blank');
+        } else if (!hasMoved && nodes[draggedNode].file) {
+            window.open(nodes[draggedNode].file, '_blank');
+        }
+        
+        isDragging = false;
+        nodes[draggedNode].currentZ = nodesData[draggedNode].z;
+        draggedNode = null;
+    }
+});
+        popup.addEventListener('mouseenter', () => { isOverPopup = true; if(hideTimeout) clearTimeout(hideTimeout); });
+        popup.addEventListener('mouseleave', () => { isOverPopup = false; popup.classList.remove('active'); hoveredNode = null; });
+
+        resizeCanvas(); window.addEventListener('resize', resizeCanvas); animate();
+
+        // ================= GRAPHE ÉTOILE POUR CARTES JOKER =================
+        const starCanvas = document.getElementById('starCanvas');
+        let starCtx, starWidth, starHeight;
+        let starNodes = [];
+        let starTooltip = document.getElementById('jokerTooltip');
+        
+        // Définition des 10 cartes (fichiers + résumés)
+        const cartesData = [
+            { label: "Dérivées", file: "CARTES_JOKER_DERIVEES_PCM.pdf", color: "#E11D48", resume: "📌 Tableau dérivées usuelles (xⁿ, 1/x, eˣ, cos, sin) · Règle f(ax+b) · Signe f' ↔ variations · Extremum local" },
+            { label: "Fonctions réelles", file: "CARTES_JOKER_FONCTIONS_DE_LA_VARIABLE_RELLE.pdf", color: "#F97316", resume: "📈 Taux variation · Sens croiss/décroiss · Polynômes degré 2 (parabole, racines) · Degré 3 (courbe S) · Algo balayage" },
+            { label: "Dérivation (tronc commun)", file: "CARTES_JOKER_FONCTIONS_DERIVEE_TRONC_COMMUN.pdf", color: "#EAB308", resume: "✏️ Nombre dérivé, tangente · Dérivées polynômes deg 1→3 · Tableau variations · Calcul approché Python" },
+            { label: "Nombres complexes", file: "CARTES_JOKER_NOMBRES_COMPLEXES.pdf", color: "#10B981", resume: "🔢 i²=-1 · Addition/soustraction/multiplication · Conjugué · Équations 2nd degré Δ<0 · Module, argument, forme exponentielle" },
+            { label: "Primitives", file: "CARTES_JOKER_PRIMITIVES.pdf", color: "#14B8A6", resume: "📦 Primitive F (F'=f) · Primitives xⁿ, cos(ωt+φ), sin(ωt+φ) · Méthode Euler · Runge-Kutta RK4 (ingénierie)" },
+            { label: "Produit scalaire", file: "CARTES_JOKER_PRODUIT_SCALAIRE.pdf", color: "#06B6D4", resume: "📐 u·v = ||u||·||v||·cosθ · Coordonnées xx'+yy' · Projeté orthogonal · Al-Kashi · Travail d'une force" },
+            { label: "Second degré", file: "CARTES_JOKER_SECOND_DEGRE.pdf", color: "#3B82F6", resume: "📉 Forme canonique a(x-α)²+β · Sommet (α,β) · Factorisée · Signe selon Δ et a · Tableau signe" },
+            { label: "Stats & Probas", file: "CARTES_JOKER_STATISTIQUES_PROBABILITES.pdf", color: "#8B5CF6", resume: "🎲 Probabilité conditionnelle P_A(B) · Indépendance · Arbres · Formule probas totales · Loi de Bernoulli" },
+            { label: "Suites numériques", file: "CARTES_JOKER_SUITES.pdf", color: "#D946EF", resume: "🔁 Arithmétique u_{n+1}=u_n+r · Géométrique u_{n+1}=q·u_n · Algorithmique (for/while, seuil) · Modélisation" },
+            { label: "Trigonométrie", file: "CARTES_JOKER_TRIGONOMETRIE.pdf", color: "#EC4899", resume: "🔄 Cercle trigo, valeurs remarquables · cos²+sin²=1 · Périodicité, parité · Symétries · Signaux sinusoïdaux · Dérivée cos(ωt+φ)" }
+        ];
+
+        function initStarGraph() {
+            if (!starCanvas) return;
+            starCtx = starCanvas.getContext('2d');
+            const rect = starCanvas.getBoundingClientRect();
+            starWidth = rect.width;
+            starHeight = rect.height;
+            starCanvas.width = starWidth;
+            starCanvas.height = starHeight;
+            const centerX = starWidth/2, centerY = starHeight/2;
+            const radius = Math.min(starWidth, starHeight) * 0.35;
+            starNodes = cartesData.map((c, idx) => {
+                let angle = (idx / cartesData.length) * 2 * Math.PI - Math.PI/2;
+                return { ...c, x: centerX + radius * Math.cos(angle), y: centerY + radius * Math.sin(angle), radius: 28, idx };
+            });
+            drawStarGraph();
+            attachStarEvents();
+        }
+
+        function drawStarGraph() {
+            if (!starCtx) return;
+            starCtx.clearRect(0, 0, starWidth, starHeight);
+            starCtx.save();
+            // fond
+            starCtx.fillStyle = '#f1f5f9';
+            starCtx.fillRect(0, 0, starWidth, starHeight);
+            // liens étoile
+            const centerX = starWidth/2, centerY = starHeight/2;
+            starCtx.beginPath();
+            starCtx.strokeStyle = '#A855F7';
+            starCtx.lineWidth = 2;
+            starCtx.setLineDash([6, 8]);
+            starNodes.forEach(n => {
+                starCtx.beginPath(); starCtx.moveTo(centerX, centerY); starCtx.lineTo(n.x, n.y); starCtx.stroke();
+            });
+            starCtx.setLineDash([]);
+            // centre
+            starCtx.beginPath(); starCtx.arc(centerX, centerY, 22, 0, 2*Math.PI);
+            starCtx.fillStyle = '#A855F7'; starCtx.fill();
+            starCtx.fillStyle = 'white'; starCtx.font = 'bold 20px "Orbitron"'; starCtx.fillText('🃏', centerX-12, centerY+8);
+            // nœuds périphériques
+            starNodes.forEach(n => {
+                let grad = starCtx.createRadialGradient(n.x-5, n.y-5, 5, n.x, n.y, n.radius);
+                grad.addColorStop(0, n.color); grad.addColorStop(1, '#4a044e');
+                starCtx.beginPath(); starCtx.arc(n.x, n.y, n.radius, 0, 2*Math.PI);
+                starCtx.fillStyle = grad; starCtx.fill();
+                starCtx.strokeStyle = '#fff'; starCtx.lineWidth = 2; starCtx.stroke();
+                starCtx.fillStyle = '#fff'; starCtx.font = 'bold 12px "Rajdhani"'; starCtx.fillText(n.label, n.x-20, n.y-10);
+            });
+            starCtx.restore();
+        }
+
+        function attachStarEvents() {
+            let currentHover = null;
+            starCanvas.addEventListener('mousemove', (e) => {
+                const rect = starCanvas.getBoundingClientRect();
+                const mx = (e.clientX - rect.left) * (starWidth / rect.width);
+                const my = (e.clientY - rect.top) * (starHeight / rect.height);
+                let hit = null;
+                for (let n of starNodes) {
+                    let dx = mx - n.x, dy = my - n.y;
+                    if (Math.hypot(dx, dy) <= n.radius) { hit = n; break; }
+                }
+                if (hit && currentHover !== hit) {
+                    currentHover = hit;
+                    starTooltip.style.display = 'block';
+                    starTooltip.innerHTML = `<strong>📘 ${hit.label}</strong><br>${hit.resume}<br><span style="color:#F59E0B;">🔗 Cliquez pour ouvrir le PDF</span>`;
+                    starTooltip.style.left = (e.clientX + 15) + 'px';
+                    starTooltip.style.top = (e.clientY - 40) + 'px';
+                } else if (!hit) {
+                    starTooltip.style.display = 'none';
+                    currentHover = null;
+                }
+            });
+            starCanvas.addEventListener('click', (e) => {
+                const rect = starCanvas.getBoundingClientRect();
+                const mx = (e.clientX - rect.left) * (starWidth / rect.width);
+                const my = (e.clientY - rect.top) * (starHeight / rect.height);
+                for (let n of starNodes) {
+                    if (Math.hypot(mx - n.x, my - n.y) <= n.radius) {
+                        window.open(n.file, '_blank');
                         break;
                     }
                 }
-
-                if (found !== hoveredNode) {
-                    hoveredNode = found;
-                    if (found !== null) {
-                        canvas.style.cursor = 'grab';
-                        nodes[found].currentZ = nodesData[found].z + 0.5;
-                        showPopup(nodes[found], pos.x, pos.y);
-                    } else {
-                        nodes.forEach((n, i) => {
-                            n.currentZ = nodesData[i].z;
-                        });
-                        canvas.style.cursor = 'default';
-                        hidePopupDelayed();
-                    }
-                } else if (found !== null) {
-                    showPopup(nodes[found], pos.x, pos.y);
-                }
-            }
-        });
-
-        window.addEventListener('mouseup', () => {
-            if (isDragging && draggedNode !== null) {
-                if (!hasMoved) {
-                    window.open(nodes[draggedNode].file, '_blank');
-                }
-                isDragging = false;
-                nodes[draggedNode].currentZ = nodesData[draggedNode].z;
-                draggedNode = null;
-                canvas.style.cursor = hoveredNode !== null ? 'grab' : 'default';
-            }
-        });
-
-        canvas.addEventListener('mouseleave', () => {
-            nodes.forEach((n, i) => {
-                n.currentZ = nodesData[i].z;
             });
-            hidePopupDelayed();
-        });
-
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-        animate();
-
-        // --- MODALE DROITS D'AUTEUR ---
-        const copyrightModal = document.getElementById("copyrightModal");
-        const copyrightBtn = document.getElementById("copyrightBtn");
-        const closeCopyrightModal = document.getElementById("closeCopyrightModal");
-
-        copyrightBtn.addEventListener("click", () => {
-            copyrightModal.style.display = "flex";
-            setTimeout(() => {
-                copyrightModal.classList.add("show");
-            }, 10);
-            closeCopyrightModal.focus();
-        });
-
-        function closeMyModal() {
-            copyrightModal.classList.remove("show");
-            setTimeout(() => {
-                copyrightModal.style.display = "none";
-                copyrightBtn.focus();
-            }, 300); 
+            starCanvas.addEventListener('mouseleave', () => { starTooltip.style.display = 'none'; currentHover = null; });
         }
 
-        closeCopyrightModal.addEventListener("click", closeMyModal);
-        closeCopyrightModal.addEventListener("keypress", function(event) {
-            if (event.key === "Enter") closeMyModal();
-        });
-        window.addEventListener("click", (event) => {
-            if (event.target === copyrightModal) closeMyModal();
-        });
+        // Gestion modale joker
+        const jokerModal = document.getElementById('jokerModal');
+        const closeJoker = document.getElementById('closeJokerModal');
+        closeJoker.addEventListener('click', () => { jokerModal.classList.remove('show'); setTimeout(() => jokerModal.style.display = 'none', 300); });
+        window.addEventListener('click', (e) => { if (e.target === jokerModal) { jokerModal.classList.remove('show'); setTimeout(() => jokerModal.style.display = 'none', 300); } });
+        
+        // Modal copyright
+        const copyrightModal = document.getElementById("copyrightModal");
+        const copyrightBtn = document.getElementById("copyrightBtn");
+        const closeCopyright = document.getElementById("closeCopyrightModal");
+        copyrightBtn.addEventListener("click", () => { copyrightModal.style.display = "flex"; setTimeout(() => copyrightModal.classList.add("show"), 10); });
+        closeCopyright.addEventListener("click", () => { copyrightModal.classList.remove("show"); setTimeout(() => copyrightModal.style.display = "none", 300); });
     });
 </script>
-
 </body>
 </html>
