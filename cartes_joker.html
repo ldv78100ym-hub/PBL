@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartes Joker - Graphe Stellaire</title>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --rb-red: #DB0A40;
+            --rb-dark: #1a1a2e;
+            --rb-blue: #1E3A8A;
+            --rb-gold: #F59E0B;
+            --bg-primary: #f8fafc;
+            --text-color: #0A0A0A;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* === ACCESSIBILITÉ DYS / MALVOYANTS === */
+        body.accessible-mode {
+            font-family: 'Comic Sans MS', 'Arial', sans-serif;
+            font-size: 1.2rem; 
+            letter-spacing: 0.08em; 
+            word-spacing: 0.2em;
+            background: #ffffff;
+            color: #000000;
+        }
+
+        .accessible-mode h1, .accessible-mode h2, .accessible-mode .modal-box h2, .accessible-mode .modal-box h3, .accessible-mode .modal-box h4 {
+            font-family: 'Comic Sans MS', 'Arial', sans-serif;
+            letter-spacing: normal;
+        }
+        
+        .accessible-mode .canvas-container {
+            background: #ffffff;
+            border: 4px solid #000000;
+        }
+
+        .bg-animation {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(219, 10, 64, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(30, 58, 138, 0.06) 0%, transparent 50%),
+                linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+        }
+
+        header {
+            position: relative; padding: 60px 20px; text-align: center;
+            background: linear-gradient(135deg, rgba(219, 10, 64, 0.95) 0%, rgba(180, 20, 60, 0.98) 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 50% 100%, 0 90%);
+            margin-bottom: 40px; box-shadow: 0 10px 40px rgba(219, 10, 64, 0.3);
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif; font-size: 3rem; font-weight: 900;
+            text-transform: uppercase; letter-spacing: 4px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); color: white;
+            margin-bottom: 15px;
+        }
+
+        header p {
+            font-size: 1.3rem; font-weight: 500; letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .main-container { max-width: 1200px; margin: 0 auto; padding: 0 20px 60px; }
+
+        .canvas-container {
+            position: relative;
+            background: linear-gradient(145deg, #e6e9f0 0%, #eef1f5 100%);
+            border-radius: 15px; padding: 20px; border: 2px solid var(--text-color);
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.8), 0 10px 30px rgba(0,0,0,0.15);
+            min-height: 600px; overflow: hidden;
+        }
+
+        #starCanvas { width: 100%; height: 600px !important; display: block; cursor: pointer; }
+
+        /* === BOUTONS FLOTTANTS === */
+        .a11y-btn {
+            position: fixed; bottom: 20px; left: 20px; background: var(--rb-blue); color: white;
+            border: 2px solid #ffffff; padding: 12px 24px; border-radius: 30px;
+            font-family: inherit; font-size: 1.1rem; font-weight: 700; cursor: pointer; z-index: 900;
+        }
+
+        .copyright-btn {
+            position: fixed; bottom: 20px; right: 20px; background: var(--rb-dark); color: white;
+            border: 2px solid var(--rb-gold); padding: 12px 24px; border-radius: 30px;
+            font-family: inherit; font-size: 1.1rem; font-weight: 700; cursor: pointer; z-index: 900;
+        }
+
+        /* === MODALES (Charte index 23) === */
+        .modal-overlay {
+            display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(10, 10, 10, 0.85); justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        
+        .modal-overlay.show { opacity: 1; }
+
+        .modal-box {
+            background: linear-gradient(145deg, var(--rb-dark) 0%, #0f0f1c 100%);
+            padding: 35px; border-radius: 15px; width: 90%; max-width: 750px;
+            border: 2px solid var(--rb-gold);
+            position: relative; max-height: 90vh; overflow-y: auto;
+            color: #f1f5f9;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), inset 0 2px 10px rgba(255,255,255,0.05);
+            transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal-overlay.show .modal-box { transform: scale(1); }
+
+        .close-modal {
+            position: absolute; top: 15px; right: 20px; color: var(--rb-gold);
+            font-size: 38px; font-weight: bold; cursor: pointer; line-height: 1;
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        .close-modal:hover { color: var(--rb-red); transform: rotate(90deg); }
+
+        .modal-box h2 {
+            font-family: 'Orbitron', sans-serif; color: var(--rb-gold);
+            margin-bottom: 20px; border-bottom: 1px solid rgba(245, 158, 11, 0.3); padding-bottom: 10px;
+        }
+
+        .modal-box p { margin-bottom: 15px; font-size: 1.1rem; color: rgba(255,255,255,0.9); }
+        .modal-box h3, .modal-box h4 { color: white; margin: 20px 0 10px; font-family: 'Orbitron', sans-serif; }
+        .modal-box ul { list-style-type: none; padding-left: 10px; }
+        .modal-box li { position: relative; padding-left: 30px; margin-bottom: 12px; color: #f1f5f9; font-size: 1.15rem; }
+        .modal-box li::before { content: '✓'; position: absolute; left: 0; color: var(--rb-gold); font-weight: bold; font-size: 1.4rem; }
+
+        .open-pdf-btn {
+            display: block; width: 100%; margin-top: 30px; background: var(--rb-red); color: white; 
+            border: 2px solid var(--rb-gold); padding: 15px; font-size: 1.3rem; 
+            font-family: 'Orbitron', sans-serif; font-weight: bold; border-radius: 8px; 
+            cursor: pointer; text-transform: uppercase; transition: all 0.3s ease;
+        }
+
+        .open-pdf-btn:hover { background: #b40431; box-shadow: 0 5px 15px rgba(219, 10, 64, 0.5); }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    
+    <header>
+        <h1>⭐ CARTES JOKER</h1>
+        <p>Graphe Stellaire des fiches de révision</p>
+    </header>
+
+    <div class="main-container">
+        <div class="canvas-container" id="canvasContainer">
+            <canvas id="starCanvas" width="1000" height="600" aria-label="Graphe stellaire des cartes joker"></canvas>
+        </div>
+        <p style="text-align: center; margin-top: 15px; font-weight: bold; font-size: 1.2rem;">🖱️ Survolez un satellite pour ouvrir le détail de la fiche.</p>
+    </div>
+
+    <button id="a11yBtn" class="a11y-btn" tabindex="0">👁️ Accessibilité Dys/Malvoyants</button>
+    <button id="copyrightBtn" class="copyright-btn" tabindex="0">⚖️ Droits d'auteur</button>
+
+    <div id="nodeContentModal" class="modal-overlay">
+        <div class="modal-box" id="nodeModalBox">
+            <span class="close-modal" id="closeNodeModal" tabindex="0">&times;</span>
+            <h2 id="nodeModalTitle"></h2>
+            <div id="nodeModalBody"></div>
+            <button id="btnOpenPdf" class="open-pdf-btn">Ouvrir la fiche PDF</button>
+        </div>
+    </div>
+
+    <div id="copyrightModal" class="modal-overlay">
+        <div class="modal-box">
+            <span class="close-modal" id="closeCopyrightModal" tabindex="0">&times;</span>
+            <h2>⚖️ Droits d'Auteur et Licence d'Utilisation</h2>
+            <p><strong>Auteur :</strong> Yann Merdy (<a href="mailto:yann.merdy@gmail.com" style="color: var(--rb-gold);">yann.merdy@gmail.com</a>) - Mars 2026</p>
+            <h3>Licence d'Utilisation Non Commerciale</h3>
+            <p>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ('Cartes Joker') sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
+            <h4>Conditions :</h4>
+            <ul>
+                <li><strong>Utilisation Privée et Éducative (Autorisée) :</strong> Vous êtes autorisé.e à utiliser, copier, modifier et distribuer ce code et son contenu uniquement à des fins personnelles, éducatives et non lucratives.</li>
+                <li><strong>Utilisation Commerciale (Interdite) :</strong> Toute utilisation, distribution, intégration ou reproduction du code ou du contenu (total ou partiel) à des fins commerciales, lucratives ou professionnelles est strictement interdite sans un accord écrit préalable et explicite de l'auteur.</li>
+                <li><strong>Attribution :</strong> Toute reproduction ou modification doit conserver la mention de l'auteur originale (Yann Merdy) et la présente notice de droits d'auteur.</li>
+            </ul>
+            <p style="margin-top: 20px;">Pour toute demande d'utilisation commerciale ou de licence spécifique, veuillez contacter l'auteur à l'adresse indiquée ci-dessus.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            // === ACCESSIBILITÉ ===
+            const a11yBtn = document.getElementById("a11yBtn");
+            let isAccessibleMode = false;
+            a11yBtn.addEventListener("click", () => {
+                isAccessibleMode = !isAccessibleMode;
+                document.body.classList.toggle("accessible-mode");
+                a11yBtn.setAttribute("aria-pressed", isAccessibleMode);
+                a11yBtn.textContent = isAccessibleMode ? "👁️ Désactiver Accessibilité" : "👁️ Accessibilité Dys/Malvoyants";
+            });
+
+            // === GESTION MODALES (Animations Fluides) ===
+            const copyrightModal = document.getElementById("copyrightModal");
+            const copyrightBtn = document.getElementById("copyrightBtn");
+            const closeCopyright = document.getElementById("closeCopyrightModal");
+            const nodeContentModal = document.getElementById("nodeContentModal");
+            const closeNodeModal = document.getElementById("closeNodeModal");
+
+            function openModal(modal) {
+                modal.style.display = "flex";
+                setTimeout(() => modal.classList.add("show"), 10);
+            }
+
+            function closeModal(modal) {
+                modal.classList.remove("show");
+                setTimeout(() => modal.style.display = "none", 300);
+            }
+            
+            copyrightBtn.addEventListener("click", () => openModal(copyrightModal));
+            closeCopyright.addEventListener("click", () => closeModal(copyrightModal));
+            closeNodeModal.addEventListener("click", () => closeModal(nodeContentModal));
+
+            window.addEventListener("click", (e) => { 
+                if (e.target === copyrightModal) closeModal(copyrightModal); 
+                if (e.target === nodeContentModal) closeModal(nodeContentModal); 
+            });
+
+            // === GRAPHE STELLAIRE & DONNEES ===
+            const starCanvas = document.getElementById('starCanvas');
+            const starCtx = starCanvas.getContext('2d');
+            const container = document.getElementById('canvasContainer');
+            
+            let starWidth = container.clientWidth - 40;
+            let starHeight = 600;
+            starCanvas.width = starWidth;
+            starCanvas.height = starHeight;
+
+            const starNodesData = [
+                { 
+                    label: "Nombres Complexes", 
+                    file: "CARTES_JOKER_COMPLEXES.pdf", 
+                    color: "#F59E0B", 
+                    resume: `<ul>
+                        <li><strong>Forme algébrique :</strong> Définition \\( z = a + ib \\) et calculs dans \\( \\mathbb{C} \\) (addition, multiplication, conjugué).</li>
+                        <li><strong>Représentation géométrique :</strong> Affixe d'un point, calcul du module \\( |z| = \\sqrt{a^2+b^2} \\) et de l'argument.</li>
+                        <li><strong>Forme trigonométrique :</strong> Écriture \\( z = r(\\cos \\theta + i \\sin \\theta) \\).</li>
+                        <li><strong>Forme exponentielle :</strong> Notation de rang \\( z = r e^{i\\theta} \\).</li>
+                        <li><strong>Propriétés :</strong> Règles de calcul opératoires avec la notation exponentielle.</li>
+                    </ul>` 
+                },
+                { 
+                    label: "Dérivation", 
+                    file: "CARTES_JOKER_DERIVATION.pdf", 
+                    color: "#10B981", 
+                    resume: `<ul>
+                        <li><strong>Nombre dérivé :</strong> Taux de variation et calcul du coefficient directeur de la tangente \\( f'(a) \\).</li>
+                        <li><strong>Équation de tangente :</strong> Formule \\( y = f'(a)(x-a) + f(a) \\).</li>
+                        <li><strong>Fonctions usuelles :</strong> Tableau récapitulatif des dérivées (puissances, inverse, racine, cosinus, sinus).</li>
+                        <li><strong>Règles opératoires :</strong> Dérivée d'une somme, d'un produit \\( uv \\), d'un quotient \\( \\frac{u}{v} \\) et d'une fonction composée.</li>
+                        <li><strong>Variations :</strong> Lien direct entre le signe de la dérivée \\( f'(x) \\) et le sens de variation de la fonction \\( f \\).</li>
+                        <li><strong>Extremums :</strong> Identification par tangente horizontale.</li>
+                    </ul>` 
+                },                { 
+                    label: "Étude de Fonctions", 
+                    file: "CARTES_JOKER_FONCTIONS.pdf", 
+                    color: "#F59E0B", 
+                    resume: `<ul>
+                        <li><strong>Généralités :</strong> Ensemble de définition, parité (paire/impaire) et périodicité.</li>
+                        <li><strong>Comportement asymptotique :</strong> Calcul des limites aux bornes et détermination des asymptotes (horizontales, verticales, obliques).</li>
+                        <li><strong>Continuité :</strong> Propriétés fondamentales et application du Théorème des Valeurs Intermédiaires (TVI).</li>
+                        <li><strong>Courbes :</strong> Représentation graphique des paraboles et des fonctions du 3ème degré.</li>
+                        <li><strong>Convexité :</strong> Étude de la concavité, convexité et points d'inflexion.</li>
+                    </ul>` 
+                },
+                { 
+                    label: "Primitives", 
+                    file: "CARTES_JOKER_PRIMITIVES.pdf", 
+                    color: "#1E3A8A", 
+                    resume: `<ul>
+                        <li><strong>Notion de base :</strong> Définition d'une primitive.</li>
+                        <li><strong>Primitives d’un polynôme de degré 1 à 3.</li>
+                        <li><strong>Méthode d'Euler :</strong> Résolution numérique par approximation affine avec un pas \\( h \\).</li>
+                        <li><strong>Méthode RK4 :</strong> Algorithme de Runge-Kutta 4 pour affiner la précision de la courbe intégrale.</li>
+                        <li><strong>Algorithmique Python :</strong> Implémentation informatique via les boucles <code>while</code> (Euler) et <code>for</code> (RK4).</li>
+                    </ul>` 
+                },
+                { 
+                    label: "Produit scalaire", 
+                    file: "CARTES_JOKER_PRODUIT_SCALAIRE.pdf", 
+                    color: "#06B6D4", 
+                    resume: `<ul>
+                        <li><strong>Définition géométrique :</strong> Formule impliquant le cosinus \\( \\vec{u} \\cdot \\vec{v} = \\|\\vec{u}\\| \\|\\vec{v}\\| \\cos(\\vec{u},\\vec{v}) \\).</li>
+                        <li><strong>Expression analytique :</strong> Calcul en repère orthonormé \\( xx' + yy' \\).</li>
+                        <li><strong>Projeté orthogonal :</strong> Simplification du calcul par projection d'un vecteur sur la droite portée par l'autre.</li>
+                        <li><strong>Propriétés :</strong> Symétrie, bilinéarité et critère d'orthogonalité (\\( \\vec{u} \\cdot \\vec{v} = 0 \\)).</li>
+                        <li><strong>Application Physique :</strong> Calcul du travail d'une force \\( W = \\vec{F} \\cdot \\vec{AB} \\) (détermination de la nature motrice ou résistante).</li>
+                    </ul>` 
+                },
+                { 
+                    label: "Second degré", 
+                    file: "CARTES_JOKER_SECOND_DEGRE.pdf", 
+                    color: "#3B82F6", 
+                    resume: `<ul>
+                        <li><strong>Les trois écritures :</strong> Forme développée (\\( ax^2+bx+c \\)), Forme canonique (\\( a(x-\\alpha)^2+\\beta \\)) et Forme factorisée (\\( a(x-x_1)(x-x_2) \\)).</li>
+			<li><strong>Interprétation des coefficients</strong> : \\(a\\), \\(b\\) et \\(c\\) dans \\( ax^2+bx+c \\), \\(\\alpha \\) et \\(\\beta \\) dans \\( a(x-\\alpha)^2+\\beta \\) et \\(x_1\\) et \\(x_2\\) dans \\( a(x-x_1)(x-x_2) \\)
+                        <li><strong>Le sommet :</strong> Déduction directe des coordonnées \\( S(\\alpha, \\beta) \\) depuis la forme canonique.</li>
+                        <li><strong>Racines : Résolution d'équation du second degré selon la forme de départ.</li>
+                        <li><strong>Tableau de signes :</strong> Application de la règle du signe de \\( a \\) à l'extérieur des racines.</li>
+                        <li><strong>Variations :</strong> Construction du tableau de variations selon le signe du coefficient directeur \\( a \\).</li>
+                    </ul>` 
+                },
+                { 
+                    label: "Stats & Probas", 
+                    file: "CARTES_JOKER_STATISTIQUES_PROBABILITES.pdf", 
+                    color: "#8B5CF6", 
+                    resume: `<ul>
+                        <li><strong>Probabilités conditionnelles :</strong> Formule \\( P_A(B) = \\frac{P(A \\cap B)}{P(A)} \\) et notion d'indépendance de deux événements.</li>
+                        <li><strong>Arbres pondérés :</strong> Modélisation et application de la formule des probabilités totales.</li>
+                        <li><strong>Loi de Bernoulli :</strong> Schéma de Bernoulli, espérance et variance associées.</li>
+                        <li><strong>Variables aléatoires :</strong> Lois de probabilité discrètes, calcul de l'Espérance mathématique \\( E(X) \\), de la Variance et de l'Écart-type.</li>
+                        <li><strong>Loi des grands nombres :</strong> Évolution de la fréquence observée et fluctuation d'échantillonnage.</li>
+                    </ul>` 
+                },
+                { 
+                    label: "Suites numériques", 
+                    file: "CARTES_JOKER_SUITES.pdf", 
+                    color: "#D946EF", 
+                    resume: `<ul>
+                        <li><strong>Génération :</strong> Suites définies par une formule explicite \\( u_n = f(n) \\) ou par une relation de récurrence \\( u_{n+1} = f(u_n) \\).</li>
+                        <li><strong>Suites arithmétiques :</strong> Raison \\( r \\), terme général \\( u_n = u_0 + nr \\) et sens de variation.</li>
+                        <li><strong>Suites géométriques :</strong> Raison \\( q \\), terme général \\( u_n = u_0 \\times q^n \\) et sens de variation.</li>
+                        <li><strong>Comportement asymptotique :</strong> Notion de limite d'une suite et repérage graphique (croissance, décroissance, alternance).</li>
+                    </ul>` 
+                },
+                { 
+                    label: "Trigonométrie", 
+                    file: "CARTES_JOKER_TRIGONOMETRIE.pdf", 
+                    color: "#EC4899", 
+                    resume: `<ul>
+                        <li><strong>Cercle trigonométrique :</strong> Enroulement de la droite des réels et mesure principale d'un angle en radians.</li>
+                        <li><strong>Valeurs remarquables :</strong> Maîtrise des angles usuels (\\( 0, \\frac{\\pi}{6}, \\frac{\\pi}{4}, \\frac{\\pi}{3}, \\frac{\\pi}{2} \\)).</li>
+                        <li><strong>Relation fondamentale :</strong> Identité \\( \\cos^2(x) + \\sin^2(x) = 1 \\).</li>
+                        <li><strong>Fonctions circulaires :</strong> Propriétés de symétrie (parité) et de périodicité des fonctions sinus et cosinus.</li>
+                        <li><strong>Équations :</strong> Résolution des équations trigonométriques simples sur un intervalle donné.</li>
+                    </ul>` 
+                }
+            ];
+
+            let cx = starWidth / 2, cy = starHeight / 2;
+            let starNodes = [];
+            let angleStep = (Math.PI * 2) / starNodesData.length;
+            let orbitRadius = Math.min(cx, cy) - 80;
+
+            const centerNode = { x: cx, y: cy, radius: 45, color: '#1a1a2e', label: "CARTES\nJOKER" };
+
+            starNodesData.forEach((d, i) => {
+                let angle = i * angleStep - Math.PI / 2;
+                starNodes.push({
+                    ...d,
+                    x: cx + Math.cos(angle) * orbitRadius,
+                    y: cy + Math.sin(angle) * orbitRadius,
+                    radius: 35
+                });
+            });
+
+            function drawStarGraph() {
+                starCtx.clearRect(0, 0, starWidth, starHeight);
+
+                starCtx.lineWidth = 2;
+                starNodes.forEach(n => {
+                    starCtx.beginPath();
+                    starCtx.moveTo(cx, cy);
+                    starCtx.lineTo(n.x, n.y);
+                    starCtx.strokeStyle = 'rgba(0,0,0,0.15)';
+                    starCtx.stroke();
+                });
+
+                starNodes.forEach(n => {
+                    starCtx.beginPath();
+                    starCtx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+                    starCtx.fillStyle = n.color;
+                    starCtx.fill();
+                    starCtx.strokeStyle = 'white';
+                    starCtx.lineWidth = 3;
+                    starCtx.stroke();
+
+                    starCtx.font = "bold 12px 'Rajdhani'";
+                    starCtx.fillStyle = "#1a1a2e";
+                    starCtx.textAlign = "center";
+                    let words = n.label.split(' ');
+                    if (words.length > 1) {
+                        starCtx.fillText(words[0], n.x, n.y - n.radius - 16);
+                        starCtx.fillText(words.slice(1).join(' '), n.x, n.y - n.radius - 4);
+                    } else {
+                        starCtx.fillText(n.label, n.x, n.y - n.radius - 8);
+                    }
+                });
+
+                starCtx.beginPath();
+                starCtx.arc(cx, cy, centerNode.radius, 0, Math.PI * 2);
+                starCtx.fillStyle = centerNode.color;
+                starCtx.fill();
+                starCtx.strokeStyle = '#F59E0B';
+                starCtx.lineWidth = 4;
+                starCtx.stroke();
+                
+                starCtx.font = "bold 16px 'Orbitron'";
+                starCtx.fillStyle = "#ffffff";
+                starCtx.textAlign = "center";
+                starCtx.fillText("CARTES", cx, cy - 4);
+                starCtx.fillText("JOKER", cx, cy + 14);
+            }
+
+            drawStarGraph();
+
+            let lastHoveredNode = null;
+
+            // SURVOL : OUVERTURE DE LA MODALE DÉTAILLÉE
+            starCanvas.addEventListener('mousemove', (e) => {
+                if (nodeContentModal.classList.contains('show')) return;
+
+                const rect = starCanvas.getBoundingClientRect();
+                const mx = (e.clientX - rect.left) * (starWidth / rect.width);
+                const my = (e.clientY - rect.top) * (starHeight / rect.height);
+                
+                let hit = null;
+                for (let n of starNodes) {
+                    if (Math.hypot(mx - n.x, my - n.y) <= n.radius) {
+                        hit = n;
+                        break;
+                    }
+                }
+
+                if (hit) {
+                    if (hit !== lastHoveredNode) {
+                        // Peupler la modale
+                        document.getElementById('nodeModalTitle').innerText = hit.label;
+                        document.getElementById('nodeModalBody').innerHTML = hit.resume;
+                        document.getElementById('btnOpenPdf').onclick = () => window.open(hit.file, '_blank');
+                        
+                        openModal(nodeContentModal);
+                        
+                        if (window.MathJax) {
+                            MathJax.typesetPromise([document.getElementById('nodeModalBody')]).catch((err) => console.log(err));
+                        }
+                        
+                        lastHoveredNode = hit;
+                    }
+                } else {
+                    lastHoveredNode = null;
+                }
+            });
+            
+            window.addEventListener('resize', () => {
+                starWidth = container.clientWidth - 40;
+                starCanvas.width = starWidth;
+                cx = starWidth / 2;
+                starNodes.forEach((n, i) => {
+                    let angle = i * angleStep - Math.PI / 2;
+                    n.x = cx + Math.cos(angle) * orbitRadius;
+                });
+                centerNode.x = cx;
+                drawStarGraph();
+            });
+        });
+    </script>
+</body>
+</html>
