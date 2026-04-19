@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulation Numérique - Arc Mécanique</title>
+    
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #1e40af; 
+            --primary-dark: #1e3a8a; 
+            --primary-light: #3b82f6;
+            --surface: #ffffff; 
+            --text-primary: #0f172a; 
+            --bg-color: #f1f5f9;
+            --border-light: #e2e8f0; 
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: var(--text-primary);
+            margin: 0; padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .back-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: var(--primary); color: white; text-decoration: none;
+            padding: 10px 20px; border-radius: 30px; font-weight: 600; margin-bottom: 2rem;
+            transition: 0.2s;
+            box-shadow: var(--shadow-md);
+        }
+        .back-btn:hover {
+            transform: translateY(-2px);
+            background: var(--primary-dark);
+        }
+
+        .container-box {
+            background: var(--surface); border-radius: 16px; padding: 2.5rem;
+            box-shadow: var(--shadow-md); border-top: 4px solid var(--primary);
+            max-width: 900px; margin: auto;
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .tool-grid { grid-template-columns: 1fr; }
+        }
+
+        .tool-card {
+            background: #f8fafc;
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .tool-card h3 { color: var(--primary-dark); margin-top: 0; }
+        
+        .input-group { margin-bottom: 1rem; }
+        .input-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #1e293b; }
+        .input-group input[type="range"] { 
+            width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; 
+            box-sizing: border-box; cursor: pointer;
+        }
+
+        .result-box {
+            background: #eff6ff; border: 1px solid #93c5fd; padding: 1rem;
+            border-radius: 8px; text-align: center; font-size: 1.2rem; font-weight: bold;
+            color: #1e3a8a; margin-top: 1rem;
+        }
+
+        .formula-box {
+            background: #f1f5f9; border-left: 4px solid var(--primary);
+            padding: 1.5rem; margin-bottom: 1.5rem; font-size: 1.1rem; border-radius: 0 8px 8px 0;
+        }
+
+        canvas {
+            background: #ffffff; border-radius: 8px; border: 1px solid #cbd5e1;
+            width: 100%; height: auto; display: block; margin: auto;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* Modale Droits d'auteur */
+        .modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex;
+            align-items: center; justify-content: center; z-index: 9999;
+        }
+        .modal-content {
+            background: white; padding: 30px; border-radius: 12px; max-width: 600px; line-height: 1.6;
+        }
+        .hidden { display: none !important; }
+        
+        .btn-copyright {
+            background: #334155; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 2rem;
+            transition: 0.2s;
+        }
+        .btn-copyright:hover {
+            background: #1e293b;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="PROJET_ARC.html" class="back-btn" aria-label="Retour au menu principal"><i class="fas fa-arrow-left" aria-hidden="true"></i> Retour à la Constellation</a>
+
+    <div class="container-box">
+        <h2><i class="fas fa-chart-line" aria-hidden="true"></i> Simulation Numérique de l'Arc</h2>
+        <p>L'étude dynamique d'un arc mécanique repose sur la modélisation de sa courbe de force-allonge (Force Draw Curve). Cette simulation trace l'évolution de la force appliquée sur la corde en fonction de son déplacement.</p>
+
+        <div class="formula-box">
+            Modèle polynomial de la force restituée : <br><br>
+            $F(x) = k \cdot x + \dfrac{1}{2} c \cdot x^2$
+            <br><br>
+            L'énergie potentielle emmagasinée correspond à l'intégrale (l'aire sous la courbe) :<br><br>
+            $E_p = \int_{0}^{x_{max}} F(x) dx$
+        </div>
+
+        <div class="tool-grid">
+            <div class="tool-card">
+                <h3>Paramètres Mécaniques</h3>
+                
+                <div class="input-group">
+                    <label for="raideur">Raideur linéaire $k$ (N/m) : <span id="val-raideur">150</span></label>
+                    <input type="range" id="raideur" min="50" max="300" value="150" 
+                           oninput="updateSimulation()">
+                </div>
+                
+                <div class="input-group">
+                    <label for="nonlineaire">Coefficient non-linéaire $c$ (N/m²) : <span id="val-nonlineaire">100</span></label>
+                    <input type="range" id="nonlineaire" min="0" max="500" value="100" step="10"
+                           oninput="updateSimulation()">
+                </div>
+
+                <div class="input-group">
+                    <label for="allonge">Allonge maximale $x_{max}$ (m) : <span id="val-allonge">0.7</span></label>
+                    <input type="range" id="allonge" min="0.3" max="0.9" value="0.7" step="0.05"
+                           oninput="updateSimulation()">
+                </div>
+
+                <div class="result-box" id="resultat-energie" aria-live="polite">
+                    Énergie emmagasinée : $E_p \approx 45.33$ J
+                </div>
+            </div>
+
+            <div class="tool-card">
+                <h3>Courbe Force-Allonge</h3>
+                <canvas id="graphCanvas" width="400" height="300" role="img" aria-label="Graphique représentant la force en fonction de l'allonge de l'arc. L'aire sous la courbe représente l'énergie potentielle.">
+                    Votre navigateur ne supporte pas le canvas.
+                </canvas>
+            </div>
+        </div>
+
+        <button class="btn-copyright" onclick="document.getElementById('copyright-modal').classList.remove('hidden')">
+            <i class="fas fa-scale-balanced" aria-hidden="true"></i> Droits d'auteur
+        </button>
+    </div>
+
+    <div id="copyright-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-content">
+            <h3 id="modal-title" style="color: var(--primary-dark);">⚖️ Droits d'Auteur et Licence d'Utilisation</h3>
+            <p><strong>Auteur :</strong> Yann Merdy (yann.merdy@gmail.com) - Avril 2026</p>
+            <p><strong>Licence d'Utilisation Non Commerciale</strong></p>
+            <p>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ('Simulation Numérique') sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
+            <p><strong>Conditions :</strong></p>
+            <ul>
+                <li><strong>Utilisation Privée et Éducative (Autorisée) :</strong> Vous êtes autorisé.e à utiliser, copier, modifier et distribuer ce code et son contenu uniquement à des fins personnelles, éducatives et non lucratives.</li>
+                <li><strong>Utilisation Commerciale (Interdite) :</strong> Toute utilisation, distribution, intégration ou reproduction du code ou du contenu (total ou partiel) à des fins commerciales, lucratives ou professionnelles est strictement interdite sans un accord écrit préalable et explicite de l'auteur.</li>
+            </ul>
+            <p><strong>Attribution :</strong> Toute reproduction ou modification doit conserver la mention de l'auteur originale (Yann Merdy) et la présente notice de droits d'auteur.</p>
+            <p>Pour toute demande d'utilisation commerciale ou de licence spécifique, veuillez contacter l'auteur à l'adresse indiquée ci-dessus.</p>
+            <button style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 15px; width: 100%; font-weight: bold;" onclick="document.getElementById('copyright-modal').classList.add('hidden')">Fermer</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('graphCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function drawGraph(k, c, xMax) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const padding = 40;
+            const width = canvas.width - padding * 2;
+            const height = canvas.height - padding * 2;
+            
+            // Calcul du maximum pour l'échelle Y
+            const fMax = k * xMax + 0.5 * c * Math.pow(xMax, 2);
+            const scaleX = width / 1.0; // max absolu X = 1.0m
+            const scaleY = height / (Math.max(fMax, 200)); // max min Y = 200N
+
+            // Dessin de la zone colorée (Énergie = intégrale)
+            ctx.beginPath();
+            ctx.moveTo(padding, canvas.height - padding);
+            for (let x = 0; x <= xMax; x += 0.02) {
+                let f = k * x + 0.5 * c * Math.pow(x, 2);
+                ctx.lineTo(padding + x * scaleX, canvas.height - padding - f * scaleY);
+            }
+            ctx.lineTo(padding + xMax * scaleX, canvas.height - padding);
+            ctx.fillStyle = 'rgba(59, 130, 246, 0.2)'; // Utilisation de var(--primary-light) en transparence
+            ctx.fill();
+
+            // Axes
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, canvas.height - padding);
+            ctx.lineTo(canvas.width - padding + 10, canvas.height - padding);
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Trace de la fonction polynomiale
+            ctx.beginPath();
+            ctx.moveTo(padding, canvas.height - padding);
+            for (let x = 0; x <= xMax; x += 0.02) {
+                let f = k * x + 0.5 * c * Math.pow(x, 2);
+                ctx.lineTo(padding + x * scaleX, canvas.height - padding - f * scaleY);
+            }
+            ctx.strokeStyle = '#1e40af'; // var(--primary)
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Labels textuels des axes
+            ctx.fillStyle = '#0f172a';
+            ctx.font = "12px Inter";
+            ctx.fillText("Allonge (m)", canvas.width - padding - 20, canvas.height - padding + 20);
+            
+            ctx.save();
+            ctx.translate(15, canvas.height / 2 + 20);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText("Force (N)", 0, 0);
+            ctx.restore();
+            
+            // Marqueur X max
+            ctx.fillText(xMax.toFixed(2), padding + xMax * scaleX - 10, canvas.height - padding + 15);
+            // Marqueur Y max
+            ctx.fillText(Math.round(fMax), padding - 30, canvas.height - padding - fMax * scaleY + 5);
+        }
+
+        function updateSimulation() {
+            const k = parseFloat(document.getElementById('raideur').value);
+            const c = parseFloat(document.getElementById('nonlineaire').value);
+            const xMax = parseFloat(document.getElementById('allonge').value);
+
+            // Mise à jour de l'affichage des curseurs
+            document.getElementById('val-raideur').innerText = k;
+            document.getElementById('val-nonlineaire').innerText = c;
+            document.getElementById('val-allonge').innerText = xMax.toFixed(2);
+
+            // Calcul de l'énergie : intégrale de (kx + 0.5*c*x^2) dx = 0.5*k*x^2 + (1/6)*c*x^3
+            const energie = 0.5 * k * Math.pow(xMax, 2) + (1/6) * c * Math.pow(xMax, 3);
+            
+            const resultBox = document.getElementById('resultat-energie');
+            resultBox.innerHTML = `Énergie emmagasinée : $E_p \\approx ${energie.toFixed(2)}$ J`;
+            
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                window.MathJax.typesetPromise([resultBox]).catch((err) => console.log(err.message));
+            }
+
+            drawGraph(k, c, xMax);
+        }
+
+        // Initialisation au chargement de la page
+        updateSimulation();
+    </script>
+</body>
+</html>

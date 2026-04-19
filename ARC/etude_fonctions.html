@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Étude de Fonctions et Optimisation - Arc Mécanique</title>
+    
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #1e40af; 
+            --primary-dark: #1e3a8a; 
+            --primary-light: #3b82f6;
+            --surface: #ffffff; 
+            --text-primary: #0f172a; 
+            --bg-color: #f1f5f9;
+            --border-light: #e2e8f0; 
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: var(--text-primary);
+            margin: 0; padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .back-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: var(--primary); color: white; text-decoration: none;
+            padding: 10px 20px; border-radius: 30px; font-weight: 600; margin-bottom: 2rem;
+            transition: 0.2s;
+            box-shadow: var(--shadow-md);
+        }
+        .back-btn:hover {
+            transform: translateY(-2px);
+            background: var(--primary-dark);
+        }
+
+        .container-box {
+            background: var(--surface); border-radius: 16px; padding: 2.5rem;
+            box-shadow: var(--shadow-md); border-top: 4px solid var(--primary);
+            max-width: 900px; margin: auto;
+        }
+
+        .content-box {
+            background: #f8fafc;
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .content-box h3 { 
+            color: var(--primary-dark); 
+            margin-top: 0; 
+            border-bottom: 2px solid var(--border-light); 
+            padding-bottom: 0.75rem; 
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .formula-box {
+            background: #eff6ff;
+            border-left: 4px solid var(--primary-light);
+            padding: 1rem 1.5rem;
+            margin: 1rem 0;
+            font-size: 1.1rem;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .method-box {
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Styles spécifiques pour le tableau Mathématique */
+        .math-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background-color: var(--surface);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .math-table th {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .math-table td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-light);
+            color: var(--text-primary);
+        }
+
+        .math-table tr:last-child td { border-bottom: none; }
+        .math-table tr:nth-child(even) { background-color: #f8fafc; }
+
+        p, ul, li { line-height: 1.6; color: #334155; }
+        ul { padding-left: 1.5rem; }
+        li::marker { color: var(--primary-light); }
+        .method-box li::marker { color: #22c55e; }
+
+        /* Modale Droits d'auteur */
+        .modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex;
+            align-items: center; justify-content: center; z-index: 9999;
+        }
+        .modal-content {
+            background: white; padding: 30px; border-radius: 12px; max-width: 600px; line-height: 1.6;
+        }
+        .hidden { display: none !important; }
+        
+        .btn-copyright {
+            background: #334155; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 2rem;
+            transition: 0.2s;
+        }
+        .btn-copyright:hover { background: #1e293b; }
+    </style>
+</head>
+<body>
+
+    <a href="PROJET_ARC.html" class="back-btn"><i class="fas fa-arrow-left"></i> Retour à la Constellation</a>
+
+    <div class="container-box">
+        <h2><i class="fas fa-chart-area"></i> Étude de Fonctions et Optimisation</h2>
+        <p>L'optimisation du rendement d'un arc à poulies nécessite d'étudier avec précision l'évolution de la tension de la corde lors de l'armement. Les outils mathématiques de l'étude de fonctions (dérivation, extrema) prennent ici tout leur sens physique.</p>
+
+        <div class="content-box">
+            <h3><i class="fas fa-project-diagram"></i> 1. Modélisation de la tension</h3>
+            <p>La tension exercée sur la corde (Force Draw Curve) n'est pas constante. Elle augmente d'abord rapidement, atteint un sommet, puis chute grâce à la démultiplication des cames (effet let-off).</p>
+            <p>L'ingénierie modélise fréquemment cette courbe de force par une fonction polynomiale complexe (par exemple de degré 3 ou 4) en fonction de l'allonge $x$ :</p>
+            <div class="formula-box">
+                $F(x) = ax^3 + bx^2 + cx + d$
+            </div>
+            <p>Afin d'étudier les variations de cette force (trouver le pic maximum d'effort et le minimum de maintien), il est impératif de dériver la fonction $F(x)$.</p>
+        </div>
+
+        <div class="content-box">
+            <h3><i class="fas fa-table"></i> 2. Dérivées des fonctions de référence</h3>
+            <p>Pour mener à bien cette étude et dériver n'importe quel modèle mathématique de force, l'ingénieur s'appuie sur un corpus fondamental. Voici le tableau des dérivées usuelles indispensables :</p>
+            
+            <div style="overflow-x: auto;">
+                <table class="math-table">
+                    <thead>
+                        <tr>
+                            <th>Fonction $f(x)$</th>
+                            <th>Dérivée $f'(x)$</th>
+                            <th>Domaine de dérivabilité</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>$k$ (constante réelle)</td>
+                            <td>$0$</td>
+                            <td>$\mathbb{R}$</td>
+                        </tr>
+                        <tr>
+                            <td>$x$</td>
+                            <td>$1$</td>
+                            <td>$\mathbb{R}$</td>
+                        </tr>
+                        <tr>
+                            <td>$x^n$ (avec $n \in \mathbb{N}^*$)</td>
+                            <td>$n x^{n-1}$</td>
+                            <td>$\mathbb{R}$</td>
+                        </tr>
+                        <tr>
+                            <td>$\dfrac{1}{x}$</td>
+                            <td>$-\dfrac{1}{x^2}$</td>
+                            <td>$\mathbb{R}^*$</td>
+                        </tr>
+                        <tr>
+                            <td>$\sqrt{x}$</td>
+                            <td>$\dfrac{1}{2\sqrt{x}}$</td>
+                            <td>$\mathbb{R}_+^*$</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p style="margin-top: 1rem; font-size: 0.95rem;"><em>Note : Les propriétés de linéarité de la dérivation permettent ensuite d'assembler ces blocs de base, par exemple : $(u + v)' = u' + v'$ et $(ku)' = k \cdot u'$.</em></p>
+        </div>
+
+        <div class="content-box">
+            <h3><i class="fas fa-balance-scale"></i> 3. Théorème fondamental : Signe de la dérivée et Variations</h3>
+            <p>Une fois la fonction dérivée $F'(x)$ déterminée, l'analyse de son signe permet de déduire le comportement physique de l'arc. Le théorème mathématique liant le signe de la dérivée aux variations de la fonction s'énonce ainsi :</p>
+            <div class="formula-box">
+                Soit $f$ une fonction dérivable sur un intervalle $I$ :
+                <ul style="margin-top: 10px; margin-bottom: 0;">
+                    <li>Si $f'(x) > 0$ pour tout $x \in I$, alors $f$ est <strong>strictement croissante</strong> sur $I$.</li>
+                    <li>Si $f'(x) < 0$ pour tout $x \in I$, alors $f$ est <strong>strictement décroissante</strong> sur $I$.</li>
+                    <li>Si $f'(x) = 0$ pour tout $x \in I$, alors $f$ est <strong>constante</strong> sur $I$.</li>
+                </ul>
+            </div>
+            <p><strong>Application biomécanique :</strong> La phase où $F'(x) > 0$ correspond à la montée en effort musculaire. La bascule où $F'(x)$ devient négatif marque le déclenchement de la démultiplication mécanique (les poulies prennent le relais), offrant un soulagement progressif à l'archer jusqu'à l'ancrage final.</p>
+        </div>
+
+        <div class="content-box">
+            <h3><i class="fas fa-crosshairs"></i> 4. Optimisation et rendement de l'arc</h3>
+            <p>Une fois la fonction dérivée $F'(x)$ obtenue grâce au tableau ci-dessus, l'objectif industriel est de résoudre l'équation $F'(x) = 0$.</p>
+            <p>Le changement de signe positif vers négatif permet d'identifier le pic de force maximal (l'effort maximal requis par l'archer).</p>
+            <p>Une dérivée fortement positive au début du mouvement ($F'(x) \gg 0$) révèle un arc au rendement très élevé, mais qui sera perçu comme "dur" et physique à armer.</p>
+        </div>
+
+        <div class="content-box">
+            <h3><i class="fas fa-edit"></i> 5. Méthodologie et Rédaction Type : Déterminer un extremum</h3>
+            <p>Dans le cadre d'un compte rendu scientifique ou d'une évaluation, la recherche mathématique d'un pic de force (maximum) nécessite une rigueur rédactionnelle spécifique. Voici la méthode complète :</p>
+            
+            <ol style="line-height: 1.8; color: #334155; margin-bottom: 1.5rem;">
+                <li><strong>Justifier la dérivabilité :</strong> Préciser l'ensemble de définition et de dérivabilité de la fonction.</li>
+                <li><strong>Calculer la dérivée :</strong> Appliquer les formules du tableau de référence.</li>
+                <li><strong>Étudier le signe de $F'(x)$ :</strong> Résoudre l'équation $F'(x) = 0$ puis l'inéquation $F'(x) > 0$.</li>
+                <li><strong>Dresser le tableau de variations :</strong> Synthétiser le signe de la dérivée et y associer les flèches de variation de $F$.</li>
+                <li><strong>Conclure :</strong> Appliquer le théorème de l'extremum local.</li>
+            </ol>
+
+            <div class="method-box">
+                <h4 style="color: #166534; margin-top: 0; margin-bottom: 10px;"><i class="fas fa-pen-nib"></i> Rédaction Modèle</h4>
+                <em>"La fonction $F$ est dérivable sur l'intervalle $I=\dots$ en tant que fonction polynomiale. <br>
+                Pour tout $x \in I$, on a $F'(x) = \dots$<br>
+                Étude du signe :  <br> $F'(x) = 0$ équivaut à $x = x_0$. <br>
+                De plus, $F'(x) > 0$ sur l'intervalle $\dots$<br>
+                D'après le tableau de variations, la dérivée $F'$ s'annule et change de signe (de positif à négatif) en $x_0$.<br>
+                La fonction $F$ admet donc un maximum local en ce point, qui correspond au pic de force maximal de l'arc. Ce maximum vaut $F(x_0) = \dots$"</em>
+            </div>
+        </div>
+
+        <button class="btn-copyright" onclick="document.getElementById('copyright-modal').classList.remove('hidden')">
+            <i class="fas fa-scale-balanced"></i> Droits d'auteur
+        </button>
+    </div>
+
+    <div id="copyright-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 style="color: var(--primary-dark);">⚖️ Droits d'Auteur et Licence d'Utilisation</h3>
+            <p><strong>Auteur :</strong> Yann Merdy (yann.merdy@gmail.com) - Avril 2026</p>
+            <p><strong>Licence d'Utilisation Non Commerciale</strong></p>
+            <p>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ('Étude de Fonctions et Optimisation') sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
+            <p><strong>Conditions :</strong></p>
+            <ul>
+                <li><strong>Utilisation Privée et Éducative (Autorisée) :</strong> Vous êtes autorisé.e à utiliser, copier, modifier et distribuer ce code et son contenu uniquement à des fins personnelles, éducatives et non lucratives.</li>
+                <li><strong>Utilisation Commerciale (Interdite) :</strong> Toute utilisation, distribution, intégration ou reproduction du code ou du contenu (total ou partiel) à des fins commerciales, lucratives ou professionnelles est strictement interdite sans un accord écrit préalable et explicite de l'auteur.</li>
+            </ul>
+            <p><strong>Attribution :</strong> Toute reproduction ou modification doit conserver la mention de l'auteur originale (Yann Merdy) et la présente notice de droits d'auteur.</p>
+            <p>Pour toute demande d'utilisation commerciale ou de licence spécifique, veuillez contacter l'auteur à l'adresse indiquée ci-dessus.</p>
+            <button style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 15px; width: 100%; font-weight: bold;" onclick="document.getElementById('copyright-modal').classList.add('hidden')">Fermer</button>
+        </div>
+    </div>
+</body>
+</html>

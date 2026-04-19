@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Culture Technique - Arc Mécanique</title>
+    
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #1e40af; 
+            --primary-dark: #1e3a8a; 
+            --primary-light: #3b82f6;
+            --surface: #ffffff; 
+            --text-primary: #0f172a; 
+            --bg-color: #f1f5f9;
+            --border-light: #e2e8f0; 
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: var(--text-primary);
+            margin: 0; padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .back-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: var(--primary); color: white; text-decoration: none;
+            padding: 10px 20px; border-radius: 30px; font-weight: 600; margin-bottom: 2rem;
+            transition: 0.2s;
+            box-shadow: var(--shadow-md);
+        }
+        .back-btn:hover {
+            transform: translateY(-2px);
+            background: var(--primary-dark);
+        }
+
+        .container-box {
+            background: var(--surface); border-radius: 16px; padding: 2.5rem;
+            box-shadow: var(--shadow-md); border-top: 4px solid var(--primary);
+            max-width: 900px; margin: auto;
+        }
+
+        .content-box {
+            background: #f8fafc;
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .content-box h3 { 
+            color: var(--primary-dark); 
+            margin-top: 0; 
+            border-bottom: 2px solid var(--border-light); 
+            padding-bottom: 0.75rem; 
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        p, ul, li { line-height: 1.6; color: #334155; }
+        ul { padding-left: 1.5rem; }
+        li::marker { color: var(--primary-light); }
+
+        /* Modale Droits d'auteur */
+        .modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex;
+            align-items: center; justify-content: center; z-index: 9999;
+        }
+        .modal-content {
+            background: white; padding: 30px; border-radius: 12px; max-width: 600px; line-height: 1.6;
+        }
+        .hidden { display: none !important; }
+        
+        .btn-copyright {
+            background: #334155; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 2rem;
+            transition: 0.2s;
+        }
+        .btn-copyright:hover { background: #1e293b; }
+    </style>
+</head>
+<body>
+
+    <a href="PROJET_ARC.html" class="back-btn"><i class="fas fa-arrow-left"></i> Retour à la Constellation</a>
+
+    <div class="container-box">
+        <h2><i class="fas fa-book-open"></i> Culture Technique et Mécanique</h2>
+        <p>L'optimisation d'un arc mécanique s'inscrit dans une longue évolution technologique, passant de l'arme traditionnelle à un système d'ingénierie complexe exploitant la démultiplication des forces et les matériaux modernes.</p>
+
+        <div class="content-box">
+            <h3><i class="fas fa-history"></i> 1. Genèse de l'Arc à Poulies</h3>
+            <p>Contrairement aux arcs traditionnels (longbow ou recurve) dont la force de tension augmente de façon proportionnelle et linéaire à l'allonge, l'arc à poulies (inventé en 1966 par Holless Wilbur Allen) bouleverse la balistique. En intégrant un système de palans, cet arc repousse les limites humaines en termes de stockage d'énergie élastique.</p>
+        </div>
+
+        <div class="content-box">
+            <h3><i class="fas fa-cogs"></i> 2. Le profil des Cames et l'effet "Let-Off"</h3>
+            <p>L'innovation majeure réside dans l'utilisation de cames asymétriques (excentrées) à la place de simples poulies rondes. Ce système mécanique permet un effet de relâchement appelé <strong>Let-off</strong>.</p>
+            <ul>
+                <li><strong>Le pic de force :</strong> Atteint à mi-parcours de l'allonge, là où le bras de levier biomécanique du tireur est le plus efficace.</li>
+                <li><strong>Le mur (allonge maximale) :</strong> En fin d'armement, la démultiplication fait chuter la force de maintien de 60 à 90 %. Cela permet à l'archer de viser longuement, sans tremblement, tout en conservant une énergie potentielle maximale dans la structure.</li>
+            </ul>
+        </div>
+
+        <div class="content-box">
+            <h3><i class="fas fa-layer-group"></i> 3. Matériaux composites et Aéronautique</h3>
+            <p>Le rendement mécanique exceptionnel de ces arcs impose l'utilisation de matériaux ultra-résistants :</p>
+            <ul>
+                <li><strong>La poignée centrale :</strong> Généralement usinée par commande numérique (CNC) dans de l'aluminium de qualité aéronautique (ex: 7075-T6) ou forgée en fibre de carbone pour minimiser le poids et maximiser la rigidité.</li>
+                <li><strong>Les branches :</strong> Composées de fibres de verre et de carbone stratifiées. Elles doivent subir des contraintes de flexion extrêmes sans aucune déformation plastique permanente.</li>
+                <li><strong>Le câblage :</strong> Utilisation de fibres synthétiques polymères (Dyneema, Vectran) qui sont insensibles à l'élongation sous haute tension.</li>
+            </ul>
+        </div>
+
+        <button class="btn-copyright" onclick="document.getElementById('copyright-modal').classList.remove('hidden')">
+            <i class="fas fa-scale-balanced"></i> Droits d'auteur
+        </button>
+    </div>
+
+    <div id="copyright-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 style="color: var(--primary-dark);">⚖️ Droits d'Auteur et Licence d'Utilisation</h3>
+            <p><strong>Auteur :</strong> Yann Merdy (yann.merdy@gmail.com) - Avril 2026</p>
+            <p><strong>Licence d'Utilisation Non Commerciale</strong></p>
+            <p>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ('Culture Technique') sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
+            <p><strong>Conditions :</strong></p>
+            <ul>
+                <li><strong>Utilisation Privée et Éducative (Autorisée) :</strong> Vous êtes autorisé.e à utiliser, copier, modifier et distribuer ce code et son contenu uniquement à des fins personnelles, éducatives et non lucratives.</li>
+                <li><strong>Utilisation Commerciale (Interdite) :</strong> Toute utilisation, distribution, intégration ou reproduction du code ou du contenu (total ou partiel) à des fins commerciales, lucratives ou professionnelles est strictement interdite sans un accord écrit préalable et explicite de l'auteur.</li>
+            </ul>
+            <p><strong>Attribution :</strong> Toute reproduction ou modification doit conserver la mention de l'auteur originale (Yann Merdy) et la présente notice de droits d'auteur.</p>
+            <p>Pour toute demande d'utilisation commerciale ou de licence spécifique, veuillez contacter l'auteur à l'adresse indiquée ci-dessus.</p>
+            <button style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 15px; width: 100%; font-weight: bold;" onclick="document.getElementById('copyright-modal').classList.add('hidden')">Fermer</button>
+        </div>
+    </div>
+</body>
+</html>

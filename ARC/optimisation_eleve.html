@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimisation Expérimentale - Fiche Élève</title>
+    
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #1e40af; --primary-dark: #1e3a8a; --primary-light: #3b82f6;
+            --surface: #ffffff; --text-primary: #0f172a; --bg-color: #f1f5f9;
+            --border-light: #e2e8f0; --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: var(--text-primary);
+            margin: 0; padding: 2rem;
+            min-height: 100vh;
+        }
+
+        /* Accessibilité */
+        body.dys-mode { font-family: 'Comic Sans MS', 'OpenDyslexic', sans-serif !important; }
+        body.vision-mode { filter: contrast(1.6) brightness(1.2); }
+        body.vision-mode button { border: 2px solid yellow; color: yellow; background: black; }
+        body.vision-mode .qcm-options li.selected { background: #333; border-color: yellow; color: white; }
+
+        .acc-panel {
+            position: absolute; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 100;
+        }
+        .acc-btn {
+            background: var(--primary); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer;
+        }
+
+        .back-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: var(--primary); color: white; text-decoration: none;
+            padding: 10px 20px; border-radius: 30px; font-weight: 600; margin-bottom: 2rem;
+        }
+
+        .container-box {
+            background: var(--surface); border-radius: 16px; padding: 2.5rem;
+            box-shadow: var(--shadow-md); border-top: 4px solid var(--primary);
+            max-width: 900px; margin: auto;
+        }
+
+        /* QCM & Diaporama */
+        .qcm-setup { text-align: center; margin-bottom: 2rem; }
+        .qcm-setup button {
+            background: var(--primary-light); color: white; border: none; padding: 12px 24px;
+            margin: 10px; border-radius: 8px; cursor: pointer; font-size: 1.1rem;
+        }
+
+        /* Maintien des calculs MathJax hors écran plutôt qu'en display none */
+        .offscreen { position: absolute; left: -9999px; opacity: 0; pointer-events: none; }
+        .onscreen { position: static; opacity: 1; pointer-events: auto; transition: opacity 0.4s ease; }
+
+        .qcm-slide { padding: 2rem; border: 1px solid var(--border-light); border-radius: 8px; background: #fafafa; }
+        
+        /* Options cliquables */
+        .qcm-options { list-style: none; padding: 0; }
+        .qcm-options li {
+            background: white; margin: 10px 0; padding: 15px; border-radius: 8px;
+            border: 2px solid var(--border-light); cursor: pointer; transition: 0.2s;
+        }
+        .qcm-options li:hover { border-color: var(--primary-light); }
+        .qcm-options li.selected {
+            background: #dbeafe; border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(30, 64, 175, 0.2);
+        }
+        
+        .nav-buttons { display: flex; justify-content: space-between; margin-top: 20px; }
+        .nav-buttons button { padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; }
+
+        .pdf-btn {
+            background: #059669; color: white; border: none; padding: 12px 24px; border-radius: 8px;
+            cursor: pointer; margin-top: 20px; display: block; width: 100%; font-size: 1.1rem;
+        }
+
+        /* Modale Droits d'auteur */
+        .modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex;
+            align-items: center; justify-content: center; z-index: 9999;
+        }
+        .modal-content { background: white; padding: 30px; border-radius: 12px; max-width: 600px; line-height: 1.6; }
+        .hidden { display: none !important; }
+
+        /* BLOC IMPRESSION BROWSER */
+        .print-summary { position: absolute; left: -9999px; top: -9999px; opacity: 0.01; z-index: -1; }
+
+        @media print {
+            body * { visibility: hidden; }
+            .print-summary, .print-summary * { visibility: visible; }
+            .print-summary {
+                position: absolute; left: 0; top: 0; width: 100%; opacity: 1; z-index: 1000;
+                background: white; padding: 20px; color: black;
+            }
+            .pdf-btn, .acc-panel, .nav-buttons { display: none !important; }
+            .print-answer-block { margin-bottom: 20px; padding: 10px; border-bottom: 1px solid #ccc; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="acc-panel">
+        <button class="acc-btn" onclick="document.body.classList.toggle('dys-mode')" title="Adaptation Dys">Dys</button>
+        <button class="acc-btn" onclick="document.body.classList.toggle('vision-mode')" title="Contraste Malvoyant">Vision</button>
+        <button class="acc-btn" onclick="document.getElementById('copyright-modal').classList.remove('hidden')">⚖️</button>
+    </div>
+
+    <a href="PROJET_ARC.html" class="back-btn"><i class="fas fa-arrow-left"></i> Retour à la constellation</a>
+
+    <div class="container-box">
+        <h2><i class="fas fa-user-graduate"></i> II. Optimisation Expérimentale - Évaluation</h2>
+        <p>Sélectionnez vos réponses pour chaque question. Une fois terminé, vous pourrez générer un fichier PDF récapitulant vos choix.</p>
+
+        <div id="qcm-setup" class="qcm-setup">
+            <p>Mode de passage :</p>
+            <button onclick="startQCM(false)"><i class="fas fa-hand-pointer"></i> À mon rythme</button>
+            <button onclick="startQCM(true)"><i class="fas fa-stopwatch"></i> Temps limité (30s / question)</button>
+        </div>
+
+        <div id="qcm-area" class="offscreen">
+            <div id="timer-display" style="font-weight: bold; color: var(--primary); text-align: right;"></div>
+            
+            <div class="qcm-slide onscreen" id="slide-0">
+                <h3>Question 1 / 5</h3>
+                <p>Quelle est la formule correcte définissant le rendement énergétique $\eta$ du système de tir ?</p>
+                <ul class="qcm-options">
+                    <li onclick="selectOption(0, this)">A) $\eta = \dfrac{E_{utile}}{E_{absorbee}}$</li>
+                    <li onclick="selectOption(0, this)">B) $\eta = \dfrac{E_{absorbee}}{E_{utile}}$</li>
+                    <li onclick="selectOption(0, this)">C) $\eta = E_{utile} \times E_{absorbee}$</li>
+                    <li onclick="selectOption(0, this)">D) $\eta = E_{utile} + E_{absorbee}$</li>
+                    <li onclick="selectOption(0, this)">E) Autre</li>
+                </ul>
+            </div>
+
+            <div class="qcm-slide offscreen" id="slide-1">
+                <h3>Question 2 / 5</h3>
+                <p>Quelle relation permet de déterminer la vitesse $v$ d'une flèche de masse $m$ connaissant son énergie cinétique $E_c$ ?</p>
+                <ul class="qcm-options">
+                    <li onclick="selectOption(1, this)">A) $v = \sqrt{\dfrac{m}{2E_c}}$</li>
+                    <li onclick="selectOption(1, this)">B) $v = \sqrt{\dfrac{2E_c}{m}}$</li>
+                    <li onclick="selectOption(1, this)">C) $v = \dfrac{2E_c}{m}$</li>
+                    <li onclick="selectOption(1, this)">D) $v = \dfrac{E_c}{2m}$</li>
+                    <li onclick="selectOption(1, this)">E) Autre</li>
+                </ul>
+            </div>
+
+            <div class="qcm-slide offscreen" id="slide-2">
+                <h3>Question 3 / 5</h3>
+                <p>Si l'énergie cinétique est $E_c = 45$ J et la masse de la flèche $m = 0,01$ kg, quelle est la vitesse approximative de sortie ?</p>
+                <ul class="qcm-options">
+                    <li onclick="selectOption(2, this)">A) $30$ m/s</li>
+                    <li onclick="selectOption(2, this)">B) $60$ m/s</li>
+                    <li onclick="selectOption(2, this)">C) $95$ m/s</li>
+                    <li onclick="selectOption(2, this)">D) $120$ m/s</li>
+                    <li onclick="selectOption(2, this)">E) Autre</li>
+                </ul>
+            </div>
+
+            <div class="qcm-slide offscreen" id="slide-3">
+                <h3>Question 4 / 5</h3>
+                <p>D'un point de vue de l'ingénierie mécanique, quelle modification structurelle permet d'améliorer directement le rendement de l'arc ?</p>
+                <ul class="qcm-options">
+                    <li onclick="selectOption(3, this)">A) Alourdir le corps de l'arc</li>
+                    <li onclick="selectOption(3, this)">B) Utiliser une corde plus élastique</li>
+                    <li onclick="selectOption(3, this)">C) Augmenter la friction de l'écarteur de câbles</li>
+                    <li onclick="selectOption(3, this)">D) Alléger la masse des poulies-cames</li>
+                    <li onclick="selectOption(3, this)">E) Autre</li>
+                </ul>
+            </div>
+
+            <div class="qcm-slide offscreen" id="slide-4">
+                <h3>Question 5 / 5</h3>
+                <p>En quelle unité physique s'exprime le rendement énergétique $\eta$ ?</p>
+                <ul class="qcm-options">
+                    <li onclick="selectOption(4, this)">A) Joules (J)</li>
+                    <li onclick="selectOption(4, this)">B) Watts (W)</li>
+                    <li onclick="selectOption(4, this)">C) Newtons (N)</li>
+                    <li onclick="selectOption(4, this)">D) Pourcentage par mètre (%/m)</li>
+                    <li onclick="selectOption(4, this)">E) Autre</li>
+                </ul>
+            </div>
+
+            <div class="nav-buttons">
+                <button onclick="prevSlide()" id="btn-prev">Précédent</button>
+                <button onclick="nextSlide()" id="btn-next">Suivant</button>
+            </div>
+            
+            <button class="pdf-btn offscreen" id="btn-generate-pdf" onclick="generateStudentPDF()">
+                <i class="fas fa-file-pdf"></i> Générer mon PDF de réponses
+            </button>
+        </div>
+    </div>
+
+    <div id="print-area" class="print-summary">
+        <h2>Fiche de Réponses : Optimisation Expérimentale</h2>
+        <p><strong>Nom / Prénom de l'élève :</strong> ............................................................</p>
+        <p><strong>Date :</strong> ........................................</p>
+        <hr>
+        <div id="print-content"></div>
+    </div>
+
+    <div id="copyright-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 style="color: var(--primary-dark);">⚖️ Droits d'Auteur et Licence d'Utilisation</h3>
+            <p><strong>Auteur :</strong> Yann Merdy (yann.merdy@gmail.com) - Avril 2026</p>
+            <p><strong>Licence d'Utilisation Non Commerciale</strong></p>
+            <p>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ('Optimisation Expérimentale') sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
+            <p><strong>Conditions :</strong></p>
+            <ul>
+                <li><strong>Utilisation Privée et Éducative (Autorisée) :</strong> Vous êtes autorisé.e à utiliser, copier, modifier et distribuer ce code et son contenu uniquement à des fins personnelles, éducatives et non lucratives.</li>
+                <li><strong>Utilisation Commerciale (Interdite) :</strong> Toute utilisation, distribution, intégration ou reproduction du code ou du contenu (total ou partiel) à des fins commerciales, lucratives ou professionnelles est strictement interdite sans un accord écrit préalable et explicite de l'auteur.</li>
+            </ul>
+            <p><strong>Attribution :</strong> Toute reproduction ou modification doit conserver la mention de l'auteur originale (Yann Merdy) et la présente notice de droits d'auteur.</p>
+            <p>Pour toute demande d'utilisation commerciale ou de licence spécifique, veuillez contacter l'auteur à l'adresse indiquée ci-dessus.</p>
+            <button style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 15px; width: 100%;" onclick="document.getElementById('copyright-modal').classList.add('hidden')">Fermer</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSlideIndex = 0;
+        let isTimed = false;
+        let timerInterval;
+        let timeLeft = 30;
+        
+        // Tableau pour stocker le HTML de la réponse sélectionnée par l'élève
+        const studentAnswers = [null, null, null, null, null];
+
+        function selectOption(questionIndex, element) {
+            // Retirer la classe 'selected' des autres options de cette question
+            const siblings = element.parentElement.children;
+            for(let i=0; i<siblings.length; i++) {
+                siblings[i].classList.remove('selected');
+            }
+            // Ajouter la classe à l'option cliquée
+            element.classList.add('selected');
+            
+            // Enregistrer le contenu HTML (ce qui préserve le rendu MathJax pour le PDF)
+            studentAnswers[questionIndex] = element.innerHTML;
+        }
+
+        function startQCM(timedMode) {
+            isTimed = timedMode;
+            document.getElementById('qcm-setup').classList.replace('onscreen', 'offscreen');
+            document.getElementById('qcm-area').classList.replace('offscreen', 'onscreen');
+            
+            if(isTimed) {
+                document.getElementById('btn-prev').style.display = 'none';
+                document.getElementById('btn-next').style.display = 'none';
+                startTimer();
+            }
+        }
+
+        function updateSlideVisibility() {
+            for(let i=0; i<5; i++) {
+                let slide = document.getElementById('slide-' + i);
+                if(i === currentSlideIndex) {
+                    slide.classList.replace('offscreen', 'onscreen');
+                } else {
+                    slide.classList.replace('onscreen', 'offscreen');
+                }
+            }
+            
+            // Afficher le bouton PDF sur la dernière diapo en mode manuel
+            if(!isTimed && currentSlideIndex === 4) {
+                document.getElementById('btn-generate-pdf').classList.replace('offscreen', 'onscreen');
+            } else if (!isTimed) {
+                document.getElementById('btn-generate-pdf').classList.replace('onscreen', 'offscreen');
+            }
+        }
+
+        function nextSlide() {
+            if(currentSlideIndex < 4) {
+                currentSlideIndex++;
+                updateSlideVisibility();
+                if(isTimed) { timeLeft = 30; }
+            } else if (isTimed) {
+                clearInterval(timerInterval);
+                document.getElementById('timer-display').innerText = "Terminé !";
+                document.getElementById('btn-generate-pdf').classList.replace('offscreen', 'onscreen');
+            }
+        }
+
+        function prevSlide() {
+            if(currentSlideIndex > 0) {
+                currentSlideIndex--;
+                updateSlideVisibility();
+            }
+        }
+
+        function startTimer() {
+            const display = document.getElementById('timer-display');
+            display.innerText = "Temps restant : " + timeLeft + "s";
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                display.innerText = "Temps restant : " + timeLeft + "s";
+                
+                if(timeLeft <= 0) {
+                    nextSlide();
+                }
+            }, 1000);
+        }
+
+        function generateStudentPDF() {
+            const printContent = document.getElementById('print-content');
+            printContent.innerHTML = '';
+            
+            for(let i=0; i<5; i++) {
+                // On récupère la question (sans les balises d'options)
+                const questionElement = document.querySelector(`#slide-${i} p`).outerHTML;
+                const answerHTML = studentAnswers[i] ? studentAnswers[i] : "<span style='color:red;'><i>Aucune réponse sélectionnée</i></span>";
+                
+                printContent.innerHTML += `
+                    <div class="print-answer-block">
+                        <h4>Question ${i + 1}</h4>
+                        ${questionElement}
+                        <p><strong>Votre choix :</strong> ${answerHTML}</p>
+                    </div>
+                `;
+            }
+            
+            // Déclenche l'impression native du navigateur
+            window.print();
+        }
+    </script>
+</body>
+</html>

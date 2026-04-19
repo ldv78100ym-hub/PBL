@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PBL : Optimisation d'un Arc Mécanique & Boîte à Outils</title>
+    
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+        
+        :root {
+            /* Palette principale - Thème Laboratoire d'Ingénierie */
+            --primary: #1e40af;
+            --primary-dark: #1e3a8a;
+            --primary-light: #3b82f6;
+            --secondary: #ea580c;
+            --secondary-light: #fb923c;
+            --accent: #0891b2;
+            
+            /* Fonctionnel */
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --info: #0284c7;
+            
+            /* Neutres */
+            --bg-color: #f1f5f9;
+            --surface: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --border-light: #e2e8f0;
+            --border-medium: #cbd5e1;
+            
+            /* Typographie */
+            --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            
+            /* Espacement et ombrages */
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-glow: 0 0 20px rgba(30, 64, 175, 0.15);
+            
+            /* Accessibilité */
+            --focus-ring: 0 0 0 3px rgba(30, 64, 175, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-main);
+            font-size: 16px;
+            line-height: 1.7;
+            letter-spacing: 0.01em;
+            color: var(--text-primary);
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        /* En-tête Hero */
+        .hero-header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            color: white;
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .hero-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin: 0 0 1rem 0;
+            line-height: 1.2;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-header p {
+            font-size: 1.125rem;
+            opacity: 0.95;
+            max-width: 800px;
+            margin: 0;
+            font-weight: 300;
+	    color : yellow;
+        }
+
+        /* Container principal */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem 3rem;
+        }
+
+        /* Cards d'exercices modernisées */
+        .exercice-box {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .exercice-box:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+        .exercice-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary), var(--accent));
+        }
+
+        .exercice-box.danger-zone::before {
+            background: linear-gradient(to bottom, var(--danger), var(--secondary));
+        }
+
+        h2 {
+            color: var(--primary-dark);
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        h2::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(to right, var(--border-light), transparent);
+            margin-left: 1rem;
+        }
+
+        h3 {
+            color: var(--primary);
+            font-size: 1.375rem;
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h4 {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        p, ul, li {
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        ul {
+            padding-left: 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+        li::marker {
+            color: var(--primary-light);
+        }
+
+        /* Badges d'étapes */
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border-radius: 50%;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Boîtes d'information stylisées */
+        .info-ingenierie {
+            background: linear-gradient(to right, #eff6ff, #ffffff);
+            border: 1px solid #bfdbfe;
+            border-left: 4px solid var(--primary);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            position: relative;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .info-ingenierie::before {
+            content: '💡';
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            font-size: 1.5rem;
+            opacity: 0.5;
+        }
+
+        .info-ingenierie h4 {
+            color: var(--primary-dark);
+            margin-top: 0;
+            font-size: 1.125rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-ingenierie ul {
+            margin-bottom: 0;
+        }
+
+        /* Formules mathématiques */
+        .formula-box {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 1px solid #7dd3fc;
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            text-align: center;
+            font-size: 1.25rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .formula-box::before {
+            content: '∑';
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            color: var(--primary-light);
+            opacity: 0.2;
+            font-family: serif;
+        }
+
+        /* Méthodologie */
+        .method-box {
+            background: linear-gradient(to right, #fffbeb, #ffffff);
+            border: 1px solid #fcd34d;
+            border-left: 4px solid var(--warning);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .method-box h4 {
+            color: #92400e;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .method-box h4::before {
+            content: '📝';
+        }
+
+        /* Canvas amélioré */
+        canvas {
+            display: block;
+            margin: 2rem auto;
+            border-radius: var(--radius-lg);
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            box-shadow: 
+                var(--shadow-lg),
+                inset 0 0 0 1px rgba(0,0,0,0.1);
+            max-width: 100%;
+            border: none;
+        }
+
+        /* Contrôles interactifs modernisés */
+        .controles-interactifs {
+            background: var(--surface);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Range Slider personnalisé */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(to right, var(--border-light), var(--border-medium));
+            border-radius: 4px;
+            outline: none;
+            margin: 1rem 0;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            border: 2px solid white;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.4);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        /* Inputs et Selects modernisés */
+        input[type="number"], input[type="text"], select {
+            border: 1.5px solid var(--border-medium);
+            border-radius: var(--radius-sm);
+            background-color: var(--surface);
+            color: var(--text-primary);
+            font-family: var(--font-main);
+            font-size: 1rem;
+            padding: 0.625rem 0.875rem;
+            width: 100%;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        input[type="number"]:focus, input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.15);
+        }
+
+        /* Boutons modernisés */
+        .btn-action {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            padding: 0.875rem 1.75rem;
+            font-size: 1rem;
+            font-family: var(--font-main);
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-md);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-action::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(30, 64, 175, 0.3);
+        }
+
+        .btn-action:hover::before {
+            left: 100%;
+        }
+
+        .btn-action:active {
+            transform: translateY(0);
+        }
+
+        .btn-action:focus {
+            outline: none;
+            box-shadow: var(--focus-ring);
+        }
+
+        .btn-action.secondary {
+            background: linear-gradient(135deg, var(--secondary) 0%, #c2410c 100%);
+        }
+
+        .btn-action.secondary:hover {
+            box-shadow: 0 8px 20px rgba(234, 88, 12, 0.3);
+        }
+
+        .btn-action.success {
+            background: linear-gradient(135deg, var(--success) 0%, #047857 100%);
+        }
+
+        /* Tableau de journal stylisé */
+        #table-journal {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 1.5rem 0;
+            background: var(--surface);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            font-size: 0.9375rem;
+        }
+
+        #table-journal th {
+            background: linear-gradient(to bottom, #f8fafc, #f1f5f9);
+            color: var(--text-primary);
+            font-weight: 600;
+            padding: 1rem;
+            border-bottom: 2px solid var(--border-medium);
+            text-align: left;
+        }
+
+        #table-journal td {
+            padding: 0.875rem 1rem;
+            border-bottom: 1px solid var(--border-light);
+            vertical-align: middle;
+        }
+
+        #table-journal tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        #table-journal input, #table-journal select {
+            margin: 0;
+            font-size: 0.9375rem;
+        }
+
+        /* Résultats et feedback */
+        .resultat-boite {
+            background: linear-gradient(to right, #fef3c7, #ffffff);
+            border: 1px solid #fbbf24;
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            margin-top: 1.5rem;
+            position: relative;
+            padding-left: 3rem;
+        }
+
+        .resultat-boite::before {
+            content: '🎯';
+            position: absolute;
+            left: 1rem;
+            top: 1.25rem;
+            font-size: 1.25rem;
+        }
+
+        #resultats-stats {
+            background: #f8fafc;
+            border: 1px dashed var(--border-medium);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin-top: 1rem;
+            font-family: var(--font-mono);
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+
+        /* Légende */
+        .legende-canvas {
+            background: linear-gradient(to right, #f1f5f9, #ffffff);
+            border: 1px solid var(--border-light);
+            border-left: 3px solid var(--primary);
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-md);
+            margin-top: 1.5rem;
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1.5rem;
+        }
+
+        .legende-canvas strong {
+            color: var(--primary);
+            margin-right: 0.5rem;
+        }
+
+        /* Resource boxes dans la boîte à outils */
+        .resource-box {
+            background: var(--surface);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .resource-box:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--border-medium);
+        }
+
+        .resource-box h3 {
+            color: var(--primary-dark);
+            font-size: 1.25rem;
+            margin-top: 0;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        /* Popup modernisé */
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        #popup-copyright {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            background: var(--surface);
+            border: none;
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            z-index: 1001;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-height: 90vh;
+            overflow-y: auto;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        #popup-copyright.active {
+            display: block;
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        #popup-copyright h2 {
+            color: var(--primary-dark);
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: none;
+        }
+
+        #popup-copyright h2::after {
+            display: none;
+        }
+
+        .btn-close {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: var(--radius-md);
+            margin-top: 1.5rem;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-close:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        }
+
+        #btn-copyright {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            font-size: 0.9375rem;
+            font-family: var(--font-main);
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            z-index: 999;
+            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        #btn-copyright:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(30, 64, 175, 0.4);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-header h1 {
+                font-size: 1.75rem;
+            }
+            
+            .exercice-box {
+                padding: 1.5rem;
+            }
+            
+            h2 {
+                font-size: 1.5rem;
+            }
+            
+            #table-journal {
+                font-size: 0.875rem;
+            }
+            
+            #table-journal th, #table-journal td {
+                padding: 0.625rem;
+            }
+        }
+
+        /* Accessibilité : Respect des préférences de mouvement */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Focus visible pour accessibilité clavier */
+        *:focus-visible {
+            outline: 3px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        /* Styles pour le rendu MathJax */
+        mjx-container {
+            font-size: 1.1em !important;
+            color: var(--text-primary);
+        }
+
+        .formula-box mjx-container {
+            font-size: 1.3em !important;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="hero-header">
+        <h1>Problème Basé sur l'Apprentissage (PBL) : Optimisation d'un Arc Mécanique</h1>
+        <p><strong>Contexte de l'étude :</strong> Un bureau d'ingénierie sportive cherche à modéliser un arc mécanique équipé de cames systémiques. L'objectif de votre équipe d'élèves de première technologique est de valider mathématiquement les paramètres de cet arc pour garantir à la fois la sécurité de l'archer et un rendement d'efficacité optimal.</p>
+    </header>
+
+    <div class="container">
+
+    <div class="exercice-box">
+        <h2>1. Analyse structurelle et conception d'une sécurité mécanique</h2>
+        <p>L'objectif de cette première partie est d'évaluer le risque de rupture de l'arc à son angle d'armement maximal, puis de concevoir une solution mécanique pour garantir la sécurité de l'utilisateur.</p>
+
+        <h3><span class="step-badge">A</span>Étude de la contrainte maximale</h3>
+        <p>La contrainte mécanique $C(\theta)$ exercée sur les branches (en Mégapascals, MPa) en fonction de l'angle de flexion $\theta$ (en radians) est modélisée par la fonction suivante, définie sur l'intervalle $[0 ; 1,5]$ :</p>
+        <div class="formula-box">
+            $$ C(\theta) = -200\theta^3 + 450\theta^2 $$
+        </div>
+        <ul>
+            <li>Déterminez la fonction dérivée $C'(\theta)$ et étudiez son signe sur l'intervalle donné.</li>
+            <li>Déduisez-en le tableau de variations de la fonction $C$.</li>
+            <li>Déterminez la valeur de l'angle $\theta_{max}$ (en radians) pour lequel la contrainte mécanique exercée sur l'arc est maximale.</li>
+        </ul>
+
+        <h3><span class="step-badge">B</span>Analyse du risque de rupture</h3>
+        <p>Pour homologuer l'arc, des tests destructifs sont réalisés. On choisit une branche au hasard et on note :</p>
+        <ul>
+            <li>$D$ l'événement : « La branche présente un micro-défaut structurel invisible ».</li>
+            <li>$R$ l'événement : « La branche rompt lors d'un tir effectué à l'angle $\theta_{max}$ ».</li>
+        </ul>
+        <p>Les données du contrôle qualité indiquent que $P(D) = 0,08$. Les tests montrent que $P_D(R) = 0,85$. Si la branche ne présente aucun défaut, la contrainte à $\theta_{max}$ engendre tout de même une probabilité de rupture de $P_{\overline{D}}(R) = 0,04$.</p>
+        <ul>
+            <li>Traduisez cette situation à l'aide d'un arbre pondéré.</li>
+            <li>Calculez la probabilité totale $P(R)$ qu'une branche prise au hasard rompe lors d'un tir à l'angle $\theta_{max}$.</li>
+            <li>La norme de sécurité exige que la probabilité de rupture soit strictement inférieure à 10 %. Concluez quant à la viabilité du système en l'état.</li>
+        </ul>
+
+        <h3><span class="step-badge">C</span>Conception et positionnement de la butée mécanique</h3>
+        <div class="info-ingenierie">
+            <h4>Qu'est-ce qu'une butée et comment fonctionne-t-elle ?</h4>
+            <p>Dans l'ingénierie d'un arc, une <strong>butée</strong> (ou <em>draw stop</em>) est un ergot de blocage vissé directement sur la poulie-came (Sous-ensemble A). Son fonctionnement est mécanique et permet de garantir la sécurité :</p>
+            <ul>
+                <li><strong>Trajectoire :</strong> Lors de l'armement de l'arc, la butée tourne de façon solidaire avec la came en décrivant un arc de cercle.</li>
+                <li><strong>Le "mur" :</strong> À un angle de rotation très précis, cette butée vient heurter un obstacle physique (généralement un câble de tension). Cela bloque net la rotation du système.</li>
+                <li><strong>Objectif :</strong> L'archer ressent un arrêt franc l'empêchant de tirer la corde plus loin. Cela garantit une allonge constante pour la précision, et surtout, empêche le système d'entrer dans la zone critique de rupture étudiée à l'étape B.</li>
+            </ul>
+        </div>
+        <p>Si l'analyse précédente démontre que l'angle $\theta_{max}$ est dangereux, l'ingénieur doit concevoir une "butée d'allonge" pour limiter l'angle d'armement à une valeur sûre.</p>
+        <ul>
+            <li><strong>Détermination du nouvel angle limite :</strong> Afin de garantir une probabilité de rupture de l'ensemble inférieure à 9 %, le bureau d'étude impose de limiter la contrainte mécanique à $C_{cible} = 175$ MPa. Déterminez l'angle maximal de sécurité $\theta_{secu}$ correspondant à cette contrainte.</li>
+            <li><strong>Choix technologique :</strong> En observant le croquis de l'arc hybride, sur quel sous-ensemble mécanique (de A à G) est-il le plus pertinent de venir fixer un ergot de blocage pour stopper la course de la corde de manière précise ? Justifiez votre choix d'un point de vue mécanique.</li>
+            <li><strong>Dimensionnement géométrique :</strong> La rotation de la poulie-came (Sous-ensemble A) est proportionnelle à l'angle de flexion $\theta$ des branches. La came a un rayon de guidage de $R = 45$ mm. Calculez la longueur de l'arc de cercle parcouru par la came pour atteindre $\theta_{secu}$. Déduisez-en la position exacte où il faudra usiner le filetage pour insérer la butée mécanique.</li>
+        </ul>
+    </div>
+
+    <div class="exercice-box">
+        <h2>2. Produit Scalaire et Travail de la Force</h2>
+        
+        <h3><span class="step-badge">A</span>Travail nominal et erreur de décoche</h3>
+        <p>La force de traction exercée par l'archer n'est pas constante. Elle est définie par un vecteur $\vec{F}$ et le déplacement de la flèche est défini par un vecteur $\vec{d}$.</p>
+        <p>Calculez le travail $W = \vec{F} \cdot \vec{d}$ en Joules pour une force maximale de 250 N appliquée avec un angle de déviation moyen de $5^\circ$ par rapport à l'axe de tir sur une distance de $0,7$ m.</p>
+        <p>Quelle part de cette énergie est perdue si l'erreur de décoche provoque une déviation qui passe à $12^\circ$ ?</p>
+
+        <h3><span class="step-badge">B</span>Adaptation ergonomique de la butée (Morphologie et Allonge)</h3>
+        <p>Le vecteur déplacement $\vec{d}$ correspond mécaniquement à l'<strong>allonge</strong> de l'archer (la distance maximale de traction de la corde avant libération). Cette allonge, ainsi que la force de crête $\vec{F}$, doivent impérativement correspondre à la corpulence de l'utilisateur. C'est l'un des rôles majeurs du réglage de la butée étudiée précédemment : elle doit bloquer la course au moment exact où le bras de l'archer est parfaitement étendu.</p>
+
+        <div class="info-ingenierie">
+            <h4>Culture technique : Livre-force vs Newton</h4>
+            <p>Accessoirement, dans le monde de l'archerie, on utilise très souvent la <strong>Livre-force</strong>, notée <strong>lbs</strong> (du latin <em>libra pondo</em>), plutôt que le Newton. Cela s'explique par des raisons historiques et industrielles : le développement de l'archerie moderne a été initié et dominé par des fabricants nord-américains. Ils ont ainsi imposé le système d'unités impérial comme standard international de fait. Sur le terrain et chez les équipementiers, la force de crête d'un arc est donc presque toujours exprimée en livres (1 lbs $\approx$ 4,45 N), et la distance d'allonge en pouces.</p>
+        </div>
+        
+        <p>Le bureau d'étude doit valider l'arc pour trois gabarits distincts. On suppose ici un tir parfaitement dans l'axe (angle de $0^\circ$ entre la force et le déplacement pour optimiser le rendement) :</p>
+        <ul>
+            <li><strong>Gabarit 1 (Enfant 10-12 ans) :</strong> Allonge réglée par la butée à $\|\vec{d}\| = 0,55$ m. Force maximale de crête applicable $\|\vec{F}\| = 90$ N.</li>
+            <li><strong>Gabarit 2 (Adolescent) :</strong> Allonge réglée par la butée à $\|\vec{d}\| = 0,65$ m. Force maximale de crête applicable $\|\vec{F}\| = 160$ N.</li>
+            <li><strong>Gabarit 3 (Adulte standard) :</strong> Allonge réglée par la butée à $\|\vec{d}\| = 0,72$ m. Force maximale de crête applicable $\|\vec{F}\| = 280$ N.</li>
+        </ul>
+        <ul>
+            <li>Calculez le travail $W$ (énergie transmise à l'arc) pour chacun de ces trois gabarits.</li>
+            <li>Un adulte (Gabarit 3) utilise par erreur l'arc alors que la butée est toujours réglée sur la position de l'enfant (Gabarit 1). Il déploie donc ses 280 N de force mais est stoppé net à 0,55 m d'allonge. Calculez le nouveau travail $W$.</li>
+            <li>Quel pourcentage de l'énergie potentielle l'adulte perd-il à cause de ce mauvais réglage de butée ? Concluez sur le rôle biomécanique de ce sous-ensemble.</li>
+        </ul>
+
+        <h3><span class="step-badge">C</span>Régularité de l'archer</h3>
+        <p>La qualité du transfert d'énergie dépend fortement de la régularité technique de l'archer. L'entraîneur observe un tireur et considère l'épreuve suivante lors de chaque tir :</p>
+        <p>Le « succès », noté $S$, correspond à une décoche maîtrisée (déviation optimale de $5^\circ$ ou moins). L'entraîneur estime, d'après ses statistiques, que la probabilité de succès est de $p = 0,75$. L'« échec », noté $\overline{S}$, correspond à une décoche fautive (déviation importante de $12^\circ$).</p>
+        <ul>
+            <li>On définit la variable aléatoire $X$ qui prend la valeur 1 si le tir est un succès, et 0 s'il est un échec. Donnez la loi de probabilité de $X$.</li>
+            <li>Calculez l'espérance $E(X)$. Que représente concrètement cette valeur sur un grand nombre de flèches tirées ?</li>
+            <li>On définit la variable aléatoire $Y$ correspondant au nombre total de succès à l'issue de la série de 3 tirs. Calculez l'espérance mathématique $E(Y)$. Déduisez-en le nombre de fois où la cible est touchée en moyenne à l'issue de ces trois tirs.</li>
+            <li>L'archer réalise un test de régularité consistant en une série de 3 tirs consécutifs. On admet que la qualité d'un tir n'influence pas celle du tir suivant (les épreuves sont indépendantes). Représentez cette succession d'épreuves à l'aide d'un arbre pondéré.</li>
+            <li>En observant votre arbre de probabilités, repérez et surlignez tous les chemins correspondant à la réalisation de <strong>exactement deux succès</strong> sur les trois tirs de la série.</li>
+            <li>Déduisez-en la probabilité d'avoir exactement deux flèches dans la cible (deux succès) sur les trois tirs. Détaillez votre calcul à l'aide des chemins identifiés dans votre arbre.</li>
+        </ul>
+    </div>
+
+    <div class="exercice-box">
+        <h2>3. Suites Mathématiques : Amortissement des vibrations</h2>
+        
+        <div class="info-ingenierie">
+            <h4>Culture technique : Impact des vibrations</h4>
+            <p><strong>1. Impact sur le risque de rupture (Sécurité du matériel)</strong></p>
+            <p>Lors de la décoche, la quasi-totalité de l'énergie potentielle accumulée dans les branches est transférée à la flèche sous forme d'énergie cinétique. Cependant, une fraction de cette énergie (l'énergie résiduelle) se dissipe dans la structure même de l'arc sous forme de vibrations à haute fréquence.</p>
+            <ul>
+                <li><strong>Fatigue des matériaux :</strong> Ces oscillations rapides créent des cycles de contraintes mécaniques répétés. Sans amortisseur, ces contraintes favorisent l'apparition des micro-défauts structurels invisibles (événement $D$).</li>
+                <li><strong>Desserrage mécanique :</strong> Les vibrations non amorties peuvent desserrer progressivement la visserie, y compris l'ergot de la butée d'allonge, risquant de dérégler le système au-delà de la zone de sécurité ($\theta_{max}$).</li>
+                <li><strong>Rôle de l'amortisseur :</strong> En réduisant l'amplitude à chaque oscillation, le caoutchouc absorbe cette énergie parasite, protégeant l'intégrité physique de l'arc.</li>
+            </ul>
+
+            <p><strong>2. Impact sur le "succès" et la précision (Atteindre la cible)</strong></p>
+            <ul>
+                <li><strong>Le "Hand Shock" (Choc dans la main) :</strong> Une forte vibration non amortie remonte dans le bras de l'archer, causant une fatigue musculaire rapide.</li>
+                <li><strong>L'anticipation nerveuse (Flinching) :</strong> C'est le phénomène le plus critique pour la précision. Le système nerveux anticipe le choc avant la décoche, l'archer crispe sa main ou modifie son axe.</li>
+                <li><strong>Rôle de l'amortisseur :</strong> En rendant l'arc "mort dans la main", il permet au tireur de rester détendu, maintenant la probabilité de succès à $p = 0,75$ sur de longues séries.</li>
+            </ul>
+        </div>
+
+        <p>Après le tir, l'arc subit des vibrations résiduelles. L'amplitude initiale de la vibration de l'écarteur de câble est mesurée à $a_0 = 15$ mm.</p>
+        <p>L'amortisseur de vibrations en caoutchouc (Sous-ensemble F) permet de réduire cette amplitude de 18 % à chaque oscillation successive. Soit $(a_n)$ l'amplitude (en mm) observée après $n$ oscillations complètes de la corde.</p>
+        
+        <ul>
+            <li><strong>Modélisation mathématique :</strong> Exprimez l'amplitude $a_{n+1}$ en fonction de $a_n$. Déduisez-en la nature mathématique de la suite $(a_n)$ ainsi que sa raison.</li>
+            <li><strong>Sécurité matérielle (Fatigue) :</strong> L'ingénieur en matériaux estime que les micro-défauts se propagent de façon critique tant que l'amplitude de vibration reste strictement supérieure à $5$ mm. Calculez l'amplitude $a_5$ (arrondie au dixième). Au bout de $5$ oscillations, l'arc est-il sorti de la zone de danger structurel ?</li>
+            <li><strong>Précision de l'archer (Hand Shock) :</strong> Pour garantir une décoche fluide et éviter le <em>Flinching</em>, l'arc ne doit transmettre aucun "Hand Shock" perceptible. On considère qu'une vibration devient imperceptible en dessous de $1,5$ mm. Déterminez le nombre minimum d'oscillations complètes $n$ nécessaires pour que l'archer ne ressente plus aucune gêne résiduelle.</li>
+        </ul>
+    </div>
+
+    <div class="exercice-box" style="background: linear-gradient(to bottom, #f8fafc, #ffffff);">
+        <h2 style="color: #1e293b; border-bottom-color: #cbd5e1;">Boîte à Outils : Ressources Mathématiques et Physiques</h2>
+        <p style="color: #64748b;"><em>Référez-vous aux définitions, théorèmes et méthodes génériques ci-dessous pour résoudre les différentes parties de l'étude.</em></p>
+
+        <div class="resource-box">
+            <h3>1. Étude de Fonctions et Optimisation (Dérivation)</h3>
+            <h4>Dérivées des fonctions de référence</h4>
+            <ul>
+                <li>Fonction puissance : Si $f(x) = x^n$, alors $f'(x) = n x^{n-1}$.</li>
+                <li>Multiplication par un réel $k$ : $(k \times u)' = k \times u'$.</li>
+                <li>Somme de fonctions : $(u + v)' = u' + v'$.</li>
+            </ul>
+
+            <h4>Théorème fondamental : Signe de la dérivée et Variations</h4>
+            <p>Soit $f$ une fonction dérivable sur un intervalle $I$ :</p>
+            <ul>
+                <li>Si pour tout $x$ de $I$, $f'(x) > 0$, alors la fonction $f$ est <strong>strictement croissante</strong> sur $I$.</li>
+                <li>Si pour tout $x$ de $I$, $f'(x) < 0$, alors la fonction $f$ est <strong>strictement décroissante</strong> sur $I$.</li>
+            </ul>
+
+            <div class="method-box">
+                <h4>Méthodologie et Rédaction Type : Déterminer un extremum</h4>
+                <ol>
+                    <li><strong>Dériver :</strong> « La fonction $f$ est dérivable sur l'intervalle $I$ comme somme de fonctions dérivables. Pour tout $x \in I$, $f'(x) = ...$ »</li>
+                    <li><strong>Étudier le signe de la dérivée :</strong> Résoudre l'équation $f'(x) = 0$ puis l'inéquation $f'(x) > 0$.</li>
+                    <li><strong>Dresser le tableau de variations :</strong> Résumer le signe de $f'(x)$ et les flèches de variations de $f(x)$ dans un tableau.</li>
+                    <li><strong>Conclure :</strong> « D'après le tableau de variations, la dérivée $f'$ s'annule en changeant de signe en $x_0$. La fonction $f$ admet donc un extremum local en $x_0$, qui vaut $f(x_0)$. »</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="resource-box">
+            <h3>2. Probabilités Conditionnelles</h3>
+            
+            <h4>Définitions et Notations</h4>
+            <ul>
+                <li>$P(A)$ : Probabilité que l'événement $A$ se réalise.</li>
+                <li>$P_B(A)$ : Probabilité conditionnelle que $A$ se réalise <strong>sachant que</strong> $B$ est déjà réalisé.</li>
+                <li>$P(A \cap B)$ : Probabilité de l'intersection ($A$ <strong>et</strong> $B$ se réalisent).</li>
+            </ul>
+
+            <h4>Règles de calcul sur un arbre pondéré</h4>
+            <p><strong>Règle des nœuds :</strong> La somme des probabilités des branches issues d'un même nœud est toujours égale à $1$.</p>
+            <div class="formula-box">$P_A(B) + P_A(\overline{B}) = 1$</div>
+
+            <p><strong>Règle du produit :</strong> La probabilité d'un chemin est égale au produit des probabilités des branches de ce chemin.</p>
+            <div class="formula-box">$P(A \cap B) = P(A) \times P_A(B)$</div>
+
+            <div class="method-box">
+                <h4>Méthodologie : Formule des Probabilités Totales</h4>
+                <p>Pour calculer la probabilité d'un événement situé à la fin de plusieurs chemins différents, on additionne les probabilités de tous les chemins menant à cet événement.</p>
+                <p><em>Rédaction type :</em> « Les événements $A$ et $\overline{A}$ forment une partition de l'univers. D'après la formule des probabilités totales : »<br>
+                $P(B) = [P(A) \times P_A(B)] + [P(\overline{A}) \times P_{\overline{A}}(B)]$</p>
+            </div>
+        </div>
+
+        <div class="resource-box">
+            <h3>3. Produit Scalaire et Travail d'une Force</h3>
+            
+            <h4>Le Produit Scalaire</h4>
+            <p>Soient deux vecteurs $\vec{u}$ et $\vec{v}$. Le produit scalaire est un nombre réel calculé à l'aide de leurs normes et de l'angle géométrique qu'ils forment :</p>
+            <div class="formula-box">$\vec{u} \cdot \vec{v} = \|\vec{u}\| \times \|\vec{v}\| \times \cos(\vec{u}, \vec{v})$</div>
+
+            <h4>Application Physique : Le Travail Mécanique</h4>
+            <p>Le travail $W$ d'une force constante $\vec{F}$ dont le point d'application se déplace le long d'un vecteur déplacement $\vec{d}$ est défini par le produit scalaire de ces deux vecteurs.</p>
+            <ul>
+                <li><strong>Formule :</strong> $W = \vec{F} \cdot \vec{d} = \|\vec{F}\| \times \|\vec{d}\| \times \cos(\alpha)$</li>
+                <li><strong>Unités du Système International :</strong> Force $\|\vec{F}\|$ en Newtons (N), distance $\|\vec{d}\|$ en mètres (m), Travail $W$ en Joules (J).</li>
+            </ul>
+        </div>
+
+        <div class="resource-box">
+            <h3>4. Loi de Bernoulli et Schéma de Bernoulli</h3>
+            <h4>Épreuve et Loi de Bernoulli</h4>
+            <p>Une <strong>épreuve de Bernoulli</strong> est une expérience aléatoire qui ne comporte que deux issues possibles : Le « Succès » ($1$), de probabilité $p$ et l'« Échec » ($0$), de probabilité $1 - p$.<br>
+            Si $X$ est la variable aléatoire associée, son espérance mathématique est : <strong>$E(X) = p$</strong>.</p>
+
+            <h4>Schéma de Bernoulli</h4>
+            <p>Un <strong>schéma de Bernoulli</strong> est la répétition de $n$ épreuves de Bernoulli identiques et strictement <strong>indépendantes</strong> les unes des autres.</p>
+            
+            <h4>Espérance d'un Schéma de Bernoulli (Loi Binomiale)</h4>
+            <p>Pour un schéma de Bernoulli composé de $n$ épreuves (par exemple, une série de $n=3$ tirs) ayant chacune une probabilité de succès $p$, le nombre de succès en moyenne est donné par l'espérance mathématique :</p>
+            <div class="formula-box">$E = n \times p$</div>
+            <p>Concrètement, cette valeur représente le nombre moyen de fois où l'événement attendu (toucher la cible) se réalisera à l'issue de la totalité des épreuves.</p>
+
+            <div class="method-box">
+                <h4>Méthodologie : Calculer la probabilité d'obtenir "exactement $k$ succès"</h4>
+                <ol>
+                    <li><strong>Modéliser :</strong> Dessiner un arbre de probabilités avec 2 branches par nœud et autant de niveaux que d'épreuves.</li>
+                    <li><strong>Identifier :</strong> Repérer visuellement tous les chemins complets qui contiennent exactement le nombre de succès recherché.</li>
+                    <li><strong>Calculer :</strong> La probabilité finale est la <strong>somme</strong> des probabilités de chaque chemin valide identifié.</li>
+                </ol>
+                <p><em>Rédaction type :</em> « L'expérience consiste en la répétition de $n$ épreuves de Bernoulli identiques et indépendantes (succès = ..., probabilité $p$). Il s'agit d'un schéma de Bernoulli. D'après l'arbre pondéré, l'événement "obtenir exactement $k$ succès" est réalisé par les chemins suivants : [...]. Sa probabilité est donc : $P = P(\text{chemin 1}) + P(\text{chemin 2}) + ...$ »</p>
+            </div>
+        </div>
+
+        <div class="resource-box">
+            <h3>5. Suites Numériques (Évolution et Amortissement)</h3>
+            
+            <h4>Suites Géométriques</h4>
+            <p>Une suite $(u_n)$ est géométrique s'il existe un nombre constant $q$ (la <strong>raison</strong>) tel que pour tout entier $n$ :</p>
+            <div class="formula-box">$u_{n+1} = u_n \times q$</div>
+
+            <div class="method-box">
+                <h4>Méthode : Traduire une variation en pourcentage</h4>
+                <p>Diminuer une grandeur de $t\ \%$ revient à multiplier cette grandeur par le coefficient multiplicateur $q = 1 - \frac{t}{100}$.</p>
+            </div>
+
+            <h4>Formule Explicite</h4>
+            <div class="formula-box">$u_n = u_0 \times q^n$</div>
+        </div>
+
+        <div class="resource-box">
+            <h3>6. Statistique inférentielle : Moyenne, Intervalle de confiance et Décision</h3>
+            <p>Dans la partie interactive, vous lancez 10 séries de 100 tirs. Pour chaque série, vous obtenez un nombre de ruptures. Vous devez ensuite calculer la moyenne, estimer un intervalle de confiance et prendre une décision quant à la conformité de l'arc (probabilité de rupture < 10 %).</p>
+
+            <h4>Moyenne d'un échantillon</h4>
+            <p>Soit $x_1, x_2, ..., x_n$ les $n$ valeurs relevées (ici $n=10$ séries). La <strong>moyenne</strong> $\bar{x}$ est donnée par :</p>
+            <div class="formula-box">$\bar{x} = \frac{x_1 + x_2 + \cdots + x_n}{n}$</div>
+            <p>Elle représente la tendance centrale de l'échantillon.</p>
+
+            <h4>Intervalle de confiance pour une proportion (niveau 95%)</h4>
+            <p>Lorsque l'on mesure une proportion $f$ (fréquence observée) sur un échantillon de taille $n$ (ici $n=100$ tirs par série), on peut estimer la vraie proportion $p$ dans la population avec un intervalle de confiance. Pour une taille d'échantillon suffisamment grande ($n \ge 30$), l'intervalle de confiance à 95 % est approximativement :</p>
+            <div class="formula-box">$IC_{95\%}(p) = \left[ f - \frac{1}{\sqrt{n}} ; f + \frac{1}{\sqrt{n}} \right]$</div>
+            <p>Dans notre cas, $n = 100$ tirs, donc $\frac{1}{\sqrt{100}} = 0,1 = 10\%$. L'intervalle de confiance pour la proportion de ruptures est donc $[f - 0,10 ; f + 0,10]$, où $f$ est exprimé en pourcentage (par exemple $f = 12\%$ donne $[2\% ; 22\%]$).</p>
+
+            <div class="method-box">
+                <h4>Méthodologie : Calculer la moyenne, l'intervalle de confiance et décider</h4>
+                <ol>
+                    <li><strong>Lancer les séries :</strong> Cliquez sur « Lancer 10 séries de 100 tirs ». Notez les 10 résultats bruts (nombre de ruptures par série).</li>
+                    <li><strong>Calculer la moyenne :</strong> Additionnez les 10 résultats et divisez par 10. Vous obtenez la fréquence moyenne de rupture $\bar{x}$ (en %).</li>
+                    <li><strong>Estimer l'intervalle de confiance :</strong> Appliquez la formule $[\bar{x} - 10\% ; \bar{x} + 10\%]$. (Attention : si les bornes sortent de l'intervalle $[0\% ; 100\%]$, on les ramène aux limites réalistes).</li>
+                    <li><strong>Prendre une décision :</strong> Comparez l'intervalle de confiance avec la norme de sécurité « probabilité de rupture < 10 % ».
+                        <ul>
+                            <li>Si <strong>tout l'intervalle est en dessous de 10 %</strong> (borne supérieure < 10), alors l'arc est <strong>conforme</strong> (sécurisé).</li>
+                            <li>Si <strong>l'intervalle contient 10 % ou le dépasse</strong>, alors l'arc est <strong>dangereux</strong> (risque de rupture trop élevé).</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+
+            <h4>Exemple concret</h4>
+            <p>Supposons que les 10 séries donnent les ruptures suivantes : 11, 9, 12, 8, 10, 11, 9, 10, 12, 8. La moyenne est $\bar{x} = \frac{100}{10} = 10\%$. L'intervalle de confiance à 95 % est $[10\% - 10\% ; 10\% + 10\%] = [0\% ; 20\%]$. Cet intervalle contient 10 % (la borne supérieure est 20 % > 10 %). On ne peut pas affirmer que la vraie probabilité est inférieure à 10 %, donc l'arc est considéré comme dangereux. Si la moyenne était de 8 %, l'intervalle serait $[-2\% ; 18\%]$, ramené à $[0\% ; 18\%]$ ; il contient encore 10 % (car 18 % > 10 %), donc toujours dangereux. En réalité, pour être sûr, il faudrait que la moyenne soit suffisamment basse pour que la borne supérieure soit < 10 %, c'est-à-dire $\bar{x} + 10\% < 10\% \Rightarrow \bar{x} < 0\%$, ce qui est impossible. Ceci montre que la norme est très stricte : avec $n=100$, l'intervalle est large. C'est pourquoi la simulation vous demande de vérifier si la moyenne calculée est inférieure à 10 % (décision simple) ; l'intervalle de confiance permet une interprétation plus fine mais ici on utilise la règle simplifiée de la consigne.</p>
+            <p><strong>Remarque :</strong> Dans la feuille de calcul du journal, vous devrez saisir la moyenne que vous avez calculée, l'intervalle de confiance estimé, puis votre décision (Conforme ou Danger) en fonction de la comparaison de votre moyenne avec le seuil de 10 %.</p>
+        </div>
+
+        <div class="resource-box">
+            <h3>7. Longueur d'un arc de cercle</h3>
+            <p>Cette notion est utilisée dans la partie 1 (étape C) pour dimensionner la butée : la rotation de la came correspond à un angle $\theta$ (en radians) et le rayon de la came est $R$. La longueur de l'arc parcouru par un point situé à la périphérie est alors donnée par la formule :</p>
+            <div class="formula-box">$L = R \times \theta$</div>
+            <p>où $\theta$ est l'angle de rotation <strong>exprimé en radians</strong>. Si l'angle est donné en degrés, il faut d'abord le convertir en radians en utilisant $\theta_{\text{rad}} = \theta_{\text{deg}} \times \frac{\pi}{180}$.</p>
+            <div class="method-box">
+                <h4>Méthodologie : Calculer la longueur d'un arc</h4>
+                <ol>
+                    <li><strong>Identifier le rayon $R$</strong> (distance de l'axe de rotation au point considéré).</li>
+                    <li><strong>Exprimer l'angle $\theta$ en radians</strong> (si nécessaire, convertir depuis les degrés).</li>
+                    <li><strong>Appliquer la formule $L = R \times \theta$</strong>. Le résultat est dans la même unité que le rayon.</li>
+                </ol>
+                <p><em>Exemple :</em> Pour un rayon $R = 35$ m et un angle $\theta = 0,345$ rad, la longueur d'arc est $L = 35 \times 0,345 = 12,075$ mm. </p>
+            </div>
+            <div class="rappel" style="background-color: #e0f2fe; padding: 15px; border-left: 4px solid #0284c7; margin-top: 10px; border-radius: 6px;">
+                <strong>🔁 Rappel :</strong> Le radian est une unité d'angle telle que la longueur d'un arc de cercle de rayon 1 est égale à l'angle. Un angle plat vaut $\pi$ radians (180°). La conversion est donc essentielle pour appliquer la formule $L = R\theta$.
+            </div>
+        </div>
+    </div>
+
+    <div class="exercice-box danger-zone">
+        <h2>Modélisation Interactive et Étude Statistique</h2>
+        <p>Cette simulation vous permet de tester le placement de la butée et d'effectuer des relevés statistiques virtuels pour valider expérimentalement vos calculs théoriques.</p>
+        
+        <canvas id="arcCanvas" width="850" height="500" aria-label="Zone de dessin interactive affichant le schéma d'un arc mécanique avec matérialisation de la zone de rupture et butée mobile"></canvas>
+        
+        <div class="controles-interactifs">
+            <label for="sliderButee" style="font-weight: 600; color: var(--text-primary); display: block; margin-bottom: 0.5rem;">
+                ⚙️ Régler la position de la butée (Tension d'arrêt max) :
+            </label>
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                <input type="range" id="sliderButee" min="150" max="300" value="300" step="10" aria-label="Curseur pour modifier la tension de la butée en Newtons" style="flex: 1;">
+                <span id="valeurButee" style="font-weight: 700; font-size: 1.25rem; color: var(--primary); min-width: 60px;">300 N</span>
+            </div>
+            <p style="font-size: 0.9375rem; color: var(--text-muted); margin-top: 0;">
+                <em>Réglez le curseur ou saisissez directement la valeur dans votre journal. Observez le déplacement de la pièce orange sur la came (A).</em>
+            </p>
+
+            <hr style="border: none; border-top: 1px solid var(--border-light); margin: 1.5rem 0;">
+
+            <div style="background: linear-gradient(to right, #ecfdf5, #ffffff); border: 1px solid #a7f3d0; border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.5rem; border-left: 4px solid var(--success);">
+                <p style="margin: 0; font-weight: 600; color: #065f46;">🎯 Démarche expérimentale :</p>
+                <ol style="margin: 0.75rem 0 0 0; padding-left: 1.25rem; color: #065f46;">
+                    <li>Réglez la butée (via le curseur ou en créant une ligne dans le journal).</li>
+                    <li>Lancez les tirs d'essai et observez les résultats bruts.</li>
+                    <li><strong>Calculez vous-même la moyenne</strong> des ruptures obtenues et estimez l'intervalle de confiance.</li>
+                    <li>Saisissez vos valeurs dans le journal, déduisez-en la validité, puis cliquez sur "Vérifier".</li>
+                </ol>
+            </div>
+
+            <p style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.75rem;">📊 Échantillonnage :</p>
+            <button id="btn-stats" class="btn-action">
+                <span>📊</span> Lancer 10 séries de 100 tirs
+            </button>
+            <div id="resultats-stats" style="margin-top: 1rem;"><em>Les résultats bruts s'afficheront ici.</em></div>
+
+            <hr style="border: none; border-top: 1px solid var(--border-light); margin: 1.5rem 0;">
+            
+            <h3 style="margin-top: 0;">Journal d'expérimentation (à compléter)</h3>
+            
+            <div style="overflow-x: auto; margin: 1rem -0.5rem; padding: 0 0.5rem;">
+                <table id="table-journal">
+                    <thead>
+                        <tr>
+                            <th>Tension d'arrêt (N)</th>
+                            <th>Moyenne calculée (%)</th>
+                            <th>Intervalle de Confiance estimé</th>
+                            <th>Décision (< 10%)</th>
+                            <th>Validation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Les lignes seront ajoutées dynamiquement -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <button id="btn-add-row" class="btn-action success" style="margin-top: 0.5rem;">
+                <span>➕</span> Ajouter une ligne de relevé
+            </button>
+
+            <div class="resultat-boite">
+                <strong>🎯 À vous de jouer :</strong><br>
+                En analysant votre journal d'expérimentation validé, quelle valeur de tension proposez-vous au bureau d'étude ? Justifiez ce choix.
+            </div>
+        </div>
+
+        <div class="legende-canvas">
+            <strong>Légende :</strong>
+            <span style="white-space: nowrap;"><span style="color: var(--primary); font-weight: 600;">A</span> : Poulie-came</span>
+            <span style="white-space: nowrap;"><span style="color: #333; font-weight: 600;">B</span> : Branches</span>
+            <span style="white-space: nowrap;"><span style="color: #111; font-weight: 600;">C</span> : Poignée</span>
+            <span style="color: var(--success); font-weight: 600;">D</span> : Corde
+            <span style="color: #666; font-weight: 600;">E</span> : Écarteur
+            <span style="color: #555; font-weight: 600;">F</span> : Amortisseur
+            <span style="color: #222; font-weight: 600;">G</span> : Repose-flèche
+        </div>
+    </div>
+
+    </div><!-- /container -->
+
+    <button id="btn-copyright" aria-label="Afficher les droits d'auteur et la licence d'utilisation">Droits d'auteur</button>
+
+    <div id="overlay" aria-hidden="true"></div>
+
+    <div id="popup-copyright" role="dialog" aria-labelledby="titre-copyright" aria-modal="true">
+        <h2 id="titre-copyright">⚖️ Droits d'Auteur et Licence d'Utilisation</h2>
+        <p><strong>Auteur :</strong> Yann Merdy (<a href="mailto:yann.merdy@gmail.com" style="color: var(--primary);">yann.merdy@gmail.com</a>) - Mars 2026</p>
+        <p><strong>Licence d'Utilisation Non Commerciale</strong></p>
+        <p>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ('Optimisation d'un Arc Mécanique') sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
+        <p><strong>Conditions :</strong></p>
+        <ul>
+            <li><strong>Utilisation Privée et Éducative (Autorisée) :</strong> Vous êtes autorisé.e à utiliser, copier, modifier et distribuer ce code et son contenu uniquement à des fins personnelles, éducatives et non lucratives.</li>
+            <li><strong>Utilisation Commerciale (Interdite) :</strong> Toute utilisation, distribution, intégration ou reproduction du code ou du contenu (total ou partiel) à des fins commerciales, lucratives ou professionnelles est strictement interdite sans un accord écrit préalable et explicite de l'auteur.</li>
+            <li><strong>Attribution :</strong> Toute reproduction ou modification doit conserver la mention de l'auteur originale (Yann Merdy) et la présente notice de droits d'auteur.</li>
+        </ul>
+        <p>Pour toute demande d'utilisation commerciale ou de licence spécifique, veuillez contacter l'auteur à l'adresse indiquée ci-dessus.</p>
+        <button id="btn-close-copyright" class="btn-close" aria-label="Fermer la fenêtre des droits d'auteur">Fermer</button>
+    </div>
+
+    <script>
+        // Gestion de l'affichage du popup Droits d'auteur
+        const btnCopyright = document.getElementById('btn-copyright');
+        const popupCopyright = document.getElementById('popup-copyright');
+        const overlay = document.getElementById('overlay');
+        const btnCloseCopyright = document.getElementById('btn-close-copyright');
+
+        function openPopup() {
+            popupCopyright.classList.add('active');
+            overlay.classList.add('active');
+            btnCloseCopyright.focus();
+        }
+
+        function closePopup() {
+            popupCopyright.classList.remove('active');
+            overlay.classList.remove('active');
+            btnCopyright.focus();
+        }
+
+        btnCopyright.addEventListener('click', openPopup);
+        btnCloseCopyright.addEventListener('click', closePopup);
+        overlay.addEventListener('click', closePopup);
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && popupCopyright.classList.contains('active')) {
+                closePopup();
+            }
+        });
+
+        // --- Logique Interactive ---
+        const sliderButee = document.getElementById('sliderButee');
+        const valeurButee = document.getElementById('valeurButee');
+        const btnStats = document.getElementById('btn-stats');
+        const resultatsStats = document.getElementById('resultats-stats');
+
+        let buteeMax = parseInt(sliderButee.value);
+        let currentExpectedMean = null; 
+        let lastActiveButeeInput = null;
+
+        sliderButee.addEventListener('input', function() {
+            buteeMax = parseInt(this.value);
+            valeurButee.textContent = buteeMax + " N";
+            resultatsStats.innerHTML = '<em>Les résultats bruts s\'afficheront ici après un test.</em>'; 
+            currentExpectedMean = null;
+            
+            if(lastActiveButeeInput) {
+                lastActiveButeeInput.value = buteeMax;
+            }
+        });
+
+        btnStats.addEventListener('click', function() {
+            let nbSeries = 10;
+            let nbTirs = 100;
+            let enDanger = (buteeMax > 250); 
+            let resultats = [];
+            let totalRuptures = 0;
+            
+            for(let s = 0; s < nbSeries; s++) {
+                let ruptures = 0;
+                for(let i = 0; i < nbTirs; i++) {
+                    let probaRupture = enDanger ? 0.1048 : 0.00; 
+                    if (Math.random() < probaRupture) {
+                        ruptures++;
+                    }
+                }
+                resultats.push(ruptures);
+                totalRuptures += ruptures;
+            }
+            
+            currentExpectedMean = (totalRuptures / nbSeries).toFixed(1);
+
+            let htmlContent = "<strong style='color: var(--primary); display: block; margin-bottom: 0.75rem;'>Résultats bruts des " + nbSeries + " échantillons :</strong>";
+            htmlContent += "<div style='display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.5rem;'>";
+            for(let i = 0; i < resultats.length; i++) {
+                let color = resultats[i] > 10 ? 'var(--danger)' : 'var(--success)';
+                htmlContent += "<div style='background: white; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border-light); font-size: 0.875rem;'>Série " + (i+1) + " : <strong style='color: " + color + "'>" + resultats[i] + "</strong></div>";
+            }
+            htmlContent += "</div>";
+            htmlContent += "<div style='margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border-light); font-size: 0.875rem; color: var(--text-muted);'>Calculez la moyenne de ces valeurs et complétez le tableau ci-dessous.</div>";
+
+            resultatsStats.innerHTML = htmlContent;
+        });
+
+        // --- Gestion du journal ---
+        const btnAddRow = document.getElementById('btn-add-row');
+        const tableJournal = document.getElementById('table-journal');
+        let rowCount = 0;
+
+        btnAddRow.addEventListener('click', function() {
+            rowCount++;
+            let tbody = tableJournal.querySelector('tbody');
+            let row = tbody.insertRow();
+            row.style.animation = 'fadeIn 0.3s ease';
+            
+            let c1 = row.insertCell(0);
+            let c2 = row.insertCell(1);
+            let c3 = row.insertCell(2);
+            let c4 = row.insertCell(3);
+            let c5 = row.insertCell(4);
+
+            c1.innerHTML = `<input type="number" id="butee-${rowCount}" aria-label="Tension d'arrêt en Newtons" value="${buteeMax}" style="width: 100%; text-align: center;">`;
+            
+            let currentButeeInput = document.getElementById(`butee-${rowCount}`);
+            lastActiveButeeInput = currentButeeInput;
+
+            currentButeeInput.addEventListener('input', function() {
+                let val = parseInt(this.value);
+                if(!isNaN(val) && val >= 150 && val <= 300) {
+                    sliderButee.value = val;
+                    valeurButee.textContent = val + " N";
+                    buteeMax = val;
+                    resultatsStats.innerHTML = '<em>Les résultats bruts s\'afficheront ici après un test.</em>';
+                    currentExpectedMean = null;
+                }
+            });
+
+            c2.innerHTML = `<input type="number" step="0.1" id="freq-${rowCount}" aria-label="Moyenne de ruptures" placeholder="%">`;
+            c3.innerHTML = `<input type="text" id="ic-${rowCount}" aria-label="Intervalle de confiance" placeholder="[x ; y]">`;
+            c4.innerHTML = `
+                <select id="dec-${rowCount}" aria-label="Conclusion pour la ligne">
+                    <option value="">-- Choix --</option>
+                    <option value="safe">✓ Conforme</option>
+                    <option value="danger">⚠ Danger</option>
+                </select>`;
+            c5.innerHTML = `
+                <button class="btn-action" style="padding: 0.5rem 1rem; font-size: 0.875rem;" onclick="validerLigne(this, ${rowCount})">
+                    Vérifier
+                </button> 
+                <div id="feed-${rowCount}" style="margin-top: 0.5rem; font-size: 0.8125rem;"></div>`;
+        });
+
+        window.validerLigne = function(btn, id) {
+            let buteeVal = document.getElementById('butee-'+id).value;
+            let freqVal = document.getElementById('freq-'+id).value;
+            let icVal = document.getElementById('ic-'+id).value;
+            let decVal = document.getElementById('dec-'+id).value;
+            let feed = document.getElementById('feed-'+id);
+
+            if(!buteeVal || !freqVal || !decVal || icVal.trim() === "") {
+                feed.innerHTML = "<span style='color:var(--danger)'>⚠️ Complétez toutes les cases</span>";
+                return;
+            }
+
+            let butee = parseInt(buteeVal);
+            let freq = parseFloat(freqVal);
+            let feedbackHtml = "";
+            let isValid = true;
+
+            if(currentExpectedMean !== null) {
+                if(Math.abs(freq - parseFloat(currentExpectedMean)) > 0.1) {
+                    feedbackHtml += "<div style='color:var(--danger); margin-bottom: 0.25rem;'>❌ Moyenne incorrecte</div>";
+                    isValid = false;
+                } else {
+                    feedbackHtml += "<div style='color:var(--success); margin-bottom: 0.25rem;'>✅ Calcul exact</div>";
+                }
+            } else {
+                feedbackHtml += "<div style='color:var(--warning); margin-bottom: 0.25rem;'>⚠️ Lancez d'abord un test</div>";
+                isValid = false;
+            }
+
+            let isLogicallyCorrect = (freq < 10 && decVal === 'safe') || (freq >= 10 && decVal === 'danger');
+            let isTheoreticallyCorrect = (butee <= 250 && decVal === 'safe') || (butee > 250 && decVal === 'danger');
+
+            if (!isLogicallyCorrect) {
+                feedbackHtml += "<div style='color:var(--danger)'>❌ Décision incohérente</div>";
+            } else if (!isTheoreticallyCorrect) {
+                feedbackHtml += "<div style='color:var(--warning)'>⚠️ Logique OK mais vérifier les calculs</div>";
+            } else {
+                if(isValid) {
+                    feedbackHtml += "<div style='color:var(--success); font-weight: 600;'>✅ Validé !</div>";
+                }
+            }
+
+            feed.innerHTML = feedbackHtml;
+        };
+
+        // --- Script Canvas modifié (sans indication visuelle de la zone de danger) ---
+        const canvas = document.getElementById('arcCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function drawLabel(x, y, text, color="#1e40af", fontSize="16px") {
+            ctx.fillStyle = color;
+            ctx.font = `bold ${fontSize} Inter, sans-serif`;
+            ctx.fillText(text, x, y);
+        }
+
+        function drawArc(tension) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Fond avec grille subtile
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 1;
+            for(let i = 0; i <= canvas.width; i+=50) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+            }
+            for(let j = 0; j <= canvas.height; j+=50) {
+                ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(canvas.width, j); ctx.stroke();
+            }
+
+            // SUPPRESSION : Plus de zone d'alerte colorée
+            // L'élève doit découvrir expérimentalement où se situe le danger
+            
+            let topY = 80;
+            let bottomY = 420;
+            let riserTopY = 150;
+            let riserBottomY = 350;
+            let bowX = 450;
+            let drawPointX = bowX - tension;
+            // La variable isDanger existe toujours pour la logique interne mais n'est plus affichée
+            let isDanger = drawPointX < 200;
+
+            // Ombre portée pour la poignée
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetY = 5;
+
+            // B : Branches avec gradient métallique
+            let gradBranch = ctx.createLinearGradient(bowX-20, topY, bowX, riserTopY);
+            gradBranch.addColorStop(0, '#475569');
+            gradBranch.addColorStop(0.5, '#64748b');
+            gradBranch.addColorStop(1, '#334155');
+            
+            ctx.strokeStyle = gradBranch;
+            ctx.lineWidth = 12;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(bowX, riserTopY);
+            ctx.lineTo(bowX - 25, topY);
+            ctx.moveTo(bowX, riserBottomY);
+            ctx.lineTo(bowX - 25, bottomY);
+            ctx.stroke();
+            
+            ctx.shadowColor = 'transparent';
+            drawLabel(bowX - 15, 115, "B", "#475569", "18px");
+
+            // C : Poignée (Riser) avec effet 3D
+            let gradGrip = ctx.createLinearGradient(bowX, riserTopY, bowX+40, riserBottomY);
+            gradGrip.addColorStop(0, '#1e293b');
+            gradGrip.addColorStop(0.5, '#334155');
+            gradGrip.addColorStop(1, '#0f172a');
+            
+            ctx.strokeStyle = gradGrip;
+            ctx.lineWidth = 18;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(bowX, riserTopY);
+            ctx.quadraticCurveTo(bowX + 70, 250, bowX, riserBottomY);
+            ctx.stroke();
+            drawLabel(bowX + 55, 255, "C", "#0f172a", "18px");
+
+            // F : Amortisseur
+            ctx.fillStyle = '#374151';
+            ctx.beginPath();
+            ctx.roundRect(bowX + 30, 295, 35, 20, 5);
+            ctx.fill();
+            drawLabel(bowX + 70, 308, "F", "#374151");
+
+            // E : Écarteur de câble
+            ctx.strokeStyle = '#6b7280';
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(bowX + 45, 175);
+            ctx.lineTo(bowX - 55, 175);
+            ctx.stroke();
+            drawLabel(bowX - 65, 170, "E", "#6b7280");
+
+            // G : Repose-flèche
+            ctx.fillStyle = '#111827';
+            ctx.beginPath();
+            ctx.roundRect(bowX + 12, 235, 25, 12, 3);
+            ctx.fill();
+            drawLabel(bowX + 18, 225, "G", "#111827");
+
+            // A : Poulies-cames avec effet métallique
+            let camX = bowX - 25;
+            
+            // Cercle extérieur
+            ctx.strokeStyle = '#1e40af';
+            ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.arc(camX, topY, 30, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Centre de la poulie
+            ctx.fillStyle = '#1e40af';
+            ctx.beginPath();
+            ctx.arc(camX, topY, 8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(camX, bottomY, 30, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(camX, bottomY, 8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            drawLabel(camX - 45, topY + 5, "A", "#1e40af", "18px");
+
+            // Butée mécanique avec glow effect
+            let angleButee = Math.PI * 1.2 + (buteeMax / 300) * Math.PI * 0.8; 
+            let buteeX = camX + 30 * Math.cos(angleButee);
+            let buteeY = topY + 30 * Math.sin(angleButee);
+
+            // Glow orange
+            ctx.shadowColor = '#f97316';
+            ctx.shadowBlur = 15;
+            ctx.fillStyle = '#ea580c';
+            ctx.beginPath();
+            ctx.arc(buteeX, buteeY, 8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowColor = 'transparent';
+            
+            // Bordure blanche
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            drawLabel(buteeX - 40, buteeY - 15, "Butée", "#ea580c");
+
+            // D : Corde - SUPPRESSION de la couleur dynamique (toujours neutre)
+            // La corde ne change plus de couleur selon le danger
+            ctx.strokeStyle = '#334155'; // Couleur neutre fixe
+            ctx.lineWidth = 5;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(camX - 28, topY - 10);
+            ctx.lineTo(drawPointX, 250);
+            ctx.lineTo(camX - 28, bottomY + 10);
+            ctx.stroke();
+            
+            // SUPPRESSION : Plus d'indicateur de tension affiché
+            // ctx.fillText(`Tension: ${Math.round((bowX - drawPointX)/2)}N`, drawPointX - 30, 275);
+
+            // SUPPRESSION : Alerte danger visuelle
+            // L'élève ne voit plus l'avertissement "RUPTURE IMMINENTE"
+            
+            // Flèche avec gradient
+            let arrowGrad = ctx.createLinearGradient(drawPointX, 240, drawPointX + 350, 250);
+            arrowGrad.addColorStop(0, '#1e40af');
+            arrowGrad.addColorStop(1, '#3b82f6');
+            
+            ctx.strokeStyle = arrowGrad;
+            ctx.lineWidth = 8;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(drawPointX, 248);
+            ctx.lineTo(drawPointX + 340, 248);
+            ctx.stroke();
+
+            // Empennage
+            ctx.fillStyle = '#1e40af';
+            ctx.beginPath();
+            ctx.moveTo(drawPointX + 340, 248);
+            ctx.lineTo(drawPointX + 310, 230);
+            ctx.lineTo(drawPointX + 310, 266);
+            ctx.fill();
+            
+            // Plumes décoratives
+            ctx.fillStyle = '#60a5fa';
+            ctx.beginPath();
+            ctx.moveTo(drawPointX + 320, 248);
+            ctx.lineTo(drawPointX + 300, 235);
+            ctx.lineTo(drawPointX + 305, 248);
+            ctx.fill();
+        }
+
+        let currentTension = 0;
+        
+        function animate() {
+            // Animation fluide
+            let targetTension = buteeMax;
+            currentTension += (targetTension - currentTension) * 0.1;
+            
+            if(Math.abs(targetTension - currentTension) < 0.5) {
+                currentTension = targetTension;
+            }
+
+            drawArc(currentTension);
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+        
+        // Ajout d'animation CSS pour les nouvelles lignes
+        let style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(-10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

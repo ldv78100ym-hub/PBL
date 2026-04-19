@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyse Théorique - Arc Mécanique</title>
+    
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+        
+        :root {
+            --primary: #1e40af; --primary-dark: #1e3a8a; --primary-light: #3b82f6;
+            --surface: #ffffff; --text-primary: #0f172a; --bg-color: #f1f5f9;
+            --border-light: #e2e8f0; --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: var(--text-primary);
+            margin: 0; padding: 2rem;
+            min-height: 100vh;
+        }
+
+        /* Accessibilité (Synchronisable avec index.html via un script ou localStorage) */
+        body.dys-mode { font-family: 'Comic Sans MS', 'OpenDyslexic', sans-serif !important; }
+        body.vision-mode { filter: contrast(1.6) brightness(1.2); }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center; gap: 8px;
+            background: var(--primary);
+            color: white; text-decoration: none;
+            padding: 10px 20px; border-radius: 30px;
+            font-weight: 600; margin-bottom: 2rem;
+            box-shadow: var(--shadow-md); transition: 0.2s;
+        }
+        .back-btn:hover { transform: translateY(-2px); background: var(--primary-dark); }
+
+        .exercice-box {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+            border-left: 4px solid var(--primary);
+            max-width: 900px; margin: auto;
+        }
+
+        .formula-box {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            border: 1px solid #7dd3fc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            text-align: center; font-size: 1.25rem;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="PROJET_ARC.html" class="back-btn"><i class="fas fa-arrow-left"></i> Retour à la Constellation</a>
+
+    <div class="exercice-box">
+        <h2><i class="fas fa-book-open"></i> I. Analyse Théorique de l'Arc</h2>
+        <p>Établissement du modèle mathématique de l'énergie stockée lors de la tension.</p>
+        
+        <div class="formula-box">
+            <p>Force exercée sur la corde :</p>
+            $ F(x) = k \cdot x + \dfrac{1}{2} c \cdot x^2 $
+            <br><br>
+            <p>Énergie potentielle élastique :</p>
+            $ E_p = \int_{0}^{x_{max}} F(x) dx $
+        </div>
+    </div>
+
+</body>
+</html>

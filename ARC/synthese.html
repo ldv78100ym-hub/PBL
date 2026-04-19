@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synthèse et Analyse - Arc Mécanique</title>
+    
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #1e40af; 
+            --primary-dark: #1e3a8a; 
+            --primary-light: #3b82f6;
+            --surface: #ffffff; 
+            --text-primary: #0f172a; 
+            --bg-color: #f1f5f9;
+            --border-light: #e2e8f0; 
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --accent: #8b5cf6;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: var(--text-primary);
+            margin: 0; 
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ----- Accessibilité (Dys & Malvoyants) ----- */
+        body.dys-mode { 
+            font-family: 'Comic Sans MS', 'OpenDyslexic', sans-serif !important; 
+            letter-spacing: 1px;
+            line-height: 1.8;
+        }
+        body.vision-mode { 
+            filter: contrast(1.6) brightness(1.2); 
+            background: #000;
+            color: #fff;
+        }
+        body.vision-mode .exercice-box {
+            background: #111;
+            border-color: #ffcc00;
+            color: #fff;
+        }
+        body.vision-mode .formula-box {
+            background: #222;
+            border-color: #ffcc00;
+            color: #ffcc00;
+        }
+        
+        /* Panneau d'accessibilité haut droit */
+        #accessibility-panel {
+            position: fixed;
+            top: 20px; right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+        .acc-btn {
+            background: var(--surface);
+            border: 1px solid var(--primary-light);
+            color: var(--primary);
+            width: 45px; height: 45px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: var(--shadow-md);
+        }
+        .acc-btn:hover { background: var(--primary-light); color: white; }
+
+        /* ----- Interface ----- */
+        .header-container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 2rem;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center; gap: 8px;
+            background: var(--primary);
+            color: white; text-decoration: none;
+            padding: 10px 20px; border-radius: 30px;
+            font-weight: 600;
+            box-shadow: var(--shadow-md); transition: 0.2s;
+        }
+        .back-btn:hover { transform: translateY(-2px); background: var(--primary-dark); }
+
+        .exercice-box {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 3rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+            border-top: 6px solid var(--accent);
+            max-width: 900px; 
+            width: 100%;
+            box-sizing: border-box;
+            line-height: 1.6;
+        }
+
+        .exercice-box h2 {
+            color: var(--primary);
+            margin-top: 0;
+            border-bottom: 2px solid var(--border-light);
+            padding-bottom: 10px;
+        }
+
+        .exercice-box h3 {
+            color: var(--accent);
+            margin-top: 2rem;
+        }
+
+        .formula-box {
+            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+            border: 1px solid #c4b5fd;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            text-align: center; 
+            font-size: 1.25rem;
+        }
+
+        /* ----- Bouton Droits d'auteur & Modale ----- */
+        #copyright-btn {
+            position: fixed;
+            bottom: 20px; left: 20px;
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: var(--shadow-md);
+            transition: 0.2s;
+            z-index: 100;
+        }
+        #copyright-btn:hover { background: var(--primary-dark); }
+
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-box {
+            background: var(--surface);
+            color: var(--text-primary);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            line-height: 1.6;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px; right: 15px;
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #ef4444;
+            width: 35px; height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .modal-close:hover { background: #ef4444; color: white; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div id="accessibility-panel">
+        <button class="acc-btn" onclick="toggleDysMode()" title="Mode Dyslexique"><i class="fas fa-font"></i></button>
+        <button class="acc-btn" onclick="toggleVisionMode()" title="Mode Malvoyant"><i class="fas fa-eye"></i></button>
+    </div>
+
+    <button id="copyright-btn" onclick="openModal('modal-copyright')">
+        <i class="fas fa-scale-balanced"></i> Droits d'auteur
+    </button>
+
+    <div id="modal-copyright" class="modal-overlay hidden">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeModal('modal-copyright')"><i class="fas fa-times"></i></button>
+            <h2 style="color: var(--primary); margin-top: 0;">⚖️ Droits d'Auteur et Licence d'Utilisation</h2>
+            <p><strong>Auteur :</strong> Yann Merdy (yann.merdy@gmail.com) - Avril 2026</p>
+            <p><strong>Licence d'Utilisation Non Commerciale</strong></p>
+            <p>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ('Synthèse et Analyse - Arc Mécanique') sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
+            <p><strong>Conditions :</strong></p>
+            <ul>
+                <li><strong>Utilisation Privée et Éducative (Autorisée) :</strong> Vous êtes autorisé.e à utiliser, copier, modifier et distribuer ce code et son contenu uniquement à des fins personnelles, éducatives et non lucratives.</li>
+                <li><strong>Utilisation Commerciale (Interdite) :</strong> Toute utilisation, distribution, intégration ou reproduction du code ou du contenu (total ou partiel) à des fins commerciales, lucratives ou professionnelles est strictement interdite sans un accord écrit préalable et explicite de l'auteur.</li>
+            </ul>
+            <p><strong>Attribution :</strong> Toute reproduction ou modification doit conserver la mention de l'auteur originale (Yann Merdy) et la présente notice de droits d'auteur.</p>
+            <p>Pour toute demande d'utilisation commerciale ou de licence spécifique, veuillez contacter l'auteur à l'adresse indiquée ci-dessus.</p>
+        </div>
+    </div>
+
+    <div class="header-container">
+        <a href="PROJET_ARC.html" class="back-btn"><i class="fas fa-arrow-left"></i> Retour à la Constellation</a>
+    </div>
+
+    <div class="exercice-box">
+        <h2><i class="fas fa-chart-pie"></i> V. Synthèse et Analyse Globale</h2>
+        <p>Cette section permet de confronter le modèle analytique établi en amont avec les données issues de la simulation numérique et de l'optimisation expérimentale de l'arc mécanique.</p>
+        
+        <h3>1. Bilan Énergétique et Rendement</h3>
+        <p>Le paramètre essentiel pour qualifier les performances de notre arc mécanique réside dans sa capacité à restituer l'énergie accumulée dans les branches au moment de la décoche.</p>
+        
+        <div class="formula-box">
+            <p>Rendement global du système $\eta$ :</p>
+            $ \eta = \dfrac{E_{restitu\acute{e}e}}{E_{stock\acute{e}e}} = \dfrac{\dfrac{1}{2} m \cdot v_{fl\grave{e}che}^2}{\int_{0}^{x_{max}} F(x) dx} $
+        </div>
+        
+        <p>En pratique, l'énergie dissipée se répartit principalement sous forme d'énergie cinétique résiduelle dans les branches et la corde, ainsi que par amortissement vibratoire (chaleur, son).</p>
+
+        <h3>2. Analyse des Contraintes et Optimisation de la Butée</h3>
+        <p>Le réglage de la butée (allonge maximale) influence directement l'effort de maintien au mur ($F_{let-off}$) pour les arcs à poulies. Si l'on note $\Delta x$ la variation de course à la décoche, l'accélération moyenne de la flèche $a_m$ s'écrit :</p>
+        
+        <div class="formula-box">
+            $ a_m = \dfrac{1}{m_{fl\grave{e}che}} \cdot \left( \dfrac{W_{total}}{\Delta x} \right) $
+        </div>
+
+        <h3>3. Conclusion sur le Profil Optimal</h3>
+        <p>L'exploitation conjointe de l'analyse théorique et des courbes de force générées révèle que le profil de came idéal doit garantir une montée en puissance abrupte suivie d'un plateau prolongé, afin de maximiser l'intégrale sous la courbe sans pour autant dépasser la contrainte de rupture du matériau des branches.</p>
+    </div>
+
+    <script>
+        // Fonctions d'accessibilité
+        function toggleDysMode() {
+            document.body.classList.toggle('dys-mode');
+        }
+        
+        function toggleVisionMode() {
+            document.body.classList.toggle('vision-mode');
+        }
+
+        // Fonctions pour la modale
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+        
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        // Fermeture de la modale en cliquant en dehors
+        document.getElementById('modal-copyright').addEventListener('click', function(e) {
+            if (e.target === this) closeModal('modal-copyright');
+        });
+    </script>
+</body>
+</html>

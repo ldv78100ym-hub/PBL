@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyse Structurelle et Sécurité - Arc Mécanique</title>
+    
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #1e40af; 
+            --primary-dark: #1e3a8a; 
+            --primary-light: #3b82f6;
+            --surface: #ffffff; 
+            --text-primary: #0f172a; 
+            --bg-color: #f1f5f9;
+            --border-light: #e2e8f0; 
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: var(--text-primary);
+            margin: 0; padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .back-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: var(--primary); color: white; text-decoration: none;
+            padding: 10px 20px; border-radius: 30px; font-weight: 600; margin-bottom: 2rem;
+            transition: 0.2s;
+            box-shadow: var(--shadow-md);
+        }
+        .back-btn:hover {
+            transform: translateY(-2px);
+            background: var(--primary-dark);
+        }
+
+        .container-box {
+            background: var(--surface); border-radius: 16px; padding: 2.5rem;
+            box-shadow: var(--shadow-md); border-top: 4px solid var(--primary);
+            max-width: 900px; margin: auto;
+        }
+
+        .content-box {
+            background: #f8fafc;
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .content-box h3 { 
+            color: var(--primary-dark); 
+            margin-top: 0; 
+            border-bottom: 2px solid var(--border-light); 
+            padding-bottom: 0.75rem; 
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .content-box ul {
+            padding-left: 1.5rem;
+            color: #334155;
+            line-height: 1.8;
+        }
+
+        .content-box li::marker {
+            color: var(--primary-light);
+        }
+
+        /* Modale Droits d'auteur */
+        .modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex;
+            align-items: center; justify-content: center; z-index: 9999;
+        }
+        .modal-content {
+            background: white; padding: 30px; border-radius: 12px; max-width: 600px; line-height: 1.6;
+        }
+        .hidden { display: none !important; }
+        
+        .btn-copyright {
+            background: #334155; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 2rem;
+            transition: 0.2s;
+        }
+        .btn-copyright:hover {
+            background: #1e293b;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="PROJET_ARC.html" class="back-btn"><i class="fas fa-arrow-left"></i> Retour à la Constellation</a>
+
+    <div class="container-box">
+        <h2><i class="fas fa-shield-alt"></i> Analyse Structurelle et Sécurité Mécanique</h2>
+        <p>Afin de garantir la fiabilité de l'arc mécanique et d'assurer la sécurité de l'utilisateur, l'équipe d'ingénierie a conduit une série d'essais destructifs et d'études cinématiques. Voici les points de contrôle majeurs.</p>
+
+        <div class="content-box">
+            <h3><i class="fas fa-microscope"></i> 1. Intégrité des branches et micro-défauts</h3>
+            <p>Lors des phases de tension maximale, les branches de l'arc emmagasinent une quantité critique d'énergie élastique. L'étude probabiliste menée s'articule autour des points suivants :</p>
+            <ul>
+                <li><strong>Tests destructifs :</strong> Vérification de la résilience des matériaux composites utilisés.</li>
+                <li><strong>Événement $D$ :</strong> Suivi et identification statistique de l'apparition de micro-défauts structurels sur les branches tirées au hasard.</li>
+                <li><strong>Enjeu :</strong> Un micro-défaut non détecté peut entraîner une rupture brutale sous contrainte, nécessitant un suivi qualité rigoureux.</li>
+            </ul>
+        </div>
+
+        <div class="content-box">
+            <h3><i class="fas fa-cogs"></i> 2. Conception de la butée de sécurité</h3>
+            <p>Pour prévenir la sur-tension (l'allonge excessive de la corde qui provoquerait la rupture de la structure), le cahier des charges exige l'implantation d'un ergot de blocage mécanique.</p>
+            <ul>
+                <li><strong>Analyse cinématique :</strong> Évaluation de plusieurs points de fixation potentiels (Points A à G sur la came/poulie).</li>
+                <li><strong>Action de l'ergot :</strong> Agir comme une butée de fin de course franche, stoppant la rotation de la poulie à une distance d'allonge millimétrée.</li>
+                <li><strong>Justification mécanique :</strong> Le choix du point de fixation doit opposer un moment de force suffisant pour stopper le système sans cisailler l'axe de rotation ni déformer la platine.</li>
+            </ul>
+        </div>
+
+        <button class="btn-copyright" onclick="document.getElementById('copyright-modal').classList.remove('hidden')">
+            <i class="fas fa-scale-balanced"></i> Droits d'auteur
+        </button>
+    </div>
+
+    <div id="copyright-modal" class="modal hidden">
+        <div class="modal-content">
+            <h3 style="color: var(--primary-dark);">⚖️ Droits d'Auteur et Licence d'Utilisation</h3>
+            <p><strong>Auteur :</strong> Yann Merdy (yann.merdy@gmail.com) - Avril 2026</p>
+            <p><strong>Licence d'Utilisation Non Commerciale</strong></p>
+            <p>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ('Analyse Structurelle et Sécurité') sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
+            <p><strong>Conditions :</strong></p>
+            <ul>
+                <li><strong>Utilisation Privée et Éducative (Autorisée) :</strong> Vous êtes autorisé.e à utiliser, copier, modifier et distribuer ce code et son contenu uniquement à des fins personnelles, éducatives et non lucratives.</li>
+                <li><strong>Utilisation Commerciale (Interdite) :</strong> Toute utilisation, distribution, intégration ou reproduction du code ou du contenu (total ou partiel) à des fins commerciales, lucratives ou professionnelles est strictement interdite sans un accord écrit préalable et explicite de l'auteur.</li>
+            </ul>
+            <p><strong>Attribution :</strong> Toute reproduction ou modification doit conserver la mention de l'auteur originale (Yann Merdy) et la présente notice de droits d'auteur.</p>
+            <p>Pour toute demande d'utilisation commerciale ou de licence spécifique, veuillez contacter l'auteur à l'adresse indiquée ci-dessus.</p>
+            <button style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 15px; width: 100%; font-weight: bold;" onclick="document.getElementById('copyright-modal').classList.add('hidden')">Fermer</button>
+        </div>
+    </div>
+</body>
+</html>
