@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boîte à Outils - Arc Mécanique</title>
+    <title>PBL : Optimisation d'un Arc Mécanique & Boîte à Outils</title>
     
     <script>
         window.MathJax = {
@@ -12,630 +12,1121 @@
         };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
+
     <style>
-        /* ----- CSS issu de synthese.html (adapté pour outils.html) ----- */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
         
         :root {
-            --primary: #1e40af; 
-            --primary-dark: #1e3a8a; 
+            --primary: #1e40af;
+            --primary-dark: #1e3a8a;
             --primary-light: #3b82f6;
-            --surface: #ffffff; 
-            --text-primary: #0f172a; 
-            --bg-color: #f1f5f9;
-            --border-light: #e2e8f0; 
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            --accent: #8b5cf6;
+            --secondary: #ea580c;
+            --secondary-light: #fb923c;
+            --accent: #0891b2;
+            
             --success: #059669;
             --warning: #d97706;
+            --danger: #dc2626;
+            --info: #0284c7;
+            
+            --bg-color: #f1f5f9;
+            --surface: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #334155; 
+            --text-muted: #475569; 
+            --border-light: #cbd5e1;
+            --border-medium: #94a3b8;
+            
+            --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
         }
+
+        * { box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            color: var(--text-primary);
-            margin: 0; 
-            padding: 2rem;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        /* Accessibilité (styles conservés mais non activés par défaut) */
-        body.dys-mode { 
-            font-family: 'Comic Sans MS', 'OpenDyslexic', sans-serif !important; 
-            letter-spacing: 1px;
-            line-height: 1.8;
-        }
-        body.vision-mode { 
-            filter: contrast(1.6) brightness(1.2); 
-            background: #000;
-            color: #fff;
-        }
-        body.vision-mode .exercice-box {
-            background: #111;
-            border-color: #ffcc00;
-            color: #fff;
-        }
-        body.vision-mode .formula-box {
-            background: #222;
-            border-color: #ffcc00;
-            color: #ffcc00;
-        }
-
-        /* Conteneur principal identique à synthese */
-        .header-container {
-            width: 100%;
-            max-width: 1100px;
-            display: flex;
-            justify-content: flex-start;
-            margin-bottom: 2rem;
-        }
-
-        .back-btn {
-            display: inline-flex;
-            align-items: center; gap: 8px;
-            background: var(--primary);
-            color: white; text-decoration: none;
-            padding: 10px 20px; border-radius: 30px;
-            font-weight: 600;
-            box-shadow: var(--shadow-md); transition: 0.2s;
-        }
-        .back-btn:hover { transform: translateY(-2px); background: var(--primary-dark); }
-
-        .exercice-box {
-            background: var(--surface);
-            border-radius: 16px;
-            padding: 2.5rem;
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--border-light);
-            border-top: 6px solid var(--accent);
-            max-width: 1100px; 
-            width: 100%;
-            box-sizing: border-box;
+            font-family: var(--font-main);
+            font-size: 1.05rem; 
             line-height: 1.6;
+            letter-spacing: 0.02em; 
+            color: var(--text-primary);
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
         }
 
-        .exercice-box h2 {
-            color: var(--primary);
-            margin-top: 0;
-            border-bottom: 2px solid var(--border-light);
-            padding-bottom: 10px;
+        .hero-header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            color: white;
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Flexbox pour l'alignement du titre et du bouton */
+        .hero-title-container {
             display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .exercice-box h3 {
-            color: var(--accent);
-            margin-top: 2rem;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 1.5rem;
             margin-bottom: 1rem;
         }
 
-        /* Grille des outils */
-        .tool-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-top: 2rem;
+        .hero-header h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin: 0;
+            line-height: 1.2;
+            flex: 1;
+            min-width: 300px;
         }
 
-        @media (max-width: 768px) {
-            .tool-grid { grid-template-columns: 1fr; }
-            .exercice-box { padding: 1.5rem; }
+        .hero-header p {
+            font-size: 1.125rem;
+            max-width: 800px;
+            margin: 0;
+            font-weight: 400; 
+            color: #fef08a; 
         }
 
-        .tool-card {
-            background: #f8fafc;
-            border: 1px solid var(--border-light);
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: var(--shadow-md);
-        }
-
-        .tool-card h3 { 
-            color: var(--primary-dark); 
-            margin-top: 0; 
-            border-bottom: 1px dashed var(--border-light);
-            padding-bottom: 0.75rem;
-        }
-
-        /* Champs de formulaire */
-        .input-group { margin-bottom: 1.5rem; }
-        .input-group label { 
-            display: block; 
-            margin-bottom: 0.5rem; 
-            font-weight: 600; 
-            color: var(--text-primary); 
-        }
-        .input-group input[type="number"], 
-        .input-group input[type="range"] { 
-            width: 100%; 
-            padding: 10px 12px; 
-            border: 1.5px solid var(--border-light); 
-            border-radius: 8px; 
-            box-sizing: border-box; 
-            font-family: inherit;
-            font-size: 1rem;
-            background: white;
-            transition: border 0.2s;
-        }
-        .input-group input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.15);
-        }
-
-        /* Curseur personnalisé */
-        input[type="range"] {
-            -webkit-appearance: none;
-            height: 8px;
-            background: linear-gradient(to right, var(--border-light), #cbd5e1);
-            border-radius: 4px;
-            padding: 0;
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 22px; height: 22px;
-            background: var(--primary);
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid white;
-            box-shadow: var(--shadow-md);
-        }
-
-        .result-box {
-            background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
-            border: 1px solid #93c5fd;
-            padding: 1.25rem;
-            border-radius: 12px;
-            text-align: center;
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: var(--primary-dark);
-            margin-top: 1.5rem;
-        }
-
-        .info-note {
-            font-size: 0.9rem; 
-            color: #475569; 
-            margin-top: 0.5rem;
-            background: #e0f2fe; 
-            padding: 6px 12px; 
-            border-radius: 20px;
-            display: inline-block;
-        }
-
-        canvas {
-            background: #f8fafc; 
-            border-radius: 12px; 
-            border: 1px solid var(--border-light);
-            display: block; 
-            margin: 1.5rem auto; 
-            width: 100%; 
-            height: auto;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
-        }
-
-        /* Légende du canvas */
-        .canvas-legend {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem 2rem;
-            margin-top: 0.5rem;
-            font-size: 0.9rem;
-            background: #f1f5f9;
-            padding: 0.75rem 1.25rem;
-            border-radius: 30px;
-        }
-
-        /* Bouton copyright (style synthese) */
-        #copyright-btn {
-            position: fixed;
-            bottom: 20px; left: 20px;
-            background: var(--primary);
-            border: none;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 30px;
-            cursor: pointer;
-            font-weight: bold;
-            box-shadow: var(--shadow-md);
-            transition: 0.2s;
-            z-index: 100;
+        /* Bouton 3D Retour Projet */
+        .btn-3d-retour {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-        }
-        #copyright-btn:hover { background: var(--primary-dark); }
-
-        /* Modale (identique à synthese) */
-        .modal-overlay {
-            position: fixed; inset: 0;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(5px);
-            z-index: 9999;
-            display: flex;
-            align-items: center;
             justify-content: center;
-        }
-        .modal-box {
-            background: var(--surface);
-            color: var(--text-primary);
-            border-radius: 16px;
-            padding: 30px;
-            max-width: 600px;
-            width: 90%;
-            position: relative;
-            line-height: 1.6;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
-        .modal-close {
-            position: absolute;
-            top: 15px; right: 15px;
-            background: #fee2e2;
-            border: 1px solid #ef4444;
-            color: #ef4444;
-            width: 35px; height: 35px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.2s;
-        }
-        .modal-close:hover { background: #ef4444; color: white; }
-        .hidden { display: none !important; }
-
-        /* Valeur de tension affichée */
-        .tension-value {
-            display: inline-block;
-            margin-left: 15px;
+            text-decoration: none;
+            color: #ffffff;
+            background-color: var(--secondary);
+            padding: 0.75rem 1.5rem;
             font-weight: 700;
-            font-size: 1.2rem;
-            color: var(--primary);
+            font-size: 1.1rem;
+            border-radius: var(--radius-md);
+            border: none;
+            box-shadow: 0 6px 0 #c2410c, 0 10px 10px rgba(0,0,0,0.25);
+            transition: all 0.1s ease;
+            white-space: nowrap;
+            cursor: pointer;
+            margin-top: 0.2rem;
         }
-        .sr-only {
-            position: absolute; width: 1px; height: 1px; padding: 0;
-            margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0);
-            white-space: nowrap; border: 0;
+
+        .btn-3d-retour:hover {
+            background-color: var(--secondary-light);
+            color: #ffffff;
+        }
+
+        .btn-3d-retour:active {
+            transform: translateY(6px);
+            box-shadow: 0 0px 0 #c2410c, 0 4px 4px rgba(0,0,0,0.2);
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem 3rem; }
+
+        .exercice-box {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+            position: relative;
+        }
+
+        .exercice-box.danger-zone::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 6px; height: 100%;
+            background: linear-gradient(to bottom, var(--danger), var(--secondary));
+        }
+
+        h2, h3, h4 { color: var(--primary-dark); }
+        h2 { font-size: 1.875rem; border-bottom: 2px solid var(--border-light); padding-bottom: 0.5rem; }
+        h3 { margin-top: 2rem; margin-bottom: 1rem; }
+
+        canvas {
+            display: block; margin: 0 auto 1rem; border-radius: var(--radius-lg);
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            box-shadow: var(--shadow-lg), inset 0 0 0 1px rgba(0,0,0,0.1);
+            max-width: 100%; border: none;
+        }
+
+        #trajectoireCanvas {
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            width: 100%;
+            height: auto;
+            border-radius: var(--radius-md);
+        }
+
+        .data-points-container {
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+        
+        .data-point {
+            background: var(--bg-color);
+            border: 1px solid var(--border-medium);
+            padding: 0.4rem 0.8rem;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            color: var(--primary-dark);
+            box-shadow: var(--shadow-sm);
+        }
+
+        #cibleCanvas {
+            background: #e2e8f0; 
+            border-radius: var(--radius-sm);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .controles-interactifs {
+            background: var(--surface); border: 2px solid var(--border-light);
+            border-radius: var(--radius-lg); padding: 2rem; margin: 2rem 0;
+            box-shadow: var(--shadow-md);
+        }
+
+        .control-group {
+            margin-bottom: 1.5rem; padding: 1.5rem; background: #f8fafc;
+            border-radius: var(--radius-md); border: 1px solid var(--border-light);
+        }
+
+        .control-group label {
+            font-weight: 600; color: var(--text-primary); display: block;
+            margin-bottom: 1rem; font-size: 1.1rem; border-bottom: 2px solid var(--border-light); padding-bottom: 0.5rem;
+        }
+
+        .preparation-grid {
+            display: flex; flex-wrap: wrap; gap: 2rem; align-items: stretch;
+        }
+
+        .preparation-col {
+            flex: 1; min-width: 300px;
+            display: flex; flex-direction: column; gap: 1.5rem;
+        }
+
+        .poste-visee-layout {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            background: #f0f9ff;
+            border: 2px solid var(--info);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            align-items: flex-start;
+        }
+
+        .visee-trajectoire-col {
+            flex: 1;
+            min-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .visee-controles-col {
+            width: 260px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .boussole-container {
+            display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+            background: white; padding: 1rem; border-radius: var(--radius-md);
+            border: 1px solid var(--border-light); box-shadow: var(--shadow-sm);
+            width: 100%;
+        }
+
+        .boussole-cadran {
+            width: 90px; height: 90px; border-radius: 50%; 
+            border: 4px solid var(--primary-dark);
+            background: #ffffff; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .boussole-aiguille {
+            position: absolute; top: 50%; left: 50%; width: 4px; height: 40px; 
+            transform-origin: bottom center; margin-left: -2px; margin-top: -40px; border-radius: 2px;
+            transition: transform 0.1s ease-out;
+        }
+        
+        .boussole-aiguille.vent { background-color: var(--danger); }
+        .boussole-aiguille.vent::before {
+            content: ''; position: absolute; top: -6px; left: -4px;
+            border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 10px solid var(--danger);
+        }
+
+        .boussole-aiguille.visee { background-color: var(--success); height: 35px; margin-top: -35px; }
+        .boussole-aiguille.visee::before {
+            content: ''; position: absolute; top: -6px; left: -4px;
+            border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 10px solid var(--success);
+        }
+
+        .boussole-repere { position: absolute; font-size: 10px; font-weight: bold; color: var(--text-muted); }
+        .repere-n { top: 2px; left: 50%; transform: translateX(-50%); }
+        .repere-s { bottom: 2px; left: 50%; transform: translateX(-50%); }
+        .repere-e { right: 4px; top: 50%; transform: translateY(-50%); }
+        .repere-o { left: 4px; top: 50%; transform: translateY(-50%); }
+
+        input[type="range"] {
+            -webkit-appearance: none; width: 100%; height: 10px; background: var(--border-light);
+            border-radius: 5px; outline: none; margin: 0.5rem 0;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 28px; height: 28px; background: var(--primary);
+            border-radius: 50%; cursor: pointer; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        
+        .valeur-afficheur {
+            font-weight: 700; font-size: 1.25rem; color: var(--primary-dark);
+            min-width: 80px; display: inline-block; text-align: right;
+        }
+
+        .dashboard-physique {
+            background: linear-gradient(to right, #eff6ff, #ffffff); border: 2px solid #bfdbfe;
+            border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.5rem;
+            border-left: 6px solid var(--info);
+        }
+        
+        .dashboard-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .metric-box {
+            background: white; padding: 1rem; border-radius: var(--radius-sm);
+            border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); text-align: center;
+        }
+        
+        .impact-box {
+            background: #f8fafc; border: 2px solid var(--primary); 
+            border-radius: var(--radius-md); padding: 1.5rem; grid-column: 1 / -1;
+            text-align: center; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .btn-action {
+            background: var(--primary); color: white; border: none; padding: 1rem 2rem;
+            font-size: 1.1rem; font-weight: 600; border-radius: var(--radius-md);
+            cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow-md);
+        }
+        .btn-action:hover { background: var(--primary-dark); transform: translateY(-2px); }
+
+        .stat-target-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .stat-ring {
+            padding: 0.75rem;
+            border-radius: var(--radius-sm);
+            text-align: center;
+            font-weight: bold;
+            border: 1px solid var(--border-medium);
+        }
+        .ring-jaune { background-color: #fde047; color: #1f2937; }
+        .ring-rouge { background-color: #ef4444; color: #ffffff; }
+        .ring-bleu { background-color: #3b82f6; color: #ffffff; }
+        .ring-noir { background-color: #1f2937; color: #ffffff; }
+        .ring-blanc { background-color: #ffffff; color: #1f2937; }
+        .ring-hors { background-color: #e2e8f0; color: #475569; border-style: dashed; }
+
+        #table-journal { width: 100%; border-collapse: collapse; margin: 1.5rem 0; background: white; }
+        #table-journal th, #table-journal td { border: 1px solid var(--border-medium); padding: 1rem; text-align: center; vertical-align: middle; }
+        #table-journal th { background: #f1f5f9; font-weight: 700; color: var(--primary-dark); }
+        #table-journal tbody tr:nth-child(even) { background-color: #f8fafc; }
+
+        #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; }
+        #overlay.active { display: block; }
+        #popup-copyright {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: var(--surface); padding: 2.5rem; z-index: 1001; border-radius: var(--radius-lg);
+            width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;
+        }
+        #popup-copyright.active { display: block; }
+        #btn-copyright {
+            position: fixed; bottom: 2rem; right: 2rem; padding: 1rem; background: var(--primary-dark); color: white;
+            border: none; border-radius: 50px; cursor: pointer; z-index: 999; font-weight: bold;
         }
     </style>
 </head>
 <body>
 
-    <!-- Bouton Retour -->
-    <div class="header-container">
-        <a href="PROJET_ARC.html" onclick="history.back();return false;" class="back-btn">
-            <i class="fas fa-arrow-left"></i> Retour à la constellation
-        </a>
-    </div>
+    <header class="hero-header">
+        <div class="hero-title-container">
+            <h1>Problème Basé sur l'Apprentissage (PBL) : Modélisation Balistique d'un Arc</h1>
+            <a href="PROJET_ARC.html" class="btn-3d-retour" aria-label="Retour au projet principal">↩ Retour au Projet</a>
+        </div>
+        <p><strong>Contexte de l'étude :</strong> Un bureau d'ingénierie sportive étudie les interactions complexes entre la morphologie du tireur, la mécanique de l'arc et l'aérodynamisme. Validez expérimentalement ces paramètres pour garantir la précision sur une cible réglementaire à 50 m.</p>
+    </header>
 
-    <!-- Contenu principal dans une carte "exercice-box" -->
-    <div class="exercice-box">
-        <h2><i class="fas fa-toolbox"></i> Boîte à Outils Numérique</h2>
-        <p>Cet espace interactif permet de simuler la balistique de la flèche et d'observer le comportement mécanique de la corde lors de la tension. 
-        L'énergie cinétique est estimée automatiquement à partir de la tension de butée.</p>
+    <div class="container">
 
-        <div class="tool-grid">
-            <!-- Calculateur de vitesse -->
-            <div class="tool-card">
-                <h3><i class="fas fa-calculator"></i> Calculateur de Vitesse</h3>
-                <p>Modèle théorique : $v = \sqrt{\dfrac{2E_c}{m}}$</p>
+        <div class="exercice-box danger-zone">
+            <h2>Simulateur Balistique Interactif en 3D</h2>
+            
+            <canvas id="arcCanvas" width="850" height="500" aria-label="Zone de dessin interactive affichant le schéma d'un arc mécanique pivotant dans l'espace"></canvas>
+            
+            <div class="controles-interactifs">
                 
-                <div class="input-group">
-                    <label for="energie">Énergie Cinétique $E_c$ (Joules) :</label>
-                    <input type="number" id="energie" value="60" step="0.1" oninput="calculerVitesse()">
-                    <div class="info-note">
-                        <i class="fas fa-link"></i> Liée à la tension (mise à jour auto)
+                <div class="control-group">
+                    <label>👤⚙️🌪️ Phase 1 : Préparation (Morphologie, Arc & Environnement)</label>
+                    <p style="font-size: 0.95rem; color: var(--text-muted); margin-top: 0; margin-bottom: 1.5rem;">
+                        Renseignez la taille du tireur (détermine la hauteur initiale), paramétrez l'arc et observez les conditions de vent sur le pas de tir.
+                    </p>
+                    
+                    <div class="preparation-grid">
+                        <div class="preparation-col">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <span style="font-weight: 500;">Taille du tireur :</span>
+                                <input type="range" id="sliderTaille" min="1.40" max="2.10" value="1.75" step="0.01" aria-label="Curseur pour la taille du tireur en mètres" style="width: 50%;">
+                                <span id="valeurTaille" class="valeur-afficheur" style="color: var(--primary-dark);">1.75 m</span>
+                            </div>
+
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <span style="font-weight: 500;">Tension max (Arc) :</span>
+                                <input type="range" id="sliderButee" min="150" max="300" value="300" step="5" aria-label="Curseur pour la tension de la butée" style="width: 50%;">
+                                <span id="valeurButee" class="valeur-afficheur">300 N</span>
+                            </div>
+                            
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <span style="font-weight: 500;">Masse de la flèche :</span>
+                                <input type="range" id="sliderMasse" min="15" max="50" value="30" step="1" aria-label="Curseur pour la masse de la flèche" style="width: 50%;">
+                                <span id="valeurMasse" class="valeur-afficheur" style="color: var(--secondary);">30 g</span>
+                            </div>
+                        </div>
+
+                        <div class="preparation-col" style="align-items: center; justify-content: center;">
+                            <div class="boussole-container" style="max-width: 300px;">
+                                <strong style="color: var(--info);">Vitesse et Origine du Vent</strong>
+                                <div style="display: flex; align-items: center; gap: 0.5rem; width: 100%;">
+                                    <input type="range" id="sliderVentVitesse" min="0" max="35" value="15" step="1" aria-label="Vitesse du vent">
+                                    <span id="valeurVentVitesse" style="font-weight:bold; color:var(--info); min-width:65px; text-align: right;">15 km/h</span>
+                                </div>
+                                <input type="range" id="sliderVentDirection" min="0" max="359" value="90" step="1" aria-label="Orientation du vent" style="width: 100%;">
+                                <div class="boussole-cadran">
+                                    <div class="boussole-repere repere-n">F</div>
+                                    <div class="boussole-repere repere-e">D</div>
+                                    <div class="boussole-repere repere-s">Dos</div>
+                                    <div class="boussole-repere repere-o">G</div>
+                                    <div id="aiguilleVent" class="boussole-aiguille vent"></div>
+                                </div>
+                                <span id="valeurVentDirText" style="font-size: 0.85rem; font-weight: bold; color: var(--text-muted);">Latéral Droit (90°)</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="input-group">
-                    <label for="masse">Masse de la flèche $m$ (kg) :</label>
-                    <input type="number" id="masse" value="0.015" step="0.001" oninput="calculerVitesse()">
+
+                <h3 style="color: var(--primary-dark); border-bottom: 2px solid var(--border-light); padding-bottom: 0.5rem; margin-top: 2.5rem;">
+                    🧭 Phase 2 : Poste de Visée et Analyse de Trajectoire
+                </h3>
+                <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+                    Ajustez vos cadrans d'Azimut et d'Élévation ci-dessous pour compenser la chute gravitationnelle et la dérive due au vent. Observez l'impact direct de vos corrections sur la trajectoire théorique de la flèche.
+                </p>
+
+                <div class="poste-visee-layout">
+                    <div class="visee-trajectoire-col">
+                        <strong style="color: var(--info);">Vue de Profil : Déformation de la parabole</strong>
+                        <canvas id="trajectoireCanvas" width="800" height="260" aria-label="Graphique 2D affichant la parabole de la trajectoire"></canvas>
+                        
+                        <div class="data-points-container" id="releve-points">
+                            <strong style="color: var(--text-muted); margin-right: 0.5rem;">Relevé Télémétrique en vol :</strong>
+                            </div>
+                    </div>
+
+                    <div class="visee-controles-col">
+                        
+                        <div style="background: white; padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-light); box-shadow: var(--shadow-sm); width: 100%;">
+                            <strong style="color: var(--primary-dark); font-size: 0.95rem; display: block; margin-bottom: 0.5rem;">Précision de réglage :</strong>
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                <label style="font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                    <input type="radio" name="stepVisee" value="0.1" checked> 0.1° (Ajustement Rapide)
+                                </label>
+                                <label style="font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                    <input type="radio" name="stepVisee" value="0.01"> 0.01° (Ajustement Fin)
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="boussole-container">
+                            <strong style="color: var(--success);">1. Visée Latérale (Azimut)</strong>
+                            <input type="range" id="sliderAzimut" min="-10" max="10" value="0" step="0.1" aria-label="Axe horizontal" style="width: 100%; margin-top: 0.5rem;">
+                            <div class="boussole-cadran">
+                                <div class="boussole-repere repere-n">Cible</div>
+                                <div class="boussole-repere repere-e">+10°</div>
+                                <div class="boussole-repere repere-o">-10°</div>
+                                <div id="aiguilleAzimut" class="boussole-aiguille visee"></div>
+                            </div>
+                            <span id="valeurAzimutText" style="font-size: 0.85rem; font-weight: bold; color: var(--text-muted);">Centre (0.0°)</span>
+                        </div>
+
+                        <div class="boussole-container">
+                            <strong style="color: var(--success);">2. Visée Hauteur (Élévation)</strong>
+                            <input type="range" id="sliderElevation" min="-5" max="15" value="0" step="0.1" aria-label="Axe vertical" style="width: 100%; margin-top: 0.5rem;">
+                            <div class="boussole-cadran">
+                                <div class="boussole-repere repere-n">+15°</div>
+                                <div class="boussole-repere repere-s">-5°</div>
+                                <div id="aiguilleElevation" class="boussole-aiguille visee" style="transform-origin: center; top: 50%; height: 40px; margin-top: -20px;"></div>
+                            </div>
+                            <span id="valeurElevationText" style="font-size: 0.85rem; font-weight: bold; color: var(--text-muted);">Plat (0.0°)</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="result-box" id="resultat-vitesse" aria-live="polite">
-                    $v \approx 89.44$ m/s
-                </div>
-            </div>
+                <div class="dashboard-physique">
+                    <h3 style="margin-top: 0;">📊 Télémétrie Globale de l'Impact Théorique</h3>
+                    
+                    <div class="dashboard-grid">
+                        <div class="metric-box">
+                            <span style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase;">Sortie de l'Arc (V0)</span><br>
+                            <strong id="valeurVitesse" style="font-size: 1.4rem; color: var(--primary-dark);">--</strong>
+                        </div>
+                        <div class="metric-box">
+                            <span style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase;">Temps de vol</span><br>
+                            <strong id="valeurTemps" style="font-size: 1.4rem; color: var(--text-primary);">--</strong>
+                        </div>
+                        <div class="impact-box">
+                            <h4 style="margin-top:0; margin-bottom: 0.5rem; color: var(--primary-dark);">Indicateur de Zone FITA</h4>
+                            <div style="font-size: 1.2rem;">
+                                Statut : <strong id="statutImpact" style="font-size: 1.5rem;">--</strong>
+                            </div>
+                            <div id="tendanceImpact" style="font-size: 1.1rem; font-weight: bold; margin-top: 0.5rem;">🎯 Ajustez la visée pour commencer</div>
+                            <p id="messageValidation" style="margin-top: 0.5rem; font-weight: 500; min-height: 1.5rem;"></p>
+                        </div>
+                    </div>
 
-            <!-- Visualiseur de tension -->
-            <div class="tool-card" style="grid-column: span 1;">
-                <h3><i class="fas fa-arrows-alt-h"></i> Visualiseur de Tension</h3>
-                <p id="desc-simulateur">Déplacez le curseur pour régler la tension d'arrêt (butée) et observer la déformation de l'arc.</p>
-                
-                <div class="input-group">
-                    <label for="tension-arc">Tension de butée (N) :</label>
-                    <input type="range" id="tension-arc" min="150" max="300" value="300" step="5"
-                           aria-describedby="desc-simulateur"
-                           aria-valuemin="150" aria-valuemax="300" aria-valuenow="300"
-                           oninput="updateTension(this.value)">
-                    <span class="tension-value" id="valeur-tension">300 N</span>
-                    <span id="tension-annonce" class="sr-only" aria-live="polite">Tension de l'arc à 300 sur 300</span>
+                    <hr style="border: none; border-top: 2px dashed var(--border-medium); margin: 2rem 0;">
+                    
+                    <h4 style="color: var(--primary-dark); margin-top: 0; display: flex; align-items: center; justify-content: space-between;">
+                        <span>🎯 Épreuve de validation : Série de 100 flèches</span>
+                        <button id="btn-simuler-tirs" class="btn-action" style="padding: 0.5rem 1.5rem; font-size: 1rem; background: var(--success);">Lancer la volée complète</button>
+                    </h4>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+                        Une fois votre réglage théorique correct, lancez la simulation incluant l'incertitude humaine et mécanique. <strong>Chaque volée sera automatiquement enregistrée dans votre Journal de Validation.</strong>
+                    </p>
+
+                    <div id="resultats-tirs-box" style="display: none; background: #ffffff; padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-light); text-align: center;">
+                        <div style="margin-bottom: 1.5rem;">
+                            <strong style="font-size: 1.2rem; color: var(--text-primary);">Score de la Volée : <span id="score-total" style="font-size: 1.8rem; color: var(--primary-dark);">0</span> / 1000</strong>
+                        </div>
+                        
+                        <div style="display: flex; flex-wrap: wrap; gap: 2rem; justify-content: center; align-items: flex-start;">
+                            <canvas id="cibleCanvas" width="400" height="400" aria-label="Cible concentrique affichant la répartition des impacts"></canvas>
+                            
+                            <div style="flex: 1; min-width: 300px;">
+                                <h4 style="margin-top: 0; color: var(--primary-dark);">Répartition par points</h4>
+                                <div class="stat-target-grid">
+                                    <div class="stat-ring ring-jaune">10 pts<br><span id="cpt-10">0</span></div>
+                                    <div class="stat-ring ring-jaune">9 pts<br><span id="cpt-9">0</span></div>
+                                    <div class="stat-ring ring-rouge">8 pts<br><span id="cpt-8">0</span></div>
+                                    <div class="stat-ring ring-rouge">7 pts<br><span id="cpt-7">0</span></div>
+                                    <div class="stat-ring ring-bleu">6 pts<br><span id="cpt-6">0</span></div>
+                                    <div class="stat-ring ring-bleu">5 pts<br><span id="cpt-5">0</span></div>
+                                    <div class="stat-ring ring-noir">4 pts<br><span id="cpt-4">0</span></div>
+                                    <div class="stat-ring ring-noir">3 pts<br><span id="cpt-3">0</span></div>
+                                    <div class="stat-ring ring-blanc">2 pts<br><span id="cpt-2">0</span></div>
+                                    <div class="stat-ring ring-blanc">1 pt<br><span id="cpt-1">0</span></div>
+                                    <div class="stat-ring ring-hors" style="grid-column: span 2;">Hors Cible<br><span id="cpt-0">0</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <h3 style="margin-top: 2rem;">Journal de Validation (Automatique)</h3>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">L'historique de vos tirs s'enregistre ici. Un réglage est validé lorsque le score total de la volée est strictement supérieur à 850 points.</p>
+                <div style="overflow-x: auto;">
+                    <table id="table-journal">
+                        <thead>
+                            <tr>
+                                <th scope="col">Volée N°</th>
+                                <th scope="col">Taille (m)</th>
+                                <th scope="col">Tension (N)</th>
+                                <th scope="col">Masse (g)</th>
+                                <th scope="col">Vent (Vit. / Dir.)</th>
+                                <th scope="col">Visée (Azimut / Élévation)</th>
+                                <th scope="col">Score total / 1000</th>
+                                <th scope="col">Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            </tbody>
+                    </table>
+                </div>
+
             </div>
         </div>
 
-        <!-- Canvas et légende (occupe toute la largeur) -->
-        <div style="margin-top: 1rem;">
-            <canvas id="arcCanvas" width="850" height="500" role="img" aria-label="Représentation graphique détaillée de l'arc mécanique avec poulies, branches et butée mobile.">
-                Votre navigateur ne supporte pas l'élément canvas.
-            </canvas>
-
-            <div class="canvas-legend">
-                <span><span style="color:#1e40af; font-weight:bold;">A</span> Poulie-came</span>
-                <span><span style="color:#475569; font-weight:bold;">B</span> Branches</span>
-                <span><span style="color:#0f172a; font-weight:bold;">C</span> Poignée</span>
-                <span><span style="color:#334155; font-weight:bold;">D</span> Corde</span>
-                <span><span style="color:#6b7280; font-weight:bold;">E</span> Écarteur</span>
-                <span><span style="color:#374151; font-weight:bold;">F</span> Amortisseur</span>
-                <span><span style="color:#111827; font-weight:bold;">G</span> Repose-flèche</span>
-                <span><span style="color:#ea580c; font-weight:bold;">●</span> Butée</span>
-            </div>
-        </div>
     </div>
 
-    <!-- Bouton Droits d'auteur -->
-    <button id="copyright-btn" onclick="openModal('modal-copyright')">
-        <i class="fas fa-scale-balanced"></i> Droits d'auteur
-    </button>
+    <button id="btn-copyright" aria-label="Afficher les droits d'auteur et la licence d'utilisation">Droits d'auteur</button>
 
-    <!-- Modale Droits d'auteur (style synthese) -->
-    <div id="modal-copyright" class="modal-overlay hidden">
-        <div class="modal-box">
-            <button class="modal-close" onclick="closeModal('modal-copyright')"><i class="fas fa-times"></i></button>
-            <h2 style="color: var(--primary); margin-top: 0;">⚖️ Droits d'Auteur et Licence d'Utilisation</h2>
-            <p><strong>Auteur :</strong> Yann Merdy (yann.merdy@gmail.com) - Avril 2026</p>
-            <p><strong>Licence d'Utilisation Non Commerciale</strong></p>
-            <p>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ('Boîte à Outils - Arc Mécanique') sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
-            <p><strong>Conditions :</strong></p>
-            <ul>
-                <li><strong>Utilisation Privée et Éducative (Autorisée) :</strong> Vous êtes autorisé.e à utiliser, copier, modifier et distribuer ce code et son contenu uniquement à des fins personnelles, éducatives et non lucratives.</li>
-                <li><strong>Utilisation Commerciale (Interdite) :</strong> Toute utilisation, distribution, intégration ou reproduction du code ou du contenu (total ou partiel) à des fins commerciales, lucratives ou professionnelles est strictement interdite sans un accord écrit préalable et explicite de l'auteur.</li>
-            </ul>
-            <p><strong>Attribution :</strong> Toute reproduction ou modification doit conserver la mention de l'auteur originale (Yann Merdy) et la présente notice de droits d'auteur.</p>
-            <p>Pour toute demande d'utilisation commerciale ou de licence spécifique, veuillez contacter l'auteur à l'adresse indiquée ci-dessus.</p>
-        </div>
+    <div id="overlay" aria-hidden="true"></div>
+    <div id="popup-copyright" role="dialog" aria-labelledby="titre-copyright" aria-modal="true">
+        <h2 id="titre-copyright">⚖️ Droits d'Auteur et Licence d'Utilisation</h2>
+        <p><strong>Auteur :</strong> Yann Merdy (<a href="mailto:yann.merdy@gmail.com" style="color: var(--primary);">yann.merdy@gmail.com</a>) - Avril 2026</p>
+        <p><strong>Licence d'Utilisation Non Commerciale</strong></p>
+        <p>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ('Optimisation d'un Arc Mécanique') sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
+        <p><strong>Conditions :</strong></p>
+        <ul>
+            <li><strong>Utilisation Privée et Éducative (Autorisée) :</strong> Vous êtes autorisé.e à utiliser, copier, modifier et distribuer ce code et son contenu uniquement à des fins personnelles, éducatives et non lucratives.</li>
+            <li><strong>Utilisation Commerciale (Interdite) :</strong> Toute utilisation, distribution, intégration ou reproduction du code ou du contenu (total ou partiel) à des fins commerciales, lucratives ou professionnelles est strictement interdite sans un accord écrit préalable et explicite de l'auteur.</li>
+            <li><strong>Attribution :</strong> Toute reproduction ou modification doit conserver la mention de l'auteur originale (Yann Merdy) et la présente notice de droits d'auteur.</li>
+        </ul>
+        <p>Pour toute demande d'utilisation commerciale ou de licence spécifique, veuillez contacter l'auteur à l'adresse indiquée ci-dessus.</p>
+        <button id="btn-close-copyright" class="btn-action" style="background: var(--danger); margin-top: 1.5rem; width: 100%;">Fermer</button>
     </div>
 
     <script>
-        // --- Gestion de la modale (identique à synthese) ---
-        function openModal(id) {
-            document.getElementById(id).classList.remove('hidden');
-        }
-        function closeModal(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
-        document.getElementById('modal-copyright').addEventListener('click', function(e) {
-            if (e.target === this) closeModal('modal-copyright');
-        });
+        // Gestion Copyright
+        const btnCopyright = document.getElementById('btn-copyright');
+        const popupCopyright = document.getElementById('popup-copyright');
+        const overlay = document.getElementById('overlay');
+        const btnCloseCopyright = document.getElementById('btn-close-copyright');
 
-        // --- Logique métier (inchangée, adaptée au nouveau DOM) ---
-        const energieInput = document.getElementById('energie');
-        const masseInput = document.getElementById('masse');
-        const resultBox = document.getElementById('resultat-vitesse');
-        const inputTension = document.getElementById('tension-arc');
-        const valeurTension = document.getElementById('valeur-tension');
-        const tensionAnnonce = document.getElementById('tension-annonce');
+        function openPopup() { popupCopyright.classList.add('active'); overlay.classList.add('active'); btnCloseCopyright.focus(); }
+        function closePopup() { popupCopyright.classList.remove('active'); overlay.classList.remove('active'); btnCopyright.focus(); }
 
-        const TENSION_TO_ENERGY_FACTOR = 0.2;  // J/N
+        btnCopyright.addEventListener('click', openPopup);
+        btnCloseCopyright.addEventListener('click', closePopup);
+        overlay.addEventListener('click', closePopup);
+        document.addEventListener('keydown', e => { if (e.key === 'Escape' && popupCopyright.classList.contains('active')) closePopup(); });
 
-        function calculerVitesse() {
-            const ec = parseFloat(energieInput.value);
-            const m = parseFloat(masseInput.value);
-            if (isNaN(ec) || isNaN(m) || m <= 0 || ec < 0) {
-                resultBox.innerHTML = "Valeurs invalides";
-                return;
-            }
-            const v = Math.sqrt((2 * ec) / m);
-            resultBox.innerHTML = `$v \\approx ${v.toFixed(2)}$ m/s`;
-            if (window.MathJax && window.MathJax.typesetPromise) {
-                window.MathJax.typesetPromise([resultBox]).catch(err => console.log(err.message));
-            }
-        }
+        // Variables globales
+        let pointImpactX_cm = 0;
+        let pointImpactY_cm = 0;
+        let previousDistanceCentre = null;
+        let compteurVolee = 0;
 
-        function updateEnergyFromTension(tension) {
-            let estimatedEnergy = tension * TENSION_TO_ENERGY_FACTOR;
-            estimatedEnergy = Math.round(estimatedEnergy * 10) / 10;
-            energieInput.value = estimatedEnergy;
-            calculerVitesse();
-        }
-
-        let buteeMax = 300;
-        function updateTension(valeur) {
-            buteeMax = parseFloat(valeur);
-            inputTension.setAttribute('aria-valuenow', valeur);
-            tensionAnnonce.textContent = `Tension de l'arc à ${valeur} sur 300`;
-            valeurTension.textContent = valeur + ' N';
-            updateEnergyFromTension(buteeMax);
-        }
-
-        // Initialisation
-        energieInput.value = (300 * TENSION_TO_ENERGY_FACTOR).toFixed(1);
-        calculerVitesse();
-
-        // --- Animation Canvas (identique à ARC_V0.html) ---
-        const canvas = document.getElementById('arcCanvas');
-        const ctx = canvas.getContext('2d');
-
-        function drawLabel(x, y, text, color="#1e40af", fontSize="16px") {
-            ctx.fillStyle = color;
-            ctx.font = `bold ${fontSize} Inter, sans-serif`;
-            ctx.fillText(text, x, y);
-        }
-
-        function drawArc(tension) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // --- DESSIN DU GRAPHIQUE DE TRAJECTOIRE DE PROFIL ---
+        function drawTrajectoire(points, h_cible, cibleAtteinte, y_50_m) {
+            const c = document.getElementById('trajectoireCanvas');
+            const ctx = c.getContext('2d');
+            const W = c.width;
+            const H = c.height;
             
-            // Grille discrète
+            ctx.clearRect(0, 0, W, H);
+            
+            // Echelles d'affichage
+            const xMax = 52; 
+            const yMax = 4;  
+            
+            const pxX = m => (m / xMax) * W;
+            const pxY = m => H - (m / yMax) * H; 
+            
+            // Grille de fond
             ctx.strokeStyle = '#e2e8f0';
             ctx.lineWidth = 1;
-            for(let i = 0; i <= canvas.width; i+=50) {
-                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+            for(let i=0; i<=50; i+=5) {
+                ctx.beginPath(); ctx.moveTo(pxX(i), 0); ctx.lineTo(pxX(i), H); ctx.stroke();
+                ctx.fillStyle = '#94a3b8'; ctx.font = '11px Inter';
+                if (i > 0) ctx.fillText(i + 'm', pxX(i) - 10, H - 5);
             }
-            for(let j = 0; j <= canvas.height; j+=50) {
-                ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(canvas.width, j); ctx.stroke();
+            for(let j=0; j<=yMax; j+=1) {
+                ctx.beginPath(); ctx.moveTo(0, pxY(j)); ctx.lineTo(W, pxY(j)); ctx.stroke();
+                ctx.fillStyle = '#94a3b8'; ctx.font = '11px Inter';
+                if (j > 0) ctx.fillText(j + 'm', 5, pxY(j) - 5);
+            }
+            
+            // Sol
+            ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(0, pxY(0)); ctx.lineTo(W, pxY(0)); ctx.stroke();
+            
+            // Cible et support
+            ctx.fillStyle = '#cbd5e1'; 
+            ctx.fillRect(pxX(50) - 2, pxY(h_cible - 0.4), 4, pxY(0) - pxY(h_cible - 0.4));
+            
+            ctx.fillStyle = '#ef4444'; 
+            ctx.fillRect(pxX(50) - 3, pxY(h_cible + 0.4), 6, (0.8 * H / yMax));
+            ctx.fillStyle = '#fde047'; 
+            ctx.fillRect(pxX(50) - 3, pxY(h_cible + 0.08), 6, (0.16 * H / yMax));
+            
+            // Tracé de la Parabole
+            if (points.length > 0) {
+                ctx.beginPath();
+                ctx.moveTo(pxX(points[0].x), pxY(points[0].y));
+                for(let i=1; i<points.length; i++) {
+                    ctx.lineTo(pxX(points[i].x), pxY(points[i].y));
+                }
+                
+                ctx.strokeStyle = cibleAtteinte ? '#1e40af' : '#94a3b8'; 
+                if (!cibleAtteinte) ctx.setLineDash([5, 5]);
+                
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.setLineDash([]); 
+                
+                let last = points[points.length-1];
+                
+                if (cibleAtteinte || last.y <= 0.05) {
+                    ctx.beginPath();
+                    ctx.arc(pxX(last.x), pxY(last.y), 5, 0, Math.PI*2);
+                    ctx.fillStyle = cibleAtteinte ? '#22c55e' : '#ea580c';
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                }
+
+                if (!cibleAtteinte && last.x > 50 && y_50_m > 0) {
+                    ctx.fillStyle = '#dc2626';
+                    ctx.font = 'bold 13px Inter';
+                    ctx.fillText("Trajectoire hors-cible (déviation latérale invisible en 2D) !", pxX(20), pxY(Math.max(y_50_m, 1)) - 15);
+                }
+            }
+        }
+
+        // --- DESSIN DE LA CIBLE DE FACE ---
+        function drawCible(impacts = []) {
+            const cCanvas = document.getElementById('cibleCanvas');
+            const cCtx = cCanvas.getContext('2d');
+            const cx = 200; 
+            const cy = 200;
+            const pxPerCm = 4; 
+
+            cCtx.clearRect(0, 0, 400, 400);
+
+            const rings = [
+                { r: 40, c: '#ffffff' }, 
+                { r: 32, c: '#1f2937' }, 
+                { r: 24, c: '#3b82f6' }, 
+                { r: 16, c: '#ef4444' }, 
+                { r: 8,  c: '#fde047' }  
+            ];
+
+            for (let i = 0; i < rings.length; i++) {
+                cCtx.beginPath();
+                cCtx.arc(cx, cy, rings[i].r * pxPerCm, 0, 2 * Math.PI);
+                cCtx.fillStyle = rings[i].c;
+                cCtx.fill();
+                cCtx.strokeStyle = (rings[i].c === '#1f2937') ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
+                cCtx.lineWidth = 1;
+                cCtx.stroke();
+
+                cCtx.beginPath();
+                cCtx.arc(cx, cy, (rings[i].r - 4) * pxPerCm, 0, 2 * Math.PI);
+                cCtx.stroke();
             }
 
-            let topY = 80, bottomY = 420, riserTopY = 150, riserBottomY = 350;
+            cCtx.beginPath();
+            cCtx.moveTo(cx - 5, cy); cCtx.lineTo(cx + 5, cy);
+            cCtx.moveTo(cx, cy - 5); cCtx.lineTo(cx, cy + 5);
+            cCtx.strokeStyle = 'rgba(0,0,0,0.5)';
+            cCtx.stroke();
+
+            impacts.forEach(imp => {
+                let px = cx + imp.x * pxPerCm;
+                let py = cy - imp.y * pxPerCm; 
+                
+                cCtx.beginPath();
+                cCtx.arc(px, py, 4, 0, 2 * Math.PI);
+                cCtx.fillStyle = '#22c55e'; 
+                cCtx.fill();
+                cCtx.strokeStyle = '#14532d';
+                cCtx.lineWidth = 1.5;
+                cCtx.stroke();
+            });
+        }
+
+        drawCible();
+
+        // Moteur Physique Réaliste 3D
+        const sliderTaille = document.getElementById('sliderTaille');
+        const sliderButee = document.getElementById('sliderButee');
+        const sliderMasse = document.getElementById('sliderMasse');
+        const sliderVentVitesse = document.getElementById('sliderVentVitesse');
+        const sliderVentDirection = document.getElementById('sliderVentDirection');
+        const sliderAzimut = document.getElementById('sliderAzimut');
+        const sliderElevation = document.getElementById('sliderElevation');
+
+        // Gestion de la précision des sliders de visée
+        document.querySelectorAll('input[name="stepVisee"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.getElementById('sliderAzimut').step = this.value;
+                document.getElementById('sliderElevation').step = this.value;
+                calculerPhysique(); // Forcer la mise à jour de l'affichage textuel
+            });
+        });
+
+        function calculerPhysique() {
+            let tailleTireur = parseFloat(sliderTaille.value);
+            let buteeMax = parseInt(sliderButee.value);
+            let masseMax = parseInt(sliderMasse.value);
+            let ventVitesse = parseInt(sliderVentVitesse.value);
+            let ventDirection = parseInt(sliderVentDirection.value);
+            let azimutDeg = parseFloat(sliderAzimut.value);
+            let elevationDeg = parseFloat(sliderElevation.value);
+
+            let masseKg = masseMax / 1000;
+            
+            let rendement = Math.min(0.85, 0.60 + (masseMax * 0.005)); 
+            let coursePoussee = 0.5; 
+            let energieStockee = buteeMax * coursePoussee * 0.85; 
+            let energieCinetique = energieStockee * rendement;
+            let v0 = Math.sqrt((2 * energieCinetique) / masseKg); 
+
+            let alpha = elevationDeg * (Math.PI / 180); 
+            let beta = azimutDeg * (Math.PI / 180);     
+            
+            let v0x = v0 * Math.cos(alpha) * Math.cos(beta);
+            let v0y_vertical = v0 * Math.sin(alpha);
+
+            let ventVitesseMs = ventVitesse / 3.6;
+            let ventAngleRad = ventDirection * (Math.PI / 180);
+            let ventFace = ventVitesseMs * Math.cos(ventAngleRad); 
+            let ventLat = ventVitesseMs * Math.sin(ventAngleRad);
+
+            let distanceCible = 50; 
+            let dt = 0.01;
+            let k_aero = 0.00006; 
+            let gravite = 9.81;
+            let h0 = tailleTireur * 0.85; 
+            let h_cible = 1.30; 
+            
+            // --- 1. Calcul des données d'impact au croisement de la cible (X = 50m) ---
+            let t_50 = 0, vx_50 = v0x, x_50 = 0;
+            while(x_50 < distanceCible && t_50 < 5) {
+                let vitesseRelative = vx_50 + ventFace; 
+                let forceTrain = k_aero * vitesseRelative * Math.abs(vitesseRelative); 
+                vx_50 += (-forceTrain / masseKg) * dt;
+                x_50 += vx_50 * dt;
+                t_50 += dt;
+            }
+            
+            let tempsDeVolReel = t_50;
+            let y_final_metres = h0 + (v0y_vertical * tempsDeVolReel) - (0.5 * gravite * tempsDeVolReel * tempsDeVolReel);
+            pointImpactY_cm = (y_final_metres - h_cible) * 100;
+
+            let tempsVide = distanceCible / v0x;
+            let deriveVentMetres = ventLat * (tempsDeVolReel - tempsVide);
+            let decalageViseeMetres = distanceCible * Math.tan(beta);
+            pointImpactX_cm = (decalageViseeMetres + deriveVentMetres) * 100;
+
+            let distanceCentre = Math.sqrt(pointImpactX_cm * pointImpactX_cm + pointImpactY_cm * pointImpactY_cm);
+            let cibleAtteinte = (distanceCentre <= 40 && y_final_metres >= 0);
+
+            // --- 2. Génération des points pour le tracé graphique et la modélisation ---
+            let trajectoirePts = [];
+            let relevePts = [];
+            let nextTargetX = 0;
+            
+            trajectoirePts.push({x: 0, y: h0});
+            let t = 0; let x = 0; let vx = v0x;
+
+            while (t < 5) {
+                let vitesseRelative = vx + ventFace; 
+                let forceTrain = k_aero * vitesseRelative * Math.abs(vitesseRelative); 
+                vx += (-forceTrain / masseKg) * dt;
+                x += vx * dt;
+                t += dt;
+                
+                let y_current = h0 + (v0y_vertical * t) - (0.5 * gravite * t * t);
+                
+                // Relevé des points (0, 10, 20, 30, 40) en évitant 50m
+                if (x >= nextTargetX && nextTargetX <= 40) {
+                    relevePts.push({x: x, y: y_current});
+                    nextTargetX += 10;
+                }
+
+                // S'arrête si elle touche le sol
+                if (y_current <= 0) {
+                    trajectoirePts.push({x: x, y: 0});
+                    break;
+                }
+                
+                // S'arrête nette si elle heurte le blason (Cible Atteinte)
+                if (cibleAtteinte && x >= distanceCible) {
+                    trajectoirePts.push({x: distanceCible, y: y_final_metres});
+                    break;
+                }
+
+                // Continue de voler jusqu'à 52m si elle a raté le blason latéralement ou en hauteur
+                if (!cibleAtteinte && x >= 52) {
+                    trajectoirePts.push({x: x, y: y_current});
+                    break;
+                }
+
+                trajectoirePts.push({x: x, y: y_current});
+            }
+            
+            // Mise à jour du Canvas de Profil
+            drawTrajectoire(trajectoirePts, h_cible, cibleAtteinte, y_final_metres);
+            
+            // Mise à jour des points de relevé
+            const conteneurPoints = document.getElementById('releve-points');
+            conteneurPoints.innerHTML = '<strong style="color: var(--text-muted); margin-right: 0.5rem;">Relevé Télémétrique en vol :</strong>';
+            relevePts.forEach(pt => {
+                let div = document.createElement('div');
+                div.className = 'data-point';
+                div.innerHTML = `X: ${Math.round(pt.x)}m | Y: ${pt.y.toFixed(2)}m`;
+                conteneurPoints.appendChild(div);
+            });
+
+            // Interface Statut
+            document.getElementById('valeurVitesse').textContent = (v0 * 3.6).toFixed(1) + " km/h";
+            document.getElementById('valeurTemps').textContent = tempsDeVolReel.toFixed(2) + " s";
+
+            let elStatut = document.getElementById('statutImpact');
+            let elMessage = document.getElementById('messageValidation');
+            let elTendance = document.getElementById('tendanceImpact');
+            
+            if (cibleAtteinte) {
+                elStatut.textContent = "🎯 BLASON ATTEINT";
+                elStatut.style.color = "var(--success)";
+                elMessage.innerHTML = "La flèche atteint la cible de 80 cm. Lancez une série de tirs pour analyser finement votre réglage !";
+                elMessage.style.color = "var(--text-secondary)";
+            } else {
+                elStatut.textContent = "❌ HORS CIBLE";
+                elStatut.style.color = "var(--danger)";
+                elMessage.innerHTML = "La flèche est complètement hors cible. Modifiez vos cadrans de visée avant de lancer la série de validation.";
+                elMessage.style.color = "var(--warning)";
+            }
+
+            if (previousDistanceCentre !== null) {
+                let diff = distanceCentre - previousDistanceCentre;
+                if (Math.abs(diff) < 0.1) {
+                    elTendance.innerHTML = "⚖️ <span style='color:var(--text-muted)'>Distance stable</span>";
+                } else if (diff < 0) {
+                    elTendance.innerHTML = "🔥 <span style='color:var(--success)'>Vous vous approchez du centre de la cible !</span>";
+                } else {
+                    elTendance.innerHTML = "❄️ <span style='color:var(--danger)'>Vous vous éloignez du centre...</span>";
+                }
+            }
+            previousDistanceCentre = distanceCentre;
+
+            document.getElementById('aiguilleVent').style.transform = `rotate(${ventDirection}deg)`;
+            let textDirVent = "Face";
+            if(ventDirection > 45 && ventDirection <= 135) textDirVent = "Latéral Droit";
+            else if(ventDirection > 135 && ventDirection <= 225) textDirVent = "Dos";
+            else if(ventDirection > 225 && ventDirection <= 315) textDirVent = "Latéral Gauche";
+            document.getElementById('valeurVentDirText').textContent = `${textDirVent} (${ventDirection}°)`;
+
+            // Gestion de l'affichage des décimales en fonction du mode choisi
+            let stepActuel = document.querySelector('input[name="stepVisee"]:checked').value;
+            let decimales = stepActuel === "0.01" ? 2 : 1;
+
+            document.getElementById('aiguilleAzimut').style.transform = `rotate(${azimutDeg * 3}deg)`; 
+            document.getElementById('valeurAzimutText').textContent = `${azimutDeg > 0 ? 'Droite' : (azimutDeg < 0 ? 'Gauche' : 'Centre')} (${Math.abs(azimutDeg).toFixed(decimales)}°)`;
+
+            let rotationElev = -90 + (elevationDeg * 4); 
+            document.getElementById('aiguilleElevation').style.transform = `rotate(${rotationElev}deg)`;
+            document.getElementById('valeurElevationText').textContent = `${elevationDeg >= 0 ? 'Haut' : 'Bas'} (${elevationDeg.toFixed(decimales)}°)`;
+        }
+
+        const sliders = [sliderTaille, sliderButee, sliderMasse, sliderVentVitesse, sliderVentDirection, sliderAzimut, sliderElevation];
+        sliders.forEach(slider => slider.addEventListener('input', function() {
+            if(this.id === 'sliderTaille') document.getElementById('valeurTaille').textContent = this.value + " m";
+            if(this.id === 'sliderButee') document.getElementById('valeurButee').textContent = this.value + " N";
+            if(this.id === 'sliderMasse') document.getElementById('valeurMasse').textContent = this.value + " g";
+            if(this.id === 'sliderVentVitesse') document.getElementById('valeurVentVitesse').textContent = this.value + " km/h";
+            calculerPhysique();
+        }));
+
+        calculerPhysique();
+
+        function randomNormal(mean, stdDev) {
+            let u1 = Math.random();
+            let u2 = Math.random();
+            let z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+            return z0 * stdDev + mean;
+        }
+
+        // --- SIMULATION ET ENREGISTREMENT AUTOMATIQUE ---
+        document.getElementById('btn-simuler-tirs').addEventListener('click', function() {
+            let resultats = { 10: 0, 9: 0, 8: 0, 7: 0, 6: 0, 5: 0, 4: 0, 3: 0, 2: 0, 1: 0, 0: 0 };
+            let scoreTotal = 0;
+            let ecartType = 8; 
+            let listeImpacts = [];
+
+            // 1. Simulation des 100 tirs
+            for (let i = 0; i < 100; i++) {
+                let tir_x = randomNormal(pointImpactX_cm, ecartType);
+                let tir_y = randomNormal(pointImpactY_cm, ecartType);
+                let distance_centre = Math.sqrt(tir_x*tir_x + tir_y*tir_y);
+
+                let points = 0;
+                if (distance_centre <= 4) points = 10;
+                else if (distance_centre <= 8) points = 9;
+                else if (distance_centre <= 12) points = 8;
+                else if (distance_centre <= 16) points = 7;
+                else if (distance_centre <= 20) points = 6;
+                else if (distance_centre <= 24) points = 5;
+                else if (distance_centre <= 28) points = 4;
+                else if (distance_centre <= 32) points = 3;
+                else if (distance_centre <= 36) points = 2;
+                else if (distance_centre <= 40) points = 1;
+                else points = 0; 
+
+                resultats[points]++;
+                scoreTotal += points;
+                listeImpacts.push({x: tir_x, y: tir_y});
+            }
+
+            // 2. Affichage des résultats
+            document.getElementById('resultats-tirs-box').style.display = 'block';
+            document.getElementById('score-total').textContent = scoreTotal;
+            drawCible(listeImpacts);
+            
+            for(let p = 0; p <= 10; p++) {
+                document.getElementById('cpt-' + p).textContent = resultats[p];
+            }
+
+            // 3. Enregistrement automatique dans le journal
+            compteurVolee++;
+            let tbody = document.getElementById('table-journal').querySelector('tbody');
+            let row = tbody.insertRow();
+            
+            // Récupération des variables du formulaire
+            let tailleActuelle = document.getElementById('sliderTaille').value;
+            let tensionActuelle = document.getElementById('sliderButee').value;
+            let masseActuelle = document.getElementById('sliderMasse').value;
+            let ventVitActuel = document.getElementById('sliderVentVitesse').value;
+            let ventDirDegActuel = document.getElementById('sliderVentDirection').value;
+            
+            let stepActuel = document.querySelector('input[name="stepVisee"]:checked').value;
+            let decimales = stepActuel === "0.01" ? 2 : 1;
+            let azimutActuel = parseFloat(document.getElementById('sliderAzimut').value).toFixed(decimales);
+            let elevationActuelle = parseFloat(document.getElementById('sliderElevation').value).toFixed(decimales);
+            
+            // Traduction de l'angle du vent en texte pour le log
+            let textDirVentLog = "Face";
+            if(ventDirDegActuel > 45 && ventDirDegActuel <= 135) textDirVentLog = "Lat. Droit";
+            else if(ventDirDegActuel > 135 && ventDirDegActuel <= 225) textDirVentLog = "Dos";
+            else if(ventDirDegActuel > 225 && ventDirDegActuel <= 315) textDirVentLog = "Lat. Gauche";
+
+            let estValide = scoreTotal >= 850;
+            let badgeValidation = estValide 
+                ? '<span style="background:var(--success); color:white; padding:0.3rem 0.6rem; border-radius:4px; font-weight:bold; font-size:0.9rem;">✅ Validé</span>' 
+                : '<span style="background:var(--danger); color:white; padding:0.3rem 0.6rem; border-radius:4px; font-weight:bold; font-size:0.9rem;">❌ Échoué</span>';
+
+            row.innerHTML = `
+                <td style="font-weight:bold;">${compteurVolee}</td>
+                <td>${tailleActuelle} m</td>
+                <td>${tensionActuelle} N</td>
+                <td>${masseActuelle} g</td>
+                <td style="font-family: var(--font-mono); font-size:0.9rem;">${ventVitActuel} km/h <br> ${textDirVentLog} (${ventDirDegActuel}°)</td>
+                <td style="font-family: var(--font-mono); font-size:0.9rem;">Az: ${azimutActuel}° <br> El: ${elevationActuelle}°</td>
+                <td style="font-weight:bold; font-size: 1.1rem; color: var(--primary-dark);">${scoreTotal}</td>
+                <td>${badgeValidation}</td>
+            `;
+        });
+
+        const arcCanvas = document.getElementById('arcCanvas');
+        const ctxArc = arcCanvas.getContext('2d');
+
+        function drawLabelArc(x, y, text, color="#1e40af", fontSize="16px") {
+            ctxArc.fillStyle = color; ctxArc.font = `bold ${fontSize} Inter, sans-serif`; ctxArc.fillText(text, x, y);
+        }
+
+        function drawArc(tension, elevation = 0, azimut = 0) {
+            ctxArc.clearRect(0, 0, arcCanvas.width, arcCanvas.height);
+            
+            ctxArc.strokeStyle = '#e2e8f0'; ctxArc.lineWidth = 1;
+            for(let i = 0; i <= arcCanvas.width; i+=50) { ctxArc.beginPath(); ctxArc.moveTo(i, 0); ctxArc.lineTo(i, arcCanvas.height); ctxArc.stroke(); }
+            for(let j = 0; j <= arcCanvas.height; j+=50) { ctxArc.beginPath(); ctxArc.moveTo(0, j); ctxArc.lineTo(arcCanvas.width, j); ctxArc.stroke(); }
+
+            ctxArc.save();
             let bowX = 450;
+            ctxArc.translate(bowX, 250);
+            ctxArc.rotate(-elevation * Math.PI / 180);
+            let visAzimut = azimut * 3;
+            ctxArc.scale(Math.cos(visAzimut * Math.PI / 180), 1);
+            ctxArc.translate(-bowX, -250);
+
+            let topY = 80; let bottomY = 420; let riserTopY = 150; let riserBottomY = 350;
             let drawPointX = bowX - tension;
 
-            // Branches
-            let gradBranch = ctx.createLinearGradient(bowX-20, topY, bowX, riserTopY);
-            gradBranch.addColorStop(0, '#475569');
-            gradBranch.addColorStop(0.5, '#64748b');
-            gradBranch.addColorStop(1, '#334155');
-            ctx.strokeStyle = gradBranch;
-            ctx.lineWidth = 12;
-            ctx.lineCap = 'round';
-            ctx.beginPath();
-            ctx.moveTo(bowX, riserTopY);
-            ctx.lineTo(bowX - 25, topY);
-            ctx.moveTo(bowX, riserBottomY);
-            ctx.lineTo(bowX - 25, bottomY);
-            ctx.stroke();
-            drawLabel(bowX - 15, 115, "B", "#475569", "18px");
+            ctxArc.shadowColor = 'rgba(0, 0, 0, 0.15)'; ctxArc.shadowBlur = 10; ctxArc.shadowOffsetY = 5;
 
-            // Poignée
-            let gradGrip = ctx.createLinearGradient(bowX, riserTopY, bowX+40, riserBottomY);
-            gradGrip.addColorStop(0, '#1e293b');
-            gradGrip.addColorStop(0.5, '#334155');
-            gradGrip.addColorStop(1, '#0f172a');
-            ctx.strokeStyle = gradGrip;
-            ctx.lineWidth = 18;
-            ctx.lineCap = 'round';
-            ctx.beginPath();
-            ctx.moveTo(bowX, riserTopY);
-            ctx.quadraticCurveTo(bowX + 70, 250, bowX, riserBottomY);
-            ctx.stroke();
-            drawLabel(bowX + 55, 255, "C", "#0f172a", "18px");
+            let gradBranch = ctxArc.createLinearGradient(bowX-20, topY, bowX, riserTopY);
+            gradBranch.addColorStop(0, '#475569'); gradBranch.addColorStop(0.5, '#64748b'); gradBranch.addColorStop(1, '#334155');
+            ctxArc.strokeStyle = gradBranch; ctxArc.lineWidth = 12; ctxArc.lineCap = 'round';
+            ctxArc.beginPath(); ctxArc.moveTo(bowX, riserTopY); ctxArc.lineTo(bowX - 25, topY);
+            ctxArc.moveTo(bowX, riserBottomY); ctxArc.lineTo(bowX - 25, bottomY); ctxArc.stroke();
+            ctxArc.shadowColor = 'transparent'; drawLabelArc(bowX - 15, 115, "B", "#475569", "18px");
 
-            // Amortisseur
-            ctx.fillStyle = '#374151';
-            ctx.beginPath();
-            ctx.roundRect(bowX + 30, 295, 35, 20, 5);
-            ctx.fill();
-            drawLabel(bowX + 70, 308, "F", "#374151");
+            let gradGrip = ctxArc.createLinearGradient(bowX, riserTopY, bowX+40, riserBottomY);
+            gradGrip.addColorStop(0, '#1e293b'); gradGrip.addColorStop(0.5, '#334155'); gradGrip.addColorStop(1, '#0f172a');
+            ctxArc.strokeStyle = gradGrip; ctxArc.lineWidth = 18; ctxArc.lineCap = 'round';
+            ctxArc.beginPath(); ctxArc.moveTo(bowX, riserTopY); ctxArc.quadraticCurveTo(bowX + 70, 250, bowX, riserBottomY); ctxArc.stroke();
+            drawLabelArc(bowX + 55, 255, "C", "#0f172a", "18px");
 
-            // Écarteur
-            ctx.strokeStyle = '#6b7280';
-            ctx.lineWidth = 5;
-            ctx.beginPath();
-            ctx.moveTo(bowX + 45, 175);
-            ctx.lineTo(bowX - 55, 175);
-            ctx.stroke();
-            drawLabel(bowX - 65, 170, "E", "#6b7280");
+            ctxArc.fillStyle = '#374151'; ctxArc.beginPath(); ctxArc.roundRect(bowX + 30, 295, 35, 20, 5); ctxArc.fill();
+            drawLabelArc(bowX + 70, 308, "F", "#374151");
 
-            // Repose-flèche
-            ctx.fillStyle = '#111827';
-            ctx.beginPath();
-            ctx.roundRect(bowX + 12, 235, 25, 12, 3);
-            ctx.fill();
-            drawLabel(bowX + 18, 225, "G", "#111827");
+            ctxArc.strokeStyle = '#6b7280'; ctxArc.lineWidth = 5; ctxArc.beginPath(); ctxArc.moveTo(bowX + 45, 175); ctxArc.lineTo(bowX - 55, 175); ctxArc.stroke();
+            drawLabelArc(bowX - 65, 170, "E", "#6b7280");
 
-            // Poulies-cames
+            ctxArc.fillStyle = '#111827'; ctxArc.beginPath(); ctxArc.roundRect(bowX + 12, 235, 25, 12, 3); ctxArc.fill();
+            drawLabelArc(bowX + 18, 225, "G", "#111827");
+
             let camX = bowX - 25;
-            ctx.strokeStyle = '#1e40af';
-            ctx.lineWidth = 6;
-            ctx.beginPath();
-            ctx.arc(camX, topY, 30, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.fillStyle = '#1e40af';
-            ctx.beginPath();
-            ctx.arc(camX, topY, 8, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(camX, bottomY, 30, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.arc(camX, bottomY, 8, 0, Math.PI * 2);
-            ctx.fill();
-            drawLabel(camX - 45, topY + 5, "A", "#1e40af", "18px");
+            ctxArc.strokeStyle = '#1e40af'; ctxArc.lineWidth = 6; ctxArc.beginPath(); ctxArc.arc(camX, topY, 30, 0, Math.PI * 2); ctxArc.stroke();
+            ctxArc.fillStyle = '#1e40af'; ctxArc.beginPath(); ctxArc.arc(camX, topY, 8, 0, Math.PI * 2); ctxArc.fill();
+            ctxArc.beginPath(); ctxArc.arc(camX, bottomY, 30, 0, Math.PI * 2); ctxArc.stroke();
+            ctxArc.beginPath(); ctxArc.arc(camX, bottomY, 8, 0, Math.PI * 2); ctxArc.fill();
+            drawLabelArc(camX - 45, topY + 5, "A", "#1e40af", "18px");
 
-            // Butée mobile
-            let angleButee = Math.PI * 1.2 + (tension / 300) * Math.PI * 0.8; 
-            let buteeX = camX + 30 * Math.cos(angleButee);
-            let buteeY = topY + 30 * Math.sin(angleButee);
-            ctx.shadowColor = '#f97316';
-            ctx.shadowBlur = 15;
-            ctx.fillStyle = '#ea580c';
-            ctx.beginPath();
-            ctx.arc(buteeX, buteeY, 8, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.shadowColor = 'transparent';
-            ctx.strokeStyle = 'white';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            drawLabel(buteeX - 40, buteeY - 15, "Butée", "#ea580c");
+            let angleButee = Math.PI * 1.2 + (parseInt(document.getElementById('sliderButee').value) / 300) * Math.PI * 0.8; 
+            let buteeX = camX + 30 * Math.cos(angleButee); let buteeY = topY + 30 * Math.sin(angleButee);
+            ctxArc.shadowColor = '#f97316'; ctxArc.shadowBlur = 15; ctxArc.fillStyle = '#ea580c'; ctxArc.beginPath(); ctxArc.arc(buteeX, buteeY, 8, 0, Math.PI * 2); ctxArc.fill();
+            ctxArc.shadowColor = 'transparent'; ctxArc.strokeStyle = 'white'; ctxArc.lineWidth = 2; ctxArc.stroke();
+            drawLabelArc(buteeX - 40, buteeY - 15, "Butée", "#ea580c");
 
-            // Corde
-            ctx.strokeStyle = '#334155';
-            ctx.lineWidth = 5;
-            ctx.lineCap = 'round';
-            ctx.beginPath();
-            ctx.moveTo(camX - 28, topY - 10);
-            ctx.lineTo(drawPointX, 250);
-            ctx.lineTo(camX - 28, bottomY + 10);
-            ctx.stroke();
+            ctxArc.strokeStyle = '#334155'; ctxArc.lineWidth = 5; ctxArc.lineCap = 'round';
+            ctxArc.beginPath(); ctxArc.moveTo(camX - 28, topY - 10); ctxArc.lineTo(drawPointX, 250); ctxArc.lineTo(camX - 28, bottomY + 10); ctxArc.stroke();
+            
+            let arrowGrad = ctxArc.createLinearGradient(drawPointX, 240, drawPointX + 350, 250);
+            arrowGrad.addColorStop(0, '#1e40af'); arrowGrad.addColorStop(1, '#3b82f6');
+            ctxArc.strokeStyle = arrowGrad; ctxArc.lineWidth = 8; ctxArc.lineCap = 'round';
+            ctxArc.beginPath(); ctxArc.moveTo(drawPointX, 248); ctxArc.lineTo(drawPointX + 340, 248); ctxArc.stroke();
 
-            // Flèche
-            let arrowGrad = ctx.createLinearGradient(drawPointX, 240, drawPointX + 350, 250);
-            arrowGrad.addColorStop(0, '#1e40af');
-            arrowGrad.addColorStop(1, '#3b82f6');
-            ctx.strokeStyle = arrowGrad;
-            ctx.lineWidth = 8;
-            ctx.lineCap = 'round';
-            ctx.beginPath();
-            ctx.moveTo(drawPointX, 248);
-            ctx.lineTo(drawPointX + 340, 248);
-            ctx.stroke();
+            ctxArc.fillStyle = '#1e40af'; ctxArc.beginPath(); ctxArc.moveTo(drawPointX + 340, 248); ctxArc.lineTo(drawPointX + 310, 230); ctxArc.lineTo(drawPointX + 310, 266); ctxArc.fill();
+            ctxArc.fillStyle = '#60a5fa'; ctxArc.beginPath(); ctxArc.moveTo(drawPointX + 320, 248); ctxArc.lineTo(drawPointX + 300, 235); ctxArc.lineTo(drawPointX + 305, 248); ctxArc.fill();
 
-            ctx.fillStyle = '#1e40af';
-            ctx.beginPath();
-            ctx.moveTo(drawPointX + 340, 248);
-            ctx.lineTo(drawPointX + 310, 230);
-            ctx.lineTo(drawPointX + 310, 266);
-            ctx.fill();
-            ctx.fillStyle = '#60a5fa';
-            ctx.beginPath();
-            ctx.moveTo(drawPointX + 320, 248);
-            ctx.lineTo(drawPointX + 300, 235);
-            ctx.lineTo(drawPointX + 305, 248);
-            ctx.fill();
+            ctxArc.restore();
         }
 
-        CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
-            if (w < 2 * r) r = w / 2;
-            if (h < 2 * r) r = h / 2;
-            this.moveTo(x + r, y);
-            this.lineTo(x + w - r, y);
-            this.quadraticCurveTo(x + w, y, x + w, y + r);
-            this.lineTo(x + w, y + h - r);
-            this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-            this.lineTo(x + r, y + h);
-            this.quadraticCurveTo(x, y + h, x, y + h - r);
-            this.lineTo(x, y + r);
-            this.quadraticCurveTo(x, y, x + r, y);
-            return this;
-        };
+        let currentTension = 0; let currentElevation = 0; let currentAzimut = 0;
 
-        let currentTension = 300;
         function animate() {
-            let targetTension = buteeMax;
+            let targetTension = parseInt(document.getElementById('sliderButee').value) || 300;
+            let targetElevation = parseFloat(document.getElementById('sliderElevation').value) || 0;
+            let targetAzimut = parseFloat(document.getElementById('sliderAzimut').value) || 0;
+
             currentTension += (targetTension - currentTension) * 0.1;
-            if(Math.abs(targetTension - currentTension) < 0.5) {
-                currentTension = targetTension;
-            }
-            drawArc(currentTension);
+            currentElevation += (targetElevation - currentElevation) * 0.1;
+            currentAzimut += (targetAzimut - currentAzimut) * 0.1;
+
+            if(Math.abs(targetTension - currentTension) < 0.5) currentTension = targetTension;
+            if(Math.abs(targetElevation - currentElevation) < 0.05) currentElevation = targetElevation;
+            if(Math.abs(targetAzimut - currentAzimut) < 0.05) currentAzimut = targetAzimut;
+
+            drawArc(currentTension, currentElevation, currentAzimut);
             requestAnimationFrame(animate);
         }
+        
         animate();
     </script>
 </body>
 </html>
+​​​​​‍‎​​‎​‌​‎‎‌‌‍‌‌​​‎‍​‎​​​‍​​​‍​‌​‍‌‍​‌​‍​​​​​​‌‍​​‌‍‌‍‍​‌‎‎​‌‍‌‍‌‍‌‌‌‎​​‌‎​‌‌‍‎​‌‍‍‍‌‎‌‌‌‍‎‎​‌​‍‌‍‌‍‌‌​‎‌​​‎‌‎‍‌​​‌‌​‎‍‍​‎‎‎​‍‍‌​‍‎​‌‎‌‌‌‍​​‌‎‌‎‌‍‎​​​‌​​​​​​‌​‍​​‌‍‌‍‎‎‌‎‎‌‌‍‎​‌‍‌​‌‎​‌‌‎​‎‌‍​‍‌‍‌​‌‎‎‌‌‎‎‎‌​‍‎‌‌​‌‌‌‎​‌‌‍​‌‎‌‎​‍​​​‎‍‍​‍​‌​‍​‌​‎‍‍​‌‌‌​‎‌‌​‍‍​​‎‎‍‌‌‍‎‌‌‎​​‌‎​‌‌‌‌​‎‌‍​‍​​‌‎‎‎​‎‎‎​‍‎​​‍​​​‎​​​‎‎​​‍‌‍​‎‍‍​‌​‍‌‌‍‌‌‌‎​‌​​‍​‎‎​​‎‎‎​‎‍‎​‎‍‍​‎‌‍​‍​‍​‎‍‎​‍‌‍‌‍‌‌​‍‍‎‌‌‎‌‌​‌‌‌​‌‍‌‌​‎‌‎‍‌​‍‎‍​‎​​​‎‎‍​‍‍​​‍‌‍​‍‌‎​‎​‌​‍‎​​‎‎‍‌‌‎‍‌‌‍‌‌​​‌‌‌‌‎​‍‎‌​‍‌​​‎​​​‎‎‌‌‍‌‌​‍‌‎​‍​​‌‎​‍​‍‌‍​‎​​‌‌‎​‌​‌​‌‌‌‎‌‌‍​​‍‎​‌‍‎‌​‍‎‍​‍‌‍​‍​​‌‍​‎​‎‌‍​‎‌‎‌‍‌‌​‍‎​‌‌‎‌‌‌‍‌‌​‌‍​‌‌‍​‍‍‌​‍‎​​‍‎‌​‍‌‎​‍‎​​‍‌‍​‎‍‌​‎‎‍​‍​​​‎​‍‌‌‌‎‌‌‎‍‌​‌‍​‌‌‍​‎‌‍​‎‍​‌‎‎‎​‎‌‎​‍‌​​‍‎‌​‍‌‍‌‎​‍​‎‌‍​‎‎‍​‌​‍‌​‌​‌‌‎‌‌​​‍​‎‍​​‍​‌​‎‌‍​‍‌‎‍‍‎​
