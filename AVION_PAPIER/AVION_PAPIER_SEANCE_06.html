@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avion en papier optimal - Séance 6</title>
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                macros: { dfrac: ['\\displaystyle\\frac{#1}{#2}', 2] }
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        /* Variables CSS - Thème clair et lisible, optimisé Dys/Malvoyants */
+        :root {
+            --bg-room: #cfd8dc;
+            --text-color: #1a1a1a;
+            --highlight-part: #b71c1c;
+            --highlight-sub: #1565c0;
+            
+            --board-part-bg: #fffde7;
+            --board-part-border: #3e2723;
+            
+            --board-sub-bg: #fdfbf7;
+            --board-sub-border: #8b5a2b;
+
+            --radius: 125vw; 
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+            background-color: var(--bg-room);
+            font-family: Verdana, 'Segoe UI', sans-serif; color: var(--text-color);
+            font-size: clamp(0.9rem, 2vh, 1.4rem); 
+            line-height: 1.6; letter-spacing: 0.03em;
+        }
+
+        .scene {
+            width: 100vw; height: 85vh; 
+            position: absolute; top: 0; left: 0;
+            perspective: 1200px;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .room {
+            width: 0; height: 0; position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            transform: translateZ(calc(-1 * var(--radius))) rotateY(0deg);
+        }
+
+        .board {
+            position: absolute; 
+            width: 80vw; height: 75vh;
+            left: -40vw; top: -37.5vh; 
+            border: 12px solid; border-radius: 8px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            padding: 40px 50px 30px 50px; box-sizing: border-box; 
+            overflow: hidden; 
+            display: flex; flex-direction: column; justify-content: flex-start;
+            backface-visibility: hidden;
+            transform: rotateY(calc(var(--i) * 36deg)) translateZ(var(--radius)); 
+        }
+
+        .type-partie { background-color: var(--board-part-bg); border-color: var(--board-part-border); }
+        .type-sous-partie { background-color: var(--board-sub-bg); border-color: var(--board-sub-border); }
+        .type-conclusion { background-color: #fce4ec; border-color: #880e4f; }
+
+        .badge {
+            position: absolute; top: 0; left: 20px;
+            padding: 5px 15px; color: white; font-weight: bold; font-size: 0.9em;
+            border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .badge-part { background-color: var(--highlight-part); }
+        .badge-sub { background-color: var(--highlight-sub); }
+        .badge-concl { background-color: #880e4f; }
+
+        h1, h2, h3 { margin: 0 0 10px 0; font-weight: 700; text-align: center; }
+        .type-partie h1, .type-partie h2 { color: var(--highlight-part); }
+        .type-sous-partie h3 { color: var(--highlight-sub); text-align: left; border-bottom: 2px solid var(--highlight-sub); padding-bottom: 5px;}
+        a { color: #0277bd; text-decoration: underline; text-underline-offset: 4px; font-weight: bold; }
+        ul, ol { padding-left: 2rem; margin: 10px 0; }
+        li { margin-bottom: 0.5rem; }
+        p { margin: 10px 0; }
+
+        .canvas-container {
+            flex-grow: 1; display: flex; justify-content: center; align-items: center;
+            min-height: 0; margin-top: 10px;
+        }
+        canvas { background: rgba(0,0,0,0.02); border: 1px dashed #ccc; border-radius: 5px; max-width: 100%; max-height: 100%; object-fit: contain; }
+
+        .controls-zone {
+            position: absolute; bottom: 0; left: 0; width: 100vw; height: 15vh;
+            background-color: #263238; display: flex; justify-content: center; align-items: center; gap: 20px;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.3); z-index: 1000;
+        }
+
+        .controls-zone button {
+            background: #eceff1; color: #263238; border: none; padding: 12px 20px; font-size: 1.1rem; 
+            cursor: pointer; border-radius: 6px; font-weight: bold; transition: all 0.3s;
+        }
+        .controls-zone button:hover, .controls-zone button:focus { background: #ffb300; color: #000; outline: 3px solid #fff; }
+
+        .board-counter {
+            background: #1a1a1a; color: #ffb300; padding: 10px 20px; border-radius: 6px; 
+            border: 2px solid #546e7a; font-size: 1.3rem; font-weight: bold; min-width: 120px; text-align: center;
+        }
+
+        .btn-droits { position: fixed; top: 15px; right: 15px; z-index: 1000; background: #5d4037; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;}
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: #fff; padding: 40px; border-radius: 10px; max-width: 800px; position: relative; }
+        .close-modal { position: absolute; top: 10px; right: 20px; background: none; border: none; font-size: 2rem; color: #d32f2f; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <button class="btn-droits" onclick="toggleModal(true)" aria-label="Droits d'auteur">⚖️ Droits d'auteur</button>
+
+    <div class="modal" id="copyrightModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="toggleModal(false)">✖</button>
+            <h2 style="color:#d32f2f;">⚖️ Droits d'Auteur et Licence d'Utilisation</h2>
+            <p><strong>Auteur :</strong> Yann Merdy (yann.merdy@gmail.com) - Mai 2026</p>
+            <p><strong>Licence d'Utilisation Non Commerciale</strong><br>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ('Avion en papier optimal') sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
+            <p><strong>Conditions :</strong><br>
+            <em>Utilisation Privée et Éducative (Autorisée) :</em> Vous êtes autorisé·e à utiliser, copier, modifier et distribuer ce code et son contenu uniquement à des fins personnelles, éducatives et non lucratives.<br>
+            <em>Utilisation Commerciale (Interdite) :</em> Toute utilisation, distribution, intégration ou reproduction du code ou du contenu (total ou partiel) à des fins commerciales, lucratives ou professionnelles est strictement interdite sans un accord écrit préalable et explicite de l'auteur.<br>
+            <em>Attribution :</em> Toute reproduction ou modification doit conserver la mention de l'auteur originale (Yann Merdy) et la présente notice de droits d'auteur.</p>
+            <p>Pour toute demande d'utilisation commerciale ou de licence spécifique, veuillez contacter l'auteur à l'adresse indiquée ci-dessus.</p>
+        </div>
+    </div>
+
+    <div class="scene">
+        <div class="room" id="room">
+            
+            <div class="board type-partie" style="--i: 0;" role="region" aria-label="Tableau 1">
+                <div class="badge badge-part">Partie Principale 1</div>
+                <h1>Avion en papier optimal</h1>
+                <h2>Livret élève</h2>
+                <p style="text-align: center;">PBL Mathématiques & Sciences -- Classe de 3e/2nde</p>
+                <hr style="width: 100%; border:1px solid #ccc; margin: 15px 0;">
+                <h2>Séance 6 : Rédaction et présentation</h2>
+                <p><strong>Objectif(s) :</strong> Synthétiser la démarche complète et présenter vos conclusions scientifiques.</p>
+                <p>C'est l'heure du bilan ! Vous devez rédiger un rapport final structuré rendant compte de toutes vos recherches, modélisations et expérimentations des 5 dernières séances.</p>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 1;" role="region" aria-label="Tableau 2">
+                <div class="badge badge-sub">Structure du Rapport</div>
+                <h3>Contenu du rapport final (10 pages max)</h3>
+                <p>Votre document écrit devra suivre scrupuleusement la structure suivante :</p>
+                <ol>
+                    <li><strong>Page de titre</strong> et de présentation de l'équipe.</li>
+                    <li><strong>Introduction :</strong> Problématique et hypothèses initiales.</li>
+                    <li><strong>Plans cotés</strong> des trois prototypes conçus.</li>
+                    <li><strong>Tableau de mesures</strong> et analyse statistique des vols.</li>
+                    <li><strong>Modélisation mathématique :</strong> Optimisation de $S(x)$ et étude du lien entre $T$ et $\sqrt{S/m}$.</li>
+                    <li><strong>Conclusion :</strong> Identification du meilleur modèle, justifications et améliorations.</li>
+                </ol>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 2;" role="region" aria-label="Tableau 3">
+                <div class="badge badge-sub">Rédaction : Points 1 & 2</div>
+                <h3>La Page de Garde et l'Introduction</h3>
+                <p><strong>La page de titre</strong> doit être soignée. Elle reflète le sérieux de votre travail d'équipe.</p>
+                <p><strong>L'introduction</strong> doit répondre à la question : <em>Que cherchons-nous à démontrer ?</em> Exposez clairement votre problématique (ex: "Comment la géométrie influence-t-elle la durée de vol ?") et formulez vos hypothèses de départ.</p>
+                <div class="canvas-container">
+                    <canvas id="canvas-page" width="300" height="200"></canvas>
+                </div>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 3;" role="region" aria-label="Tableau 4">
+                <div class="badge badge-sub">Rédaction : Point 3</div>
+                <h3>Les plans cotés des prototypes</h3>
+                <p>Pour chaque prototype (A, B et C), fournissez un schéma ou une photographie annotée vue de dessus.</p>
+                <ul>
+                    <li>Indiquez l'envergure $b$, la longueur totale $L$ et la corde moyenne $\bar{c}$.</li>
+                    <li>Matérialisez la position de votre centre de gravité (CG) après réglage.</li>
+                </ul>
+                <div class="canvas-container">
+                    <canvas id="canvas-plan" width="500" height="200"></canvas>
+                </div>
+            </div>
+
+            <div class="board type-partie" style="--i: 4;" role="region" aria-label="Tableau 5">
+                <div class="badge badge-part">Partie Principale 2</div>
+                <h2>Analyse des performances</h2>
+                <hr style="width: 100%; border:1px solid #ccc; margin: 15px 0;">
+                <h3>Rédaction : Point 4 (Mesures et Statistiques)</h3>
+                <p>Insérez le grand tableau de recueil de données complété lors de la Séance 4.</p>
+                <p><strong>Interprétation obligatoire :</strong> Ne laissez jamais un tableau parler seul ! Rédigez un paragraphe expliquant ce que les <strong>moyennes</strong> (qui vole le plus longtemps ?) et les <strong>écarts-types</strong> (quel avion est le plus fiable/régulier ?) révèlent sur vos prototypes.</p>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 5;" role="region" aria-label="Tableau 6">
+                <div class="badge badge-sub">Rédaction : Point 5 (Partie A)</div>
+                <h3>Modélisation mathématique : L'optimisation</h3>
+                <p>C'est le cœur de l'analyse mathématique (réalisée en Séance 5) :</p>
+                <ul>
+                    <li>Détaillez le calcul de la dérivée de la fonction d'aire $S(x)$.</li>
+                    <li>Présentez le tableau de variation prouvant que vous avez trouvé un extremum (maximum).</li>
+                    <li>Concluez sur la dimension $x$ optimale. Privilégiez l'écriture sous forme de fractions irréductibles pour vos résultats intermédiaires.</li>
+                </ul>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 6;" role="region" aria-label="Tableau 7">
+                <div class="badge badge-sub">Rédaction : Point 5 (Partie B)</div>
+                <h3>Modélisation mathématique : Lien T vs S/m</h3>
+                <p>Insérez le graphique généré par votre tableur. Le nuage de points doit être clairement visible, ainsi que la courbe de tendance mathématique $T = k \sqrt{\dfrac{S}{m}}$.</p>
+                <p><strong>Commentaire attendu :</strong> La théorie physique concorde-t-elle avec vos expérimentations de la Séance 4 ? Expliquez pourquoi certains points s'éloignent éventuellement de la courbe théorique (vent, décrochage, mauvais lancer, etc.).</p>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 7;" role="region" aria-label="Tableau 8">
+                <div class="badge badge-sub">Rédaction : Point 6</div>
+                <h3>La Conclusion Générale</h3>
+                <p>Le moment est venu de répondre à votre problématique de départ.</p>
+                <ol>
+                    <li><strong>Le grand vainqueur :</strong> Quel est le meilleur modèle parmi les trois ? Justifiez-le en croisant la modélisation mathématique et les statistiques de vol.</li>
+                    <li><strong>Perspectives et améliorations :</strong> Que feriez-vous différemment si vous deviez recommencer ? (ex: grammage du papier, type de rampe, réglage des gouvernes, ajout de dièdre).</li>
+                </ol>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 8;" role="region" aria-label="Tableau 9">
+                <div class="badge badge-sub">Préparation de l'Oral</div>
+                <h3>La Présentation devant le groupe</h3>
+                <p>Vous présenterez ensuite oralement votre travail en <strong>5 minutes chronométrées</strong>.</p>
+                <ul>
+                    <li>L'utilisation d'un <strong>diaporama</strong> (3 à 5 diapositives maximum) est fortement conseillée.</li>
+                    <li>Répartissez-vous équitablement la parole.</li>
+                    <li>Ne lisez pas vos notes ! Regardez le public et expliquez avec passion pourquoi votre prototype est l'avion optimal.</li>
+                </ul>
+                <div class="canvas-container">
+                    <canvas id="canvas-oral" width="400" height="150"></canvas>
+                </div>
+            </div>
+
+            <div class="board type-conclusion" style="--i: 9;" role="region" aria-label="Tableau 10">
+                <div class="badge badge-concl">Fin du projet</div>
+                <h2 style="color: #880e4f;">Bon courage à toutes et à tous !</h2>
+                <p>Ce projet vous a permis de relier de manière concrète les mathématiques (fonctions, statistiques, géométrie) et les sciences physiques (aérodynamique, forces) à travers une démarche d'ingénierie amusante.</p>
+                <div style="background-color: white; border: 3px dashed #880e4f; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                    <h3 style="margin-top: 0; color: #880e4f; border: none;">🎯 Grille d'évaluation :</h3>
+                    <ul style="margin-bottom: 0;">
+                        <li><strong>Rapport écrit :</strong> Rigueur scientifique, qualité de la rédaction, présentation des graphiques.</li>
+                        <li><strong>Soutenance orale :</strong> Clarté du propos, gestion du temps, dynamique de groupe.</li>
+                        <li><strong>Prototypes :</strong> Soin apporté au pliage et respect des cotes calculées.</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="controls-zone">
+        <button onclick="goToBoard(0)" aria-label="Aller au premier tableau">|◄ Premier</button>
+        <button onclick="rotateRoom(-1)" aria-label="Tableau précédent">◄ Précédent</button>
+        
+        <div id="board-counter" class="board-counter" aria-live="polite">Tableau 1 / 10</div>
+        
+        <button onclick="rotateRoom(1)" aria-label="Tableau suivant">Suivant ►</button>
+        <button onclick="goToBoard(9)" aria-label="Aller au dernier tableau">Dernier ►|</button>
+    </div>
+
+    <script>
+        const totalBoards = 10;
+        let currentIndex = 0;
+        const room = document.getElementById('room');
+        const counterElement = document.getElementById('board-counter');
+
+        function updateCounter() {
+            let actualIndex = ((currentIndex % totalBoards) + totalBoards) % totalBoards;
+            counterElement.innerText = "Tableau " + (actualIndex + 1) + " / " + totalBoards;
+        }
+
+        function applyRotation() {
+            let angle = currentIndex * -36;
+            room.style.transform = `translateZ(calc(-1 * var(--radius))) rotateY(${angle}deg)`;
+            updateCounter();
+        }
+
+        function rotateRoom(direction) {
+            currentIndex += direction;
+            applyRotation();
+        }
+
+        function goToBoard(targetIndex) {
+            let actualIndex = ((currentIndex % totalBoards) + totalBoards) % totalBoards;
+            let diff = targetIndex - actualIndex;
+            
+            if (diff > totalBoards / 2) diff -= totalBoards;
+            else if (diff < -totalBoards / 2) diff += totalBoards;
+            
+            currentIndex += diff;
+            applyRotation();
+        }
+
+        function toggleModal(show) {
+            document.getElementById('copyrightModal').style.display = show ? 'flex' : 'none';
+        }
+
+        updateCounter();
+
+        // -------------------------------------------------------------
+        // Tracé des figures Canvas
+        // -------------------------------------------------------------
+        window.onload = () => {
+            
+            // --- Canvas 1 : Page de titre (Tableau 3) ---
+            const ctxPage = document.getElementById('canvas-page').getContext('2d');
+            ctxPage.clearRect(0,0,300,200);
+            
+            // Feuille A4 miniature
+            ctxPage.fillStyle = "#ffffff"; ctxPage.strokeStyle = "#90a4ae"; ctxPage.lineWidth = 2;
+            ctxPage.beginPath(); ctxPage.roundRect(90, 10, 120, 170, 4); ctxPage.fill(); ctxPage.stroke();
+            
+            // Éléments de la page
+            ctxPage.fillStyle = "#1a1a1a";
+            ctxPage.fillRect(110, 40, 80, 6); // Titre
+            ctxPage.fillRect(120, 55, 60, 4); // Sous-titre
+            
+            ctxPage.fillStyle = "#1565c0"; // Noms équipe
+            ctxPage.fillRect(100, 130, 40, 3);
+            ctxPage.fillRect(100, 140, 40, 3);
+            ctxPage.fillRect(100, 150, 40, 3);
+            
+            // Petite illustration centrale
+            ctxPage.strokeStyle = "#d32f2f"; ctxPage.lineWidth = 1.5;
+            ctxPage.beginPath(); ctxPage.moveTo(130, 90); ctxPage.lineTo(170, 90); ctxPage.lineTo(150, 70); ctxPage.closePath(); ctxPage.stroke();
+
+            // --- Canvas 2 : Plan coté (Tableau 4) ---
+            const ctxPlan = document.getElementById('canvas-plan').getContext('2d');
+            ctxPlan.clearRect(0,0,500,200);
+            
+            // Avion (Vue de dessus)
+            ctxPlan.fillStyle = "#e0e0e0"; ctxPlan.strokeStyle = "#1a1a1a"; ctxPlan.lineWidth = 2;
+            ctxPlan.beginPath(); ctxPlan.moveTo(250, 30); ctxPlan.lineTo(150, 150); ctxPlan.lineTo(350, 150); ctxPlan.closePath(); ctxPlan.fill(); ctxPlan.stroke();
+            ctxPlan.beginPath(); ctxPlan.moveTo(250, 30); ctxPlan.lineTo(250, 150); ctxPlan.stroke();
+            
+            // Cotations
+            ctxPlan.strokeStyle = "#1565c0"; ctxPlan.lineWidth = 1.5; ctxPlan.setLineDash([5, 5]);
+            ctxPlan.beginPath(); ctxPlan.moveTo(150, 150); ctxPlan.lineTo(150, 180); ctxPlan.stroke();
+            ctxPlan.beginPath(); ctxPlan.moveTo(350, 150); ctxPlan.lineTo(350, 180); ctxPlan.stroke();
+            ctxPlan.setLineDash([]);
+            
+            ctxPlan.beginPath(); ctxPlan.moveTo(150, 170); ctxPlan.lineTo(350, 170); ctxPlan.stroke();
+            // Pointes flèche
+            ctxPlan.beginPath(); ctxPlan.moveTo(160, 165); ctxPlan.lineTo(150, 170); ctxPlan.lineTo(160, 175); ctxPlan.stroke();
+            ctxPlan.beginPath(); ctxPlan.moveTo(340, 165); ctxPlan.lineTo(350, 170); ctxPlan.lineTo(340, 175); ctxPlan.stroke();
+            ctxPlan.fillStyle = "#1565c0"; ctxPlan.font = "bold 14px Arial"; ctxPlan.fillText("Envergure b", 210, 190);
+
+            // Centre de gravité
+            ctxPlan.fillStyle = "#d32f2f";
+            ctxPlan.beginPath(); ctxPlan.arc(250, 100, 5, 0, Math.PI*2); ctxPlan.fill();
+            ctxPlan.fillText("CG", 265, 105);
+
+            // --- Canvas 3 : Soutenance Orale (Tableau 9) ---
+            const ctxOral = document.getElementById('canvas-oral').getContext('2d');
+            ctxOral.clearRect(0,0,400,150);
+            
+            // Écran de projection
+            ctxOral.fillStyle = "#f5f5f5"; ctxOral.strokeStyle = "#1a1a1a"; ctxOral.lineWidth = 2;
+            ctxOral.fillRect(100, 10, 160, 100); ctxOral.strokeRect(100, 10, 160, 100);
+            // Trépied
+            ctxOral.beginPath(); ctxOral.moveTo(120, 110); ctxOral.lineTo(110, 140); ctxOral.stroke();
+            ctxOral.beginPath(); ctxOral.moveTo(240, 110); ctxOral.lineTo(250, 140); ctxOral.stroke();
+            
+            // Contenu écran
+            ctxOral.fillStyle = "#1565c0";
+            ctxOral.fillRect(120, 30, 80, 8);
+            ctxOral.fillStyle = "#b71c1c";
+            ctxOral.beginPath(); ctxOral.moveTo(130, 80); ctxOral.lineTo(170, 50); ctxOral.lineTo(210, 70); ctxOral.stroke();
+            
+            // Stickman (Présentateur)
+            const sx = 300;
+            ctxOral.strokeStyle = "#1a1a1a"; ctxOral.lineWidth = 3;
+            ctxOral.beginPath(); ctxOral.arc(sx, 50, 12, 0, Math.PI*2); ctxOral.stroke(); // Tête
+            ctxOral.beginPath(); ctxOral.moveTo(sx, 62); ctxOral.lineTo(sx, 110); ctxOral.stroke(); // Corps
+            ctxOral.beginPath(); ctxOral.moveTo(sx, 110); ctxOral.lineTo(sx-15, 140); ctxOral.stroke(); // Jambe 1
+            ctxOral.beginPath(); ctxOral.moveTo(sx, 110); ctxOral.lineTo(sx+15, 140); ctxOral.stroke(); // Jambe 2
+            
+            // Bras avec pointeur
+            ctxOral.beginPath(); ctxOral.moveTo(sx, 75); ctxOral.lineTo(sx-30, 60); ctxOral.stroke();
+            ctxOral.strokeStyle = "#d32f2f"; ctxOral.lineWidth = 2;
+            ctxOral.beginPath(); ctxOral.moveTo(sx-30, 60); ctxOral.lineTo(265, 45); ctxOral.stroke();
+        };
+
+        // Navigation clavier
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') rotateRoom(-1);
+            if (e.key === 'ArrowRight') rotateRoom(1);
+            if (e.key === 'Home') goToBoard(0);
+            if (e.key === 'End') goToBoard(9);
+            if (e.key === 'Escape') toggleModal(false);
+        });
+    </script>
+    <script>
+    (function() {
+        const btn = document.createElement('a');
+        btn.href = 'AVION_PAPIER_SOMMAIRE.html';
+        btn.innerHTML = '🏠 Sommaire';
+        btn.className = 'btn-sommaire';
+        btn.style.position = 'fixed';
+        btn.style.top = '15px';
+        btn.style.left = '15px';
+        btn.style.zIndex = '1000';
+        btn.style.background = '#1565c0';
+        btn.style.color = 'white';
+        btn.style.padding = '10px 20px';
+        btn.style.borderRadius = '5px';
+        btn.style.fontWeight = 'bold';
+        btn.style.textDecoration = 'none';
+        document.body.appendChild(btn);
+    })();
+</script>
+</body>
+</html>

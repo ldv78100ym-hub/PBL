@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Chute d'un avion en papier - Méthode pas à pas (Collège)</title>
+    
+    <!-- MathJax pour les belles formules -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        :root {
+            --bg-room: #b0bec5;
+            --text-color: #1e2a3a;
+            --highlight-part: #c62828;
+            --highlight-sub: #0d47a1;
+            --board-part-bg: #fff8e7;
+            --board-part-border: #4e2e1e;
+            --board-sub-bg: #fef9e6;
+            --board-sub-border: #795548;
+            --radius: 140vw;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-room);
+            font-family: 'Segoe UI', 'Comic Neue', 'Quicksand', sans-serif;
+            color: var(--text-color);
+            font-size: clamp(0.85rem, 2.2vh, 1.3rem);
+            line-height: 1.5;
+        }
+
+        /* Scene 3D */
+        .scene {
+            width: 100vw;
+            height: 85vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            perspective: 1300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .room {
+            width: 0;
+            height: 0;
+            position: relative;
+            transform-style: preserve-3d;
+        }
+
+        /* Style des diapositives */
+        .board {
+            position: absolute;
+            width: 80vw;
+            max-width: 1000px;
+            height: 75vh;
+            max-height: 650px;
+            left: -40vw;
+            top: -37.5vh;
+            border-radius: 32px;
+            border: 8px solid;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            padding: 50px 35px 25px 35px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            backface-visibility: hidden;
+            transition: transform 0.7s cubic-bezier(0.2, 0.9, 0.4, 1.1), opacity 0.5s ease;
+            transform: translateZ(calc(-1 * var(--radius))) rotateY(calc((var(--i) - var(--current, 0)) * 30deg)) translateZ(var(--radius));
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .board.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .type-partie {
+            background-color: var(--board-part-bg);
+            border-color: var(--board-part-border);
+        }
+        .type-sous-partie {
+            background-color: var(--board-sub-bg);
+            border-color: var(--board-sub-border);
+        }
+        .type-conclusion {
+            background-color: #ffefef;
+            border-color: #b71c1c;
+        }
+
+        .badge {
+            position: absolute;
+            top: 8px;
+            left: 25px;
+            padding: 5px 18px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.85rem;
+            border-radius: 40px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+            font-family: monospace;
+            letter-spacing: 1px;
+            z-index: 5;
+        }
+        .badge-part { background-color: var(--highlight-part); }
+        .badge-sub { background-color: var(--highlight-sub); }
+        .badge-concl { background-color: #880e4f; }
+
+        h1, h2, h3 {
+            margin: 0 0 12px 0;
+            font-weight: 700;
+            text-align: center;
+        }
+        .type-partie h1 {
+            color: var(--highlight-part);
+            font-size: 2rem;
+        }
+        .type-sous-partie h3 {
+            color: var(--highlight-sub);
+            text-align: left;
+            border-left: 6px solid var(--highlight-sub);
+            padding-left: 12px;
+            margin-top: 0;
+        }
+
+        .board > :first-child {
+            margin-top: 0;
+        }
+
+        p, li {
+            margin: 8px 0;
+        }
+        ul, ol {
+            padding-left: 1.6rem;
+        }
+        .step {
+            background: #ffffffcc;
+            backdrop-filter: blur(2px);
+            border-radius: 20px;
+            padding: 12px 18px;
+            margin: 15px 0;
+            border-left: 6px solid #ffa000;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .note {
+            background: #fff3cd;
+            border-radius: 20px;
+            padding: 10px 18px;
+            margin: 15px 0;
+            border-left: 5px solid #ffb300;
+            color: #3e2a1f;
+        }
+        .formula {
+            background: #e3f2fd;
+            border-radius: 32px;
+            padding: 12px 20px;
+            text-align: center;
+            margin: 20px auto;
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: inline-block;
+            width: auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .formula-fit {
+            display: table;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Simulation */
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 12px 0;
+            flex-wrap: wrap;
+        }
+        .input-group label {
+            font-weight: bold;
+            width: 120px;
+        }
+        input {
+            padding: 8px 12px;
+            border-radius: 30px;
+            border: 1px solid #aaa;
+            font-size: 0.9rem;
+            width: 110px;
+            text-align: center;
+        }
+        .action-btn {
+            background-color: #0d47a1;
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 8px;
+        }
+        .action-btn:hover {
+            background-color: #ff8f00;
+            transform: scale(1.02);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        th, td {
+            border: 1px solid #bcaaa4;
+            padding: 6px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+        th {
+            background: #d7ccc8;
+        }
+
+        canvas {
+            width: 100%;
+            height: auto;
+            background: white;
+            border-radius: 20px;
+            margin-top: 10px;
+            border: 1px solid #bbb;
+        }
+
+        /* Contrôles */
+        .controls-zone {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100vw;
+            height: 15vh;
+            background: #2c3e2f;
+            background: linear-gradient(145deg, #2c3e2f, #1f2e21);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        .controls-zone button {
+            background: #ffe0b5;
+            border: none;
+            font-weight: bold;
+            padding: 8px 20px;
+            border-radius: 60px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .controls-zone button:hover {
+            background: #ffb74d;
+            transform: scale(1.05);
+        }
+        .board-counter {
+            background: #1e2a1f;
+            color: #ffd966;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            min-width: 150px;
+            text-align: center;
+            border: 1px solid #ffb74d;
+        }
+        .btn-top {
+            position: fixed;
+            top: 12px;
+            z-index: 1200;
+            background: #1565c0;
+            color: white;
+            border: none;
+            padding: 6px 18px;
+            border-radius: 60px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .btn-sommaire { left: 15px; }
+        .btn-droits { right: 15px; background: #4e2e1e; }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #fff8e7;
+            padding: 30px;
+            border-radius: 30px;
+            max-width: 500px;
+            position: relative;
+        }
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+        }
+        .correction {
+            background: #e8f5e9;
+            margin-top: 12px;
+            padding: 10px;
+            border-radius: 16px;
+            display: none;
+        }
+        .correction.visible {
+            display: block;
+        }
+        @media (max-width: 700px) {
+            .board { padding: 50px 20px 20px 20px; }
+            .formula { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Bouton Sommaire modifié pour pointer vers AVION_PAPIER_EXEMPLE_CALCULS.html -->
+<a href="AVION_PAPIER_EXEMPLE_CALCULS.html" class="btn-top btn-sommaire">🏠 Sommaire</a>
+<button class="btn-top btn-droits" onclick="toggleModal(true)">📜 Droits</button>
+
+<!-- Modal des droits d'auteur - structure corrigée (plus de double div) -->
+<div class="modal" id="copyrightModal">
+    <div class="modal-content">
+        <button class="close-modal" onclick="toggleModal(false)">✖</button>
+        <h2 style="color:#d32f2f;">⚖️ Droits d'Auteur et Licence d'Utilisation</h2>
+        <p><strong>Auteur :</strong> Yann Merdy (yann.merdy@gmail.com) - Mai 2026</p>
+        <p><strong>Licence d'Utilisation Non Commerciale</strong><br>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ('Avion en papier optimal') sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
+        <p><strong>Conditions :</strong><br>
+        <em>Utilisation Privée et Éducative (Autorisée) :</em> Vous êtes autorisé.e à utiliser, copier, modifier et distribuer ce code et son contenu uniquement à des fins personnelles, éducatives et non lucratives.<br>
+        <em>Utilisation Commerciale (Interdite) :</em> Toute utilisation, distribution, intégration ou reproduction du code ou du contenu (total ou partiel) à des fins commerciales, lucratives ou professionnelles est strictement interdite sans un accord écrit préalable et explicite de l'auteur.<br>
+        <em>Attribution :</em> Toute reproduction ou modification doit conserver la mention de l'auteur originale (Yann Merdy) et la présente notice de droits d'auteur.</p>
+        <p>Pour toute demande d'utilisation commerciale ou de licence spécifique, veuillez contacter l'auteur à l'adresse indiquée ci-dessus.</p>
+    </div>
+</div>
+
+<div class="scene">
+    <div class="room" id="room">
+        <!-- DIAPO 0 : Introduction -->
+        <div class="board type-partie" style="--i: 0;">
+            <div class="badge badge-part">✈️ Introduction</div>
+            <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center;">
+                <h1>📄 Chute d'un avion en papier</h1>
+                <h2>Découvrir la méthode d'Euler (pas à pas)</h2>
+                <h2 style="color:#0d47a1;">Comment connaître sa vitesse à chaque instant ?</h2>
+                <p>On va découvrir une méthode simple <strong>pas à pas</strong> inventée par le mathématicien Euler.<br>
+                Pas besoin de formules compliquées, seulement des additions et multiplications !</p>
+                <div class="step">🎯 Objectif : savoir calculer la vitesse verticale d’un avion en papier lâché sans le jeter.</div>
+            </div>
+        </div>
+
+        <!-- DIAPO 1 : vitesse et accélération (sans dérivée) -->
+        <div class="board type-sous-partie" style="--i: 1;">
+            <div class="badge badge-sub">🚀 Rappel physique</div>
+            <h3>💨 La vitesse et l’accélération</h3>
+            <div class="step">
+                <strong>🔹 Vitesse</strong> : elle indique si l’avion va vite (mètres par seconde, m/s).<br>
+                <strong>🔹 Accélération</strong> : c’est <em>de combien augmente la vitesse chaque seconde</em>.<br>
+                ➕ Si l’accélération est grande, la vitesse monte rapidement.
+            </div>
+            <div class="note">
+                📌 Exemple : Au début, la gravité accélère l’avion d’environ <strong>9,81 m/s chaque seconde</strong>.<br>
+                Mais l’air freine à mesure que la vitesse augmente.
+            </div>
+            <p>On va donc calculer la vitesse seconde par seconde, en tenant compte du freinage.</p>
+        </div>
+
+        <!-- DIAPO 2 : Modélisation - explication de la formule m*dV/dt = mg - 1/2 ρ V^2 S C_D (sans dérivée) -->
+        <div class="board type-sous-partie" style="--i: 2;">
+            <div class="badge badge-sub">📐 Les forces en jeu</div>
+            <h3>Poids vers le bas – Frottement vers le haut</h3>
+            <p>L’avion subit deux forces :</p>
+            <ul>
+                <li>⚡ Son <strong>poids</strong> ($m \times g$) vers le bas, qui le tire vers le sol.</li>
+                <li>🌀 La <strong>résistance de l’air</strong> (frottement) vers le haut, qui freine l’avion. Cette force dépend de la vitesse : plus l’avion va vite, plus l’air le freine fort.</li>
+            </ul>
+            <p>La physique (2e loi de Newton) nous dit que :</p>
+            <div class="formula formula-fit">
+                $ \text{Masse} \times \text{Accélération} = \text{Poids} - \text{Frottement} $
+            </div>
+            <p>En langage mathématique, cela s’écrit :</p>
+            <div class="formula formula-fit">
+                $$ m \times a = mg - \frac{1}{2} \rho V^2 S C_D $$
+            </div>
+            <p>où $a$ est l’accélération (de combien la vitesse augmente chaque seconde).<br>
+            On remplace souvent l’accélération $a$ par le symbole $\dfrac{dV}{dt}$ (qui signifie exactement la même chose : le changement de vitesse au cours du temps).</p>
+            <div class="step">
+                🔎 <strong>Traduction pour les collégiens :</strong><br>
+                • $m$ = masse de l’avion (en kg)<br>
+                • $g$ = 9,81 m/s² (accélération due à la pesanteur)<br>
+                • $\rho$ = densité de l’air (1,225 kg/m³)<br>
+                • $S$ = surface de l’avion (m²)<br>
+                • $C_D$ = coefficient de frottement (ici 0,5)<br>
+                • $V$ = vitesse (m/s)<br>
+                • $\frac{1}{2} \rho V^2 S C_D$ est la formule du freinage.
+            </div>
+            <p>En isolant l’accélération, on obtient la formule pratique pour nos calculs pas à pas :</p>
+            <div class="formula formula-fit">
+                $ \text{Accélération} = g - \left(\dfrac{\rho S C_D}{2m}\right) V^2 $
+            </div>
+            <div class="note">
+                💡 La flèche du temps ne pose aucun problème : on n’a pas besoin de dérivée. On calcule juste l’accélération à chaque petite étape avec la vitesse actuelle, puis on en déduit la vitesse suivante.
+            </div>
+        </div>
+
+        <!-- DIAPO 3 : Méthode d'Euler pas à pas -->
+        <div class="board type-sous-partie" style="--i: 3;">
+            <div class="badge badge-sub">🧮 La méthode pas à pas (Euler)</div>
+            <h3>Comment prédire la vitesse seconde après seconde ?</h3>
+            <p>On choisit un petit intervalle de temps, par exemple $h = 0,05$ secondes. On répète :</p>
+            <div class="formula formula-fit" style="background:#ffecb3;">
+                💡 <strong>Nouvelle vitesse = ancienne vitesse + (h × accélération actuelle)</strong>
+            </div>
+            <div class="step">
+                <strong>Étapes :</strong><br>
+                1. On connaît la vitesse au départ : $V_0 = 0$ m/s (lâché sans impulsion).<br>
+                2. On calcule l’accélération avec $V$ actuelle (grâce à la formule ci-dessus).<br>
+                3. On multiplie cette accélération par $h$ (le petit pas de temps).<br>
+                4. On ajoute le résultat à la vitesse pour obtenir la vitesse suivante.<br>
+                5. On recommence !
+            </div>
+            <p>✅ Pas besoin de formule magique : seulement des multiplications et additions.</p>
+        </div>
+
+        <!-- DIAPO 4 : Simulateur interactif -->
+        <div class="board type-sous-partie" style="--i: 4;">
+            <div class="badge badge-sub">⚙️ Simulateur – calcule toi-même !</div>
+            <h3>Teste différents paramètres</h3>
+            <div class="input-group">
+                <label>📦 Masse (kg) :</label>
+                <input type="number" id="mass" value="0.005" step="0.001">
+                <span style="font-size:0.8rem;">(0.005 kg = 5 grammes)</span>
+            </div>
+            <div class="input-group">
+                <label>📐 Surface (m²) :</label>
+                <input type="number" id="area" value="0.016" step="0.001">
+                <span style="font-size:0.8rem;">(16 cm² ≈ une carte à jouer)</span>
+            </div>
+            <div class="input-group">
+                <label>⏱️ Pas de temps h (s) :</label>
+                <input type="number" id="stepsize" value="0.05" step="0.01">
+                <span>plus h est petit, plus le calcul est précis</span>
+            </div>
+            <button class="action-btn" onclick="runEuler()">🚀 Lancer le calcul pas à pas</button>
+            <div id="eulerTable" style="max-height: 180px; overflow-y: auto; margin-top: 15px;"></div>
+            <p class="note">🔎 Le tableau montre les premières secondes. La vitesse augmente puis se stabilise.</p>
+        </div>
+
+        <!-- DIAPO 5 : Graphique -->
+        <div class="board type-sous-partie" style="--i: 5;">
+            <div class="badge badge-sub">📈 Courbe d’évolution</div>
+            <h3>Visualisation de la vitesse en fonction du temps</h3>
+            <div style="width:100%;">
+                <canvas id="velocityGraph" width="600" height="300" style="width:100%; height:auto; max-height:280px; background:#fff; border-radius:24px;"></canvas>
+            </div>
+            <p>📌 La courbe monte vite au début, puis elle s’aplatit : c’est la <strong>vitesse limite</strong>.</p>
+        </div>
+
+        <!-- DIAPO 6 : Vitesse limite -->
+        <div class="board type-sous-partie" style="--i: 6;">
+            <div class="badge badge-sub">⏱️ Vitesse limite</div>
+            <h3>Pourquoi l’avion ne tombe pas plus vite ?</h3>
+            <p>Quand la vitesse devient grande, la résistance de l’air devient aussi grande que le poids. L’accélération s’annule, donc la vitesse <strong>cesse d’augmenter</strong>.</p>
+            <div class="formula formula-fit">
+                $ V_{\text{limite}} = \sqrt{\dfrac{2 \times m \times g}{\rho \times S \times C_D}} $
+            </div>
+            <p>Avec nos valeurs : $m=0,005$ kg, $S=0,016$ m² → $V_{\text{lim}} \approx 3,16$ m/s (soit 11,4 km/h).</p>
+            <div class="step">
+                🧠 À retenir : plus l’avion est lourd, plus la vitesse limite est grande. Plus la surface est grande, plus la vitesse limite est petite (ça freine).
+            </div>
+        </div>
+
+        <!-- DIAPO 7 : Exemple concret -->
+        <div class="board type-sous-partie" style="--i: 7;">
+            <div class="badge badge-sub">📝 Exemple de calcul manuel</div>
+            <h3>Premières étapes avec $h = 0,1$ s</h3>
+            <ul>
+                <li>🔹 <strong>t = 0 s</strong> : V = 0 m/s → Accélération = 9,81 m/s² (aucun freinage).</li>
+                <li>🔹 <strong>t = 0,1 s</strong> : V = 0 + 0,1 × 9,81 = 0,981 m/s.</li>
+                <li>🔹 À t = 0,1 s, accélération = 9,81 − 4,9×(0,981)² ≈ 9,81 − 4,71 = 5,10 m/s².</li>
+                <li>🔹 <strong>t = 0,2 s</strong> : V = 0,981 + 0,1×5,10 ≈ 1,491 m/s.</li>
+                <li>🔹 On continue … Au bout de 2 secondes, la vitesse dépasse 3 m/s et l’accélération devient très petite.</li>
+            </ul>
+            <div class="note">✨ Grâce à cette méthode, on peut calculer toute la trajectoire sans équation compliquée.</div>
+        </div>
+
+        <!-- DIAPO 8 : Deux QCM interactifs -->
+        <div class="board type-sous-partie" style="--i: 8;">
+            <div class="badge badge-sub">🧠 Teste-toi !</div>
+            <h3>Vrai ou faux ? (QCM)</h3>
+            
+            <!-- Première question -->
+            <div class="qcm-question" style="background:#fff0e0; border-radius:24px; padding:15px; margin-bottom:30px;">
+                <p><strong>❓ La vitesse limite d’un avion en papier dépend-t-elle de sa masse ?</strong></p>
+                <label><input type="radio" name="q1" value="oui"> ✅ Oui, plus il est lourd, plus la vitesse limite est grande.</label><br>
+                <label><input type="radio" name="q1" value="non"> ❌ Non, elle ne change jamais.</label>
+                <div style="margin-top: 12px;">
+                    <button class="action-btn" onclick="checkQCM('q1', 'oui', 'qcmFeedback1')">Vérifier ma réponse</button>
+                </div>
+                <div id="qcmFeedback1" class="correction"></div>
+            </div>
+
+            <!-- Deuxième question (surface) -->
+            <div class="qcm-question" style="background:#fff0e0; border-radius:24px; padding:15px;">
+                <p><strong>❓ Si on double la surface de l’avion, que devient la vitesse limite ?</strong></p>
+                <label><input type="radio" name="q2" value="augmente"> 📈 Elle augmente.</label><br>
+                <label><input type="radio" name="q2" value="diminue"> 📉 Elle diminue.</label><br>
+                <label><input type="radio" name="q2" value="inchangée"> 🔄 Elle ne change pas.</label>
+                <div style="margin-top: 12px;">
+                    <button class="action-btn" onclick="checkQCM('q2', 'diminue', 'qcmFeedback2')">Vérifier ma réponse</button>
+                </div>
+                <div id="qcmFeedback2" class="correction"></div>
+            </div>
+        </div>
+
+        <!-- DIAPO 9 : Bilan -->
+        <div class="board type-conclusion" style="--i: 9;">
+            <div class="badge badge-concl">🎓 Ce qu’il faut retenir</div>
+            <h2>✈️ La méthode pas à pas (Euler) est un super pouvoir !</h2>
+            <ul>
+                <li>✔ On n’a pas besoin de connaitre les dérivées.</li>
+                <li>✔ On répète : <strong>vitesse suivante = vitesse actuelle + (petit pas de temps × accélération)</strong>.</li>
+                <li>✔ L’accélération change à chaque instant à cause du freinage de l’air.</li>
+                <li>✔ Au bout d’un moment, l’avion atteint une vitesse limite (équilibre).</li>
+            </ul>
+            <p>📢 C’est ainsi que les ingénieurs simulent la chute des parachutes, des fusées ou des avions en papier !</p>
+            <div style="text-align:center; margin-top:20px;">🌟 Tu peux revenir à la diapo simulation et modifier la masse ou la surface.🌟</div>
+        </div>
+    </div>
+</div>
+
+<div class="controls-zone">
+    <button onclick="goToBoard(0)">|◄ Début</button>
+    <button onclick="rotateRoom(-1)">◄ Précédent</button>
+    <div id="board-counter" class="board-counter">Diapo 1 / 10</div>
+    <button onclick="rotateRoom(1)">Suivant ►</button>
+    <button onclick="goToBoard(9)">Fin ►|</button>
+</div>
+
+<script>
+    // Gestion de l'effet 3D avec opacité nulle pour les diapos non actives
+    const totalBoards = 10;
+    let currentIndex = 0;
+    const counterElement = document.getElementById('board-counter');
+    const boards = document.querySelectorAll('.board');
+
+    function updateCounter() {
+        counterElement.innerText = "Diapo " + (currentIndex + 1) + " / " + totalBoards;
+    }
+
+    function applyRotation() {
+        boards.forEach(board => {
+            board.style.setProperty('--current', currentIndex);
+            const boardI = parseInt(board.style.getPropertyValue('--i'));
+            if (boardI === currentIndex) {
+                board.classList.add('active');
+            } else {
+                board.classList.remove('active');
+            }
+        });
+        updateCounter();
+    }
+
+    function rotateRoom(direction) {
+        let nextIndex = currentIndex + direction;
+        if (nextIndex >= 0 && nextIndex < totalBoards) {
+            currentIndex = nextIndex;
+            applyRotation();
+        }
+    }
+
+    function goToBoard(targetIndex) {
+        if (targetIndex >= 0 && targetIndex < totalBoards) {
+            currentIndex = targetIndex;
+            applyRotation();
+        }
+    }
+
+    function toggleModal(show) {
+        document.getElementById('copyrightModal').style.display = show ? 'flex' : 'none';
+    }
+
+    // --- Simulation Euler (pas à pas) ---
+    const rho = 1.225;   // kg/m³ air
+    const Cd = 0.5;      // coefficient aérodynamique
+    const g = 9.81;
+
+    function runEuler() {
+        let m = parseFloat(document.getElementById('mass').value);
+        let S = parseFloat(document.getElementById('area').value);
+        let h = parseFloat(document.getElementById('stepsize').value);
+        if (isNaN(m) || m <= 0) m = 0.005;
+        if (isNaN(S) || S <= 0) S = 0.016;
+        if (isNaN(h) || h <= 0) h = 0.05;
+
+        let k = (rho * S * Cd) / (2 * m);
+        const tMax = 3.0;
+
+        let times = [0];
+        let velocities = [0];
+        let t = 0;
+        let V = 0;
+
+        while (t < tMax) {
+            let acceleration = g - k * V * V;
+            if (acceleration < 0) acceleration = 0;
+            V = V + h * acceleration;
+            t = t + h;
+            times.push(t);
+            velocities.push(V);
+            if (times.length > 300) break;
+        }
+
+        let html = `°<td>°<td><th>⏱️ Temps (s)</th><th>📊 Vitesse (m/s)</th></tr>`;
+        let maxDisplay = Math.min(times.length, 12);
+        for (let i = 0; i < maxDisplay; i++) {
+            html += `<tr><td>${times[i].toFixed(2)}</td><td>${velocities[i].toFixed(3)}</td></tr>`;
+        }
+        if (times.length > 12) html += `<tr><td colspan="2">... suite jusqu'à ${times[times.length-1].toFixed(2)} s</td></tr>`;
+        html += `</table>`;
+        document.getElementById('eulerTable').innerHTML = html;
+        drawGraph(times, velocities);
+    }
+
+    function drawGraph(times, velocities) {
+        const canvas = document.getElementById('velocityGraph');
+        if (!canvas) return;
+        const w = canvas.clientWidth;
+        const h = 260;
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, w, h);
+
+        if (!times.length) return;
+        const tMax = Math.max(...times);
+        const vMax = Math.max(5, Math.max(...velocities) + 0.5);
+
+        ctx.beginPath();
+        ctx.strokeStyle = "#555";
+        ctx.lineWidth = 1;
+        ctx.moveTo(40, h-30);
+        ctx.lineTo(w-15, h-30);
+        ctx.moveTo(40, 15);
+        ctx.lineTo(40, h-30);
+        ctx.stroke();
+        ctx.fillStyle = "#1e2a3a";
+        ctx.font = "12px 'Segoe UI'";
+        ctx.fillText("Temps (s)", w-50, h-12);
+        ctx.fillText("Vitesse (m/s)", 10, 25);
+
+        ctx.beginPath();
+        ctx.strokeStyle = "#ccc";
+        for (let i = 0; i <= 4; i++) {
+            let yVal = (i * vMax / 4);
+            let y = h-30 - (yVal / vMax) * (h-45);
+            ctx.moveTo(35, y);
+            ctx.lineTo(w-15, y);
+            ctx.stroke();
+            ctx.fillStyle = "#333";
+            ctx.fillText(yVal.toFixed(1), 5, y+3);
+        }
+
+        ctx.beginPath();
+        ctx.strokeStyle = "#d32f2f";
+        ctx.lineWidth = 3;
+        let first = true;
+        for (let i = 0; i < times.length; i++) {
+            let x = 40 + (times[i] / tMax) * (w - 55);
+            let y = h-30 - (velocities[i] / vMax) * (h-45);
+            if (first) {
+                ctx.moveTo(x, y);
+                first = false;
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+        ctx.stroke();
+
+        let m = parseFloat(document.getElementById('mass').value);
+        let S = parseFloat(document.getElementById('area').value);
+        if (!isNaN(m) && !isNaN(S) && m>0 && S>0) {
+            let vlim = Math.sqrt((2 * m * g) / (rho * S * Cd));
+            if (vlim && vlim < vMax) {
+                let ylim = h-30 - (vlim / vMax) * (h-45);
+                ctx.beginPath();
+                ctx.setLineDash([5,5]);
+                ctx.moveTo(40, ylim);
+                ctx.lineTo(w-15, ylim);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = "#0d47a1";
+                ctx.fillText("Vitesse limite ≈ "+vlim.toFixed(2)+" m/s", w-170, ylim-5);
+            }
+        }
+    }
+
+    function checkQCM(name, expectedValue, feedbackId) {
+        let selected = document.querySelector(`input[name="${name}"]:checked`);
+        let feedback = document.getElementById(feedbackId);
+        if (!selected) {
+            feedback.innerHTML = "❓ Choisis une réponse avant de valider !";
+            feedback.classList.add('visible');
+            return;
+        }
+        if (selected.value === expectedValue) {
+            if (name === 'q1') {
+                feedback.innerHTML = "✅ Exact ! La vitesse limite dépend de la masse : plus l'avion est lourd, plus il tombe vite avant que l'air ne le freine.";
+            } else if (name === 'q2') {
+                feedback.innerHTML = "✅ Parfait ! Quand la surface augmente, le freinage de l'air est plus fort, donc la vitesse limite diminue.";
+            }
+        } else {
+            if (name === 'q1') {
+                feedback.innerHTML = "❌ Attention, la masse change la vitesse limite. Regarde la formule : plus m est grand, plus √(2mg/...) est grand.";
+            } else if (name === 'q2') {
+                feedback.innerHTML = "❌ Ce n'est pas ça. Revois la formule : Vlim = √(2mg/(ρ S Cd)). Si S augmente, le dénominateur augmente, donc Vlim diminue.";
+            }
+        }
+        feedback.classList.add('visible');
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') rotateRoom(-1);
+        if (e.key === 'ArrowRight') rotateRoom(1);
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        applyRotation();
+        runEuler();
+    });
+    window.addEventListener('resize', () => runEuler());
+</script>
+</body>
+</html>

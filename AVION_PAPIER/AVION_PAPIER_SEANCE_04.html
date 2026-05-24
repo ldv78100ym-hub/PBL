@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avion en papier optimal - Séance 4</title>
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                macros: { dfrac: ['\\displaystyle\\frac{#1}{#2}', 2] }
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        /* Variables CSS - Thème clair et lisible, optimisé Dys/Malvoyants */
+        :root {
+            --bg-room: #cfd8dc;
+            --text-color: #1a1a1a;
+            --highlight-part: #b71c1c;
+            --highlight-sub: #1565c0;
+            
+            /* Styles Partie Principale */
+            --board-part-bg: #fffde7;
+            --board-part-border: #3e2723;
+            
+            /* Styles Sous-Partie */
+            --board-sub-bg: #fdfbf7;
+            --board-sub-border: #8b5a2b;
+
+            /* Rayon du décagone 3D (10 faces) */
+            --radius: 125vw; 
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+            background-color: var(--bg-room);
+            font-family: Verdana, 'Segoe UI', sans-serif; color: var(--text-color);
+            font-size: clamp(0.9rem, 2vh, 1.4rem); 
+            line-height: 1.6; letter-spacing: 0.03em;
+        }
+
+        /* Scène 3D */
+        .scene {
+            width: 100vw; height: 85vh; /* Laisse 15vh libres en bas */
+            position: absolute; top: 0; left: 0;
+            perspective: 1200px;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .room {
+            width: 0; height: 0; position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            transform: translateZ(calc(-1 * var(--radius))) rotateY(0deg);
+        }
+
+        .board {
+            position: absolute; 
+            width: 80vw; height: 75vh;
+            left: -40vw; top: -37.5vh; 
+            border: 12px solid; border-radius: 8px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            padding: 40px 50px 30px 50px; box-sizing: border-box; 
+            overflow: hidden; /* Interdiction stricte de l'ascenseur */
+            display: flex; flex-direction: column; justify-content: flex-start;
+            backface-visibility: hidden;
+            transform: rotateY(calc(var(--i) * 36deg)) translateZ(var(--radius)); 
+        }
+
+        /* Différenciation visuelle des tableaux */
+        .type-partie { background-color: var(--board-part-bg); border-color: var(--board-part-border); }
+        .type-sous-partie { background-color: var(--board-sub-bg); border-color: var(--board-sub-border); }
+        .type-conclusion { background-color: #fce4ec; border-color: #880e4f; }
+
+        /* Badges d'identification */
+        .badge {
+            position: absolute; top: 0; left: 20px;
+            padding: 5px 15px; color: white; font-weight: bold; font-size: 0.9em;
+            border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .badge-part { background-color: var(--highlight-part); }
+        .badge-sub { background-color: var(--highlight-sub); }
+        .badge-concl { background-color: #880e4f; }
+
+        /* Typographie */
+        h1, h2, h3 { margin: 0 0 10px 0; font-weight: 700; text-align: center; }
+        .type-partie h1, .type-partie h2 { color: var(--highlight-part); }
+        .type-sous-partie h3 { color: var(--highlight-sub); text-align: left; border-bottom: 2px solid var(--highlight-sub); padding-bottom: 5px;}
+        a { color: #0277bd; text-decoration: underline; text-underline-offset: 4px; font-weight: bold; }
+        ul, ol { padding-left: 2rem; margin: 10px 0; }
+        li { margin-bottom: 0.5rem; }
+        p { margin: 10px 0; }
+
+        /* TABLEAU DE DONNÉES - FORMAT OPTIMISÉ POUR ÉVITER LE DÉBORDEMENT */
+        table { 
+            width: 100%; border-collapse: collapse; 
+            margin-top: 10px; font-size: 0.85em; 
+            line-height: 1.3; background: white; 
+        }
+        th, td { 
+            border: 2px solid #8b5a2b; 
+            padding: 6px 8px; 
+            text-align: center; 
+        }
+        th { background-color: #f0e6d2; color: #1a1a1a; padding: 8px; }
+        td:first-child { text-align: left; font-weight: bold; background-color: #fafafa; }
+
+        /* Canvas */
+        .canvas-container {
+            flex-grow: 1; display: flex; justify-content: center; align-items: center;
+            min-height: 0; margin-top: 10px;
+        }
+        canvas { background: rgba(0,0,0,0.02); border: 1px dashed #ccc; border-radius: 5px; max-width: 100%; max-height: 100%; object-fit: contain; }
+
+        /* Zone des Boutons Fixe (Panneau de contrôle) */
+        .controls-zone {
+            position: absolute; bottom: 0; left: 0; width: 100vw; height: 15vh;
+            background-color: #263238; display: flex; justify-content: center; align-items: center; gap: 20px;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.3); z-index: 1000;
+        }
+
+        .controls-zone button {
+            background: #eceff1; color: #263238; border: none; padding: 12px 20px; font-size: 1.1rem; 
+            cursor: pointer; border-radius: 6px; font-weight: bold; transition: all 0.3s;
+        }
+        .controls-zone button:hover, .controls-zone button:focus { background: #ffb300; color: #000; outline: 3px solid #fff; }
+
+        /* Affichage du compteur de tableaux */
+        .board-counter {
+            background: #1a1a1a; color: #ffb300; padding: 10px 20px; border-radius: 6px; 
+            border: 2px solid #546e7a; font-size: 1.3rem; font-weight: bold; min-width: 120px; text-align: center;
+        }
+
+        .btn-droits { position: fixed; top: 15px; right: 15px; z-index: 1000; background: #5d4037; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;}
+
+        /* Modale */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: #fff; padding: 40px; border-radius: 10px; max-width: 800px; position: relative; }
+        .close-modal { position: absolute; top: 10px; right: 20px; background: none; border: none; font-size: 2rem; color: #d32f2f; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <button class="btn-droits" onclick="toggleModal(true)" aria-label="Droits d'auteur">⚖️ Droits d'auteur</button>
+
+    <div class="modal" id="copyrightModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="toggleModal(false)">✖</button>
+            <h2 style="color:#d32f2f;">⚖️ Droits d'Auteur et Licence d'Utilisation</h2>
+            <p><strong>Auteur :</strong> Yann Merdy (yann.merdy@gmail.com) - Mai 2026</p>
+            <p><strong>Licence d'Utilisation Non Commerciale</strong><br>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ('Avion en papier optimal') sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
+            <p><strong>Conditions :</strong><br>
+            <em>Utilisation Privée et Éducative (Autorisée) :</em> Vous êtes autorisé·e à utiliser, copier, modifier et distribuer ce code et son contenu uniquement à des fins personnelles, éducatives et non lucratives.<br>
+            <em>Utilisation Commerciale (Interdite) :</em> Toute utilisation, distribution, intégration ou reproduction du code ou du contenu (total ou partiel) à des fins commerciales, lucratives ou professionnelles est strictement interdite sans un accord écrit préalable et explicite de l'auteur.<br>
+            <em>Attribution :</em> Toute reproduction ou modification doit conserver la mention de l'auteur originale (Yann Merdy) et la présente notice de droits d'auteur.</p>
+            <p>Pour toute demande d'utilisation commerciale ou de licence spécifique, veuillez contacter l'auteur à l'adresse indiquée ci-dessus.</p>
+        </div>
+    </div>
+
+    <div class="scene">
+        <div class="room" id="room">
+            
+            <div class="board type-partie" style="--i: 0;" role="region" aria-label="Tableau 1">
+                <div class="badge badge-part">Partie Principale 1</div>
+                <h1>Avion en papier optimal</h1>
+                <h2>Livret élève</h2>
+                <p style="text-align: center;">PBL Mathématiques & Sciences -- Classe de 3e/2nde</p>
+                <hr style="width: 100%; border:1px solid #ccc; margin: 15px 0;">
+                <h2>Séance 4 : Tests en vol et collecte de données</h2>
+                <p><strong>Objectif(s) :</strong> Évaluer les performances des prototypes réalisés précédemment par des vols chronométrés et des mesures de distance.</p>
+                <p>Dans cette séance, la rigueur de l'expérimentation est fondamentale pour que les données récoltées soient exploitables.</p>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 1;" role="region" aria-label="Tableau 2">
+                <div class="badge badge-sub">Le Protocole (1/2)</div>
+                <h3>Étape 1 : Le Lancement</h3>
+                <p><strong>Consignes :</strong></p>
+                <ul>
+                    <li>Placez-vous dans une salle vaste sans courant d’air (ou un couloir fermé).</li>
+                    <li>Utilisez la <strong>règle de lancement</strong> construite en Séance 1. Réglez-la précisément à votre hauteur de lancer $h_0$ (mesurée en vous tenant debout, le bras tendu à l'horizontale).</li>
+                    <li>Posez l’avion dans le rail de la rampe.</li>
+                    <li>Placez votre main plate derrière la queue de l'appareil et poussez-le doucement, <strong>sans aucun élan ni impulsion</strong>, jusqu’à ce qu’il quitte la rampe de lui-même.</li>
+                </ul>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 2;" role="region" aria-label="Tableau 3">
+                <div class="badge badge-sub">Le Protocole (2/2)</div>
+                <h3>Étape 2 : Chronométrage et Mesure</h3>
+                <ul>
+                    <li><strong>Le chronométreur :</strong> Un camarade se tient prêt avec un chronomètre. Il doit impérativement déclencher le chronomètre à l'instant exact où l’avion quitte la rampe.</li>
+                    <li>Il arrête le chronomètre au <strong>premier contact</strong> de l'avion avec le sol.</li>
+                    <li><strong>La distance :</strong> Pour les mesures de distance, un troisième camarade (ou le lanceur) relève la position du point de chute au sol à l'aide d'un décamètre, depuis l'aplomb du point de lancement.</li>
+                </ul>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 3;" role="region" aria-label="Tableau 4">
+                <div class="badge badge-sub">Illustration du Protocole</div>
+                <h3>Schéma du test en vol</h3>
+                <p>Ce schéma récapitule la disposition de l'équipe et les actions à synchroniser lors du lancement.</p>
+                <div class="canvas-container">
+                    <canvas id="canvas-protocole" width="650" height="300"></canvas>
+                </div>
+            </div>
+
+            <div class="board type-partie" style="--i: 4;" role="region" aria-label="Tableau 5">
+                <div class="badge badge-part">Partie Principale 2</div>
+                <h2>Réalisation des Tests</h2>
+                <hr style="width: 100%; border:1px solid #ccc; margin: 15px 0;">
+                <p><strong>La collecte des données :</strong></p>
+                <ul>
+                    <li>Pour <strong>chaque prototype</strong> (A, B et C), vous devez effectuer une série de <strong>5 lancers valides</strong>.</li>
+                    <li><em>Astuce :</em> Utilisez si possible la caméra d'un smartphone (en mode ralenti 120 ou 240 fps) pour filmer le vol. L'analyse de la vidéo permet souvent de vérifier les temps de vol avec une précision supérieure au simple réflexe humain.</li>
+                </ul>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 5;" role="region" aria-label="Tableau 6">
+                <div class="badge badge-sub">Observations en vol</div>
+                <h3>Relevés qualitatifs</h3>
+                <p>Lors de chaque vol, ne vous contentez pas de relever les chiffres du chronomètre et du mètre. Notez minutieusement vos observations sur le comportement de l'avion :</p>
+                <ul>
+                    <li><strong>Stabilité :</strong> La trajectoire est-elle rectiligne ou l'avion ondule-t-il (marsouinage) ?</li>
+                    <li><strong>Vrille :</strong> L'avion a-t-il tendance à tourner sur son axe longitudinal ?</li>
+                    <li><strong>Piqué :</strong> L'avion tombe-t-il lourdement le nez le premier ?</li>
+                    <li><strong>Cabré / Décrochage :</strong> L'avion monte-t-il trop fort pour ensuite s'arrêter en l'air et chuter brutalement ?</li>
+                </ul>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 6;" role="region" aria-label="Tableau 7">
+                <div class="badge badge-sub">Calculs Statistiques</div>
+                <h3>Traitement des données</h3>
+                <p>Une fois les 5 vols réalisés pour un prototype, vous devrez calculer deux indicateurs statistiques fondamentaux :</p>
+                <ol>
+                    <li><strong>La Moyenne ($\bar{x}$) :</strong> Calculez la distance moyenne et la durée moyenne. <br>
+                    $$\bar{x} = \dfrac{x_1 + x_2 + x_3 + x_4 + x_5}{5}$$</li>
+                    <li><strong>L'Écart-type ($\sigma$) :</strong> Il permet d'évaluer la régularité et la fiabilité de votre avion. Un faible écart-type signifie que votre prototype a un comportement constant à chaque lancer.</li>
+                </ol>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 7;" role="region" aria-label="Tableau 8">
+                <div class="badge badge-sub">Recueil (1/2)</div>
+                <h3>Tableau de relevé des performances</h3>
+                <p>Vous trouverez sur le tableau suivant la grille de relevé officielle.</p>
+                <ul>
+                    <li>Reproduisez ce tableau sur votre copie ou utilisez la fiche distribuée.</li>
+                    <li>Remplissez-le rigoureusement lors de vos expérimentations.</li>
+                    <li><strong>Attention :</strong> N'oubliez pas d'indiquer la hauteur de lâcher $h_0$, qui doit rester strictement identique du premier au quinzième vol.</li>
+                </ul>
+            </div>
+
+            <div class="board type-partie" style="--i: 8;" role="region" aria-label="Tableau 9">
+                <div class="badge badge-part">Grille de données</div>
+                <h3 style="margin-bottom: 5px;">Performances en vol</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="text-align: left;">Hauteur de lâcher $h_0 = \dots$ (m)</th>
+                            <th>Prototype A</th>
+                            <th>Prototype B</th>
+                            <th>Prototype C</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Vol 1 <br><span style="font-weight:normal; font-size:0.9em;">(distance en m / durée en s)</span></td><td> / </td><td> / </td><td> / </td></tr>
+                        <tr><td>Vol 2 <br><span style="font-weight:normal; font-size:0.9em;">(distance en m / durée en s)</span></td><td> / </td><td> / </td><td> / </td></tr>
+                        <tr><td>Vol 3 <br><span style="font-weight:normal; font-size:0.9em;">(distance en m / durée en s)</span></td><td> / </td><td> / </td><td> / </td></tr>
+                        <tr><td>Vol 4 <br><span style="font-weight:normal; font-size:0.9em;">(distance en m / durée en s)</span></td><td> / </td><td> / </td><td> / </td></tr>
+                        <tr><td>Vol 5 <br><span style="font-weight:normal; font-size:0.9em;">(distance en m / durée en s)</span></td><td> / </td><td> / </td><td> / </td></tr>
+                        <tr style="background-color: #fffde7;"><td><strong>MOYENNE</strong> <br><span style="font-weight:normal; font-size:0.9em;">(dist. / durée)</span></td><td> / </td><td> / </td><td> / </td></tr>
+                        <tr style="background-color: #fffde7;"><td><strong>ÉCART-TYPE</strong> <br><span style="font-weight:normal; font-size:0.9em;">(dist. / durée)</span></td><td> / </td><td> / </td><td> / </td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="board type-conclusion" style="--i: 9;" role="region" aria-label="Tableau 10">
+                <div class="badge badge-concl">Conclusion & Évaluation</div>
+                <h2 style="color: #880e4f;">Synthèse de la séance</h2>
+                <p>Ce recueil de données constitue la base scientifique de notre étude. Il nous permettra, lors de la prochaine séance, de déterminer mathématiquement quel est l'avion "optimal" selon les critères de vol choisis.</p>
+                <div style="background-color: white; border: 3px dashed #880e4f; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                    <h3 style="margin-top: 0; color: #880e4f; border: none;">📝 Travail à rendre :</h3>
+                    <p style="margin-bottom: 0;">Le tableau de mesures <strong>intégralement complété</strong> (incluant les calculs de moyenne et d'écart-type), accompagné d'un paragraphe rédigeant vos <strong>observations qualitatives</strong> sur le comportement aérodynamique de chaque appareil.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="controls-zone">
+        <button onclick="goToBoard(0)" aria-label="Aller au premier tableau">|◄ Premier</button>
+        <button onclick="rotateRoom(-1)" aria-label="Tableau précédent">◄ Précédent</button>
+        
+        <div id="board-counter" class="board-counter" aria-live="polite">Tableau 1 / 10</div>
+        
+        <button onclick="rotateRoom(1)" aria-label="Tableau suivant">Suivant ►</button>
+        <button onclick="goToBoard(9)" aria-label="Aller au dernier tableau">Dernier ►|</button>
+    </div>
+
+    <script>
+        const totalBoards = 10;
+        let currentIndex = 0;
+        const room = document.getElementById('room');
+        const counterElement = document.getElementById('board-counter');
+
+        function updateCounter() {
+            let actualIndex = ((currentIndex % totalBoards) + totalBoards) % totalBoards;
+            counterElement.innerText = "Tableau " + (actualIndex + 1) + " / " + totalBoards;
+        }
+
+        function applyRotation() {
+            let angle = currentIndex * -36;
+            room.style.transform = `translateZ(calc(-1 * var(--radius))) rotateY(${angle}deg)`;
+            updateCounter();
+        }
+
+        function rotateRoom(direction) {
+            currentIndex += direction;
+            applyRotation();
+        }
+
+        function goToBoard(targetIndex) {
+            let actualIndex = ((currentIndex % totalBoards) + totalBoards) % totalBoards;
+            let diff = targetIndex - actualIndex;
+            
+            if (diff > totalBoards / 2) diff -= totalBoards;
+            else if (diff < -totalBoards / 2) diff += totalBoards;
+            
+            currentIndex += diff;
+            applyRotation();
+        }
+
+        function toggleModal(show) {
+            document.getElementById('copyrightModal').style.display = show ? 'flex' : 'none';
+        }
+
+        updateCounter();
+
+        // -------------------------------------------------------------
+        // Tracé des figures Canvas (Conversion TikZ -> JS)
+        // -------------------------------------------------------------
+        window.onload = () => {
+            
+            // --- Canvas 1 : Protocole de vol (Tableau 4) ---
+            const ctxProto = document.getElementById('canvas-protocole').getContext('2d');
+            ctxProto.clearRect(0,0,650,300);
+            
+            // Variables de base
+            const groundY = 260;
+            
+            // 1. Sol
+            ctxProto.fillStyle = "#d7ccc8"; ctxProto.fillRect(20, groundY, 610, 10);
+            ctxProto.strokeStyle = "#5d4037"; ctxProto.lineWidth = 2;
+            ctxProto.beginPath(); ctxProto.moveTo(20, groundY); ctxProto.lineTo(630, groundY); ctxProto.stroke();
+            ctxProto.fillStyle = "#5d4037"; ctxProto.font = "bold 14px Arial";
+            ctxProto.fillText("SOL", 600, groundY + 25);
+
+            // 2. Camarade Chronométreur (gauche)
+            const cx = 100; // Position X chronométreur
+            ctxProto.strokeStyle = "#1a1a1a"; ctxProto.lineWidth = 3;
+            // Tête
+            ctxProto.beginPath(); ctxProto.arc(cx, 100, 15, 0, Math.PI*2); ctxProto.stroke();
+            // Corps
+            ctxProto.beginPath(); ctxProto.moveTo(cx, 115); ctxProto.lineTo(cx, 190); ctxProto.stroke();
+            // Jambes
+            ctxProto.beginPath(); ctxProto.moveTo(cx, 190); ctxProto.lineTo(cx-20, 260); ctxProto.stroke();
+            ctxProto.beginPath(); ctxProto.moveTo(cx, 190); ctxProto.lineTo(cx+20, 260); ctxProto.stroke();
+            // Bras + Chrono
+            ctxProto.beginPath(); ctxProto.moveTo(cx, 130); ctxProto.lineTo(cx+40, 150); ctxProto.stroke();
+            ctxProto.fillStyle = "#ffb300"; ctxProto.fillRect(cx+35, 140, 25, 20);
+            ctxProto.strokeRect(cx+35, 140, 25, 20);
+            ctxProto.fillStyle = "#1a1a1a"; ctxProto.font = "bold 10px Courier"; ctxProto.fillText("0:00", cx+37, 153);
+            
+            ctxProto.fillStyle = "#1a1a1a"; ctxProto.font = "14px Arial"; ctxProto.textAlign = "center";
+            ctxProto.fillText("Chronométreur", cx, 290);
+            ctxProto.textAlign = "left"; // reset
+
+            // 3. Lanceur (droite)
+            const lx = 500; // Position X Lanceur
+            ctxProto.strokeStyle = "#1a1a1a"; ctxProto.lineWidth = 3;
+            // Tête
+            ctxProto.beginPath(); ctxProto.arc(lx, 100, 15, 0, Math.PI*2); ctxProto.stroke();
+            // Corps
+            ctxProto.beginPath(); ctxProto.moveTo(lx, 115); ctxProto.lineTo(lx, 190); ctxProto.stroke();
+            // Jambes
+            ctxProto.beginPath(); ctxProto.moveTo(lx, 190); ctxProto.lineTo(lx-20, 260); ctxProto.stroke();
+            ctxProto.beginPath(); ctxProto.moveTo(lx, 190); ctxProto.lineTo(lx+20, 260); ctxProto.stroke();
+            // Bras tendu
+            const armY = 130;
+            ctxProto.beginPath(); ctxProto.moveTo(lx, armY); ctxProto.lineTo(lx-100, armY); ctxProto.stroke();
+            
+            ctxProto.fillStyle = "#1a1a1a"; ctxProto.font = "14px Arial"; ctxProto.textAlign = "center";
+            ctxProto.fillText("Lanceur (bras tendu)", lx, 290);
+            ctxProto.textAlign = "left";
+
+            // 4. Ligne Hauteur de Lâcher (Bleue pointillée)
+            ctxProto.strokeStyle = "#1565c0"; ctxProto.setLineDash([5, 5]); ctxProto.lineWidth = 2;
+            ctxProto.beginPath(); ctxProto.moveTo(lx-110, armY); ctxProto.lineTo(250, armY); ctxProto.stroke();
+            ctxProto.setLineDash([]);
+            ctxProto.fillStyle = "#1565c0"; ctxProto.font = "bold 14px Arial";
+            ctxProto.fillText("Hauteur de lâcher (h0)", 260, armY - 10);
+
+            // 5. Avion (en chute)
+            ctxProto.save();
+            ctxProto.translate(280, 160);
+            ctxProto.rotate(-20 * Math.PI / 180); // Incliné vers le bas
+            ctxProto.fillStyle = "#90a4ae"; ctxProto.strokeStyle = "#1a1a1a"; ctxProto.lineWidth = 2;
+            ctxProto.beginPath(); ctxProto.moveTo(-20, -10); ctxProto.lineTo(30, 0); ctxProto.lineTo(-20, 10); ctxProto.closePath();
+            ctxProto.fill(); ctxProto.stroke();
+            ctxProto.fillStyle = "#1a1a1a"; ctxProto.font = "14px Arial"; ctxProto.fillText("Avion", -10, -15);
+            ctxProto.restore();
+
+            // 6. Flèche Chute Libre (Rouge)
+            ctxProto.strokeStyle = "#d32f2f"; ctxProto.setLineDash([8, 6]); ctxProto.lineWidth = 3;
+            ctxProto.beginPath(); ctxProto.moveTo(lx-110, armY+10); 
+            ctxProto.quadraticCurveTo(280, 160, 220, 255); ctxProto.stroke();
+            ctxProto.setLineDash([]);
+            // Tête flèche
+            ctxProto.beginPath(); ctxProto.moveTo(215, 245); ctxProto.lineTo(220, 255); ctxProto.lineTo(230, 250); ctxProto.stroke();
+            ctxProto.fillStyle = "#d32f2f"; ctxProto.font = "bold 14px Arial";
+            ctxProto.fillText("Chute libre", 310, 200);
+
+            // 7. Annotation Lâcher (Rouge)
+            ctxProto.fillStyle = "#d32f2f"; ctxProto.font = "italic 13px Arial";
+            ctxProto.fillText("Lâcher sans", lx-110, armY + 30);
+            ctxProto.fillText("impulsion", lx-110, armY + 45);
+
+            // 8. Flèche Déclenchement Chrono (Verte)
+            ctxProto.strokeStyle = "#388e3c"; ctxProto.lineWidth = 2;
+            ctxProto.beginPath(); ctxProto.moveTo(lx-120, armY-5); 
+            ctxProto.quadraticCurveTo(250, 80, cx+60, 135); ctxProto.stroke();
+            // Tête
+            ctxProto.beginPath(); ctxProto.moveTo(cx+70, 130); ctxProto.lineTo(cx+60, 135); ctxProto.lineTo(cx+65, 145); ctxProto.stroke();
+            ctxProto.fillStyle = "#388e3c"; ctxProto.font = "bold 13px Arial";
+            ctxProto.fillText("Déclenchement", 200, 70);
+            ctxProto.fillText("chronomètre", 210, 85);
+        };
+
+        // Navigation clavier (flèches et touches extrêmes)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') rotateRoom(-1);
+            if (e.key === 'ArrowRight') rotateRoom(1);
+            if (e.key === 'Home') goToBoard(0);
+            if (e.key === 'End') goToBoard(9);
+            if (e.key === 'Escape') toggleModal(false);
+        });
+    </script>
+    <script>
+    (function() {
+        const btn = document.createElement('a');
+        btn.href = 'AVION_PAPIER_SOMMAIRE.html';
+        btn.innerHTML = '🏠 Sommaire';
+        btn.className = 'btn-sommaire';
+        btn.style.position = 'fixed';
+        btn.style.top = '15px';
+        btn.style.left = '15px';
+        btn.style.zIndex = '1000';
+        btn.style.background = '#1565c0';
+        btn.style.color = 'white';
+        btn.style.padding = '10px 20px';
+        btn.style.borderRadius = '5px';
+        btn.style.fontWeight = 'bold';
+        btn.style.textDecoration = 'none';
+        document.body.appendChild(btn);
+    })();
+</script>
+</body>
+</html>

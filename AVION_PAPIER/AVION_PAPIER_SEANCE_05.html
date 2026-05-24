@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avion en papier optimal - Séance 5</title>
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                macros: { dfrac: ['\\displaystyle\\frac{#1}{#2}', 2] }
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        /* Variables CSS - Thème clair et lisible, optimisé Dys/Malvoyants */
+        :root {
+            --bg-room: #cfd8dc;
+            --text-color: #1a1a1a;
+            --highlight-part: #b71c1c;
+            --highlight-sub: #1565c0;
+            
+            --board-part-bg: #fffde7;
+            --board-part-border: #3e2723;
+            
+            --board-sub-bg: #fdfbf7;
+            --board-sub-border: #8b5a2b;
+
+            --radius: 125vw; 
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+            background-color: var(--bg-room);
+            font-family: Verdana, 'Segoe UI', sans-serif; color: var(--text-color);
+            font-size: clamp(0.9rem, 2vh, 1.4rem); 
+            line-height: 1.6; letter-spacing: 0.03em;
+        }
+
+        .scene {
+            width: 100vw; height: 85vh; 
+            position: absolute; top: 0; left: 0;
+            perspective: 1200px;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .room {
+            width: 0; height: 0; position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            transform: translateZ(calc(-1 * var(--radius))) rotateY(0deg);
+        }
+
+        .board {
+            position: absolute; 
+            width: 80vw; height: 75vh;
+            left: -40vw; top: -37.5vh; 
+            border: 12px solid; border-radius: 8px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            padding: 40px 50px 30px 50px; box-sizing: border-box; 
+            overflow: hidden; 
+            display: flex; flex-direction: column; justify-content: flex-start;
+            backface-visibility: hidden;
+            transform: rotateY(calc(var(--i) * 36deg)) translateZ(var(--radius)); 
+        }
+
+        .type-partie { background-color: var(--board-part-bg); border-color: var(--board-part-border); }
+        .type-sous-partie { background-color: var(--board-sub-bg); border-color: var(--board-sub-border); }
+        .type-conclusion { background-color: #fce4ec; border-color: #880e4f; }
+
+        .badge {
+            position: absolute; top: 0; left: 20px;
+            padding: 5px 15px; color: white; font-weight: bold; font-size: 0.9em;
+            border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .badge-part { background-color: var(--highlight-part); }
+        .badge-sub { background-color: var(--highlight-sub); }
+        .badge-concl { background-color: #880e4f; }
+
+        h1, h2, h3 { margin: 0 0 10px 0; font-weight: 700; text-align: center; }
+        .type-partie h1, .type-partie h2 { color: var(--highlight-part); }
+        .type-sous-partie h3 { color: var(--highlight-sub); text-align: left; border-bottom: 2px solid var(--highlight-sub); padding-bottom: 5px;}
+        a { color: #0277bd; text-decoration: underline; text-underline-offset: 4px; font-weight: bold; }
+        ul, ol { padding-left: 2rem; margin: 10px 0; }
+        li { margin-bottom: 0.5rem; }
+        p { margin: 10px 0; }
+
+        .canvas-container {
+            flex-grow: 1; display: flex; justify-content: center; align-items: center;
+            min-height: 0; margin-top: 10px;
+        }
+        canvas { background: rgba(0,0,0,0.02); border: 1px dashed #ccc; border-radius: 5px; max-width: 100%; max-height: 100%; object-fit: contain; }
+
+        .controls-zone {
+            position: absolute; bottom: 0; left: 0; width: 100vw; height: 15vh;
+            background-color: #263238; display: flex; justify-content: center; align-items: center; gap: 20px;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.3); z-index: 1000;
+        }
+
+        .controls-zone button {
+            background: #eceff1; color: #263238; border: none; padding: 12px 20px; font-size: 1.1rem; 
+            cursor: pointer; border-radius: 6px; font-weight: bold; transition: all 0.3s;
+        }
+        .controls-zone button:hover, .controls-zone button:focus { background: #ffb300; color: #000; outline: 3px solid #fff; }
+
+        .board-counter {
+            background: #1a1a1a; color: #ffb300; padding: 10px 20px; border-radius: 6px; 
+            border: 2px solid #546e7a; font-size: 1.3rem; font-weight: bold; min-width: 120px; text-align: center;
+        }
+
+        .btn-droits { position: fixed; top: 15px; right: 15px; z-index: 1000; background: #5d4037; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;}
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: #fff; padding: 40px; border-radius: 10px; max-width: 800px; position: relative; }
+        .close-modal { position: absolute; top: 10px; right: 20px; background: none; border: none; font-size: 2rem; color: #d32f2f; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <button class="btn-droits" onclick="toggleModal(true)" aria-label="Droits d'auteur">⚖️ Droits d'auteur</button>
+
+    <div class="modal" id="copyrightModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="toggleModal(false)">✖</button>
+            <h2 style="color:#d32f2f;">⚖️ Droits d'Auteur et Licence d'Utilisation</h2>
+            <p><strong>Auteur :</strong> Yann Merdy (yann.merdy@gmail.com) - Mai 2026</p>
+            <p><strong>Licence d'Utilisation Non Commerciale</strong><br>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ('Avion en papier optimal') sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
+            <p><strong>Conditions :</strong><br>
+            <em>Utilisation Privée et Éducative (Autorisée) :</em> Vous êtes autorisé·e à utiliser, copier, modifier et distribuer ce code et son contenu uniquement à des fins personnelles, éducatives et non lucratives.<br>
+            <em>Utilisation Commerciale (Interdite) :</em> Toute utilisation, distribution, intégration ou reproduction du code ou du contenu (total ou partiel) à des fins commerciales, lucratives ou professionnelles est strictement interdite sans un accord écrit préalable et explicite de l'auteur.<br>
+            <em>Attribution :</em> Toute reproduction ou modification doit conserver la mention de l'auteur originale (Yann Merdy) et la présente notice de droits d'auteur.</p>
+            <p>Pour toute demande d'utilisation commerciale ou de licence spécifique, veuillez contacter l'auteur à l'adresse indiquée ci-dessus.</p>
+        </div>
+    </div>
+
+    <div class="scene">
+        <div class="room" id="room">
+            
+            <div class="board type-partie" style="--i: 0;" role="region" aria-label="Tableau 1">
+                <div class="badge badge-part">Partie Principale 1</div>
+                <h1>Avion en papier optimal</h1>
+                <h2>Livret élève</h2>
+                <p style="text-align: center;">PBL Mathématiques & Sciences -- Classe de 3e/2nde</p>
+                <hr style="width: 100%; border:1px solid #ccc; margin: 15px 0;">
+                <h2>Séance 5 : Analyse mathématique et optimisation</h2>
+                <p><strong>Objectif(s) :</strong> Relier géométrie et durée de vol, optimiser le pliage.</p>
+                <p>Dans cette ultime séance, nous allons exploiter les mesures des séances 2, 3 et 4 pour trouver l'optimum mathématique et aérodynamique de vos prototypes.</p>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 1;" role="region" aria-label="Tableau 2">
+                <div class="badge badge-sub">Étude Mathématique (1/2)</div>
+                <h3>Consigne 1 : Optimisation de la surface alaire</h3>
+                <p>En reprenant l’expression de l'aire $S_{\text{aile}}(x)$ déterminée lors de la <strong>Séance 2</strong> :</p>
+                <ol>
+                    <li>Trouvez mathématiquement la valeur de $x$ qui <strong>maximise</strong> cette surface alaire.</li>
+                    <li>Vérifiez que cette valeur de $x$ est physiquement réalisable sur votre feuille de papier sans que les plis ne se chevauchent ou ne sortent de la feuille.</li>
+                </ol>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 2;" role="region" aria-label="Tableau 3">
+                <div class="badge badge-sub">Illustration : Le Maximum</div>
+                <h3>Aide visuelle : Fonction et Contraintes</h3>
+                <p>Le schéma ci-dessous illustre la recherche du sommet de la fonction $S_{\text{aile}}(x)$ sous une contrainte physique (la largeur de la feuille limitant $x$).</p>
+                <div class="canvas-container">
+                    <canvas id="canvas-opti" width="550" height="250"></canvas>
+                </div>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 3;" role="region" aria-label="Tableau 4">
+                <div class="badge badge-sub">Modélisation (1/2)</div>
+                <h3>Consigne 2 : Analyse graphique sur Tableur</h3>
+                <ol start="3">
+                    <li>Ouvrez un tableur (Excel, Calc ou Google Sheets).</li>
+                    <li>Tracez le nuage de points ayant pour abscisse $\left( \dfrac{S_{\text{aile}}}{m} \right)$ et pour ordonnée la <strong>durée moyenne</strong> de vol $T$, pour vos trois prototypes.</li>
+                    <li>Ajoutez-y la courbe théorique d'équation : <br>
+                    $$T = k \sqrt{\dfrac{S_{\text{aile}}}{m}}$$ <br>
+                    Ajustez la valeur du coefficient $k$ pour que la courbe passe au mieux par vos points expérimentaux.</li>
+                </ol>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 4;" role="region" aria-label="Tableau 5">
+                <div class="badge badge-sub">Illustration : Le Graphique</div>
+                <h3>Allure attendue du nuage de points</h3>
+                <p>Votre tableur devrait produire un graphique similaire à celui-ci, mettant en évidence la relation mathématique entre la géométrie, la masse et la performance.</p>
+                <div class="canvas-container">
+                    <canvas id="canvas-graph" width="550" height="280"></canvas>
+                </div>
+                <p><strong>À faire :</strong> Rédigez un court paragraphe pour commenter les écarts éventuels entre vos points et la courbe théorique.</p>
+            </div>
+
+            <div class="board type-partie" style="--i: 5;" role="region" aria-label="Tableau 6">
+                <div class="badge badge-part">Partie Principale 2</div>
+                <h2>Ajustement du Centre de Gravité</h2>
+                <hr style="width: 100%; border:1px solid #ccc; margin: 15px 0;">
+                <h3>Consigne 3 : L'équilibre parfait</h3>
+                <ol start="6">
+                    <li>Où se situe exactement le centre de gravité (CG) de votre meilleur planeur (Prototype B) ?</li>
+                    <li>Ce point se trouve-t-il dans la zone de stabilité idéale, c'est-à-dire <strong>entre 20\% et 30\%</strong> de la corde moyenne ?</li>
+                    <li>Si ce n'est pas le cas, proposez une modification du pliage de l'avion pour ramener le CG dans cette plage <strong>sans utiliser de lest extérieur</strong> (pas de trombone, ni de scotch).</li>
+                </ol>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 6;" role="region" aria-label="Tableau 7">
+                <div class="badge badge-sub">Méthode : Déplacer le CG</div>
+                <h3>Comment reculer ou avancer le CG par le pliage ?</h3>
+                <p>En accumulant des épaisseurs de papier à un endroit précis, vous déplacez la masse. Un pliage supplémentaire du nez vers l'arrière permet de reculer légèrement la pointe tout en augmentant la masse à l'avant.</p>
+                <div class="canvas-container">
+                    <canvas id="canvas-cg-shift" width="550" height="220"></canvas>
+                </div>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 7;" role="region" aria-label="Tableau 8">
+                <div class="badge badge-sub">Bilan (1/2)</div>
+                <h3>La quête de l'avion optimal</h3>
+                <p>Au terme de ces 5 séances, vous avez démontré que la conception d'un "avion en papier optimal" n'est pas due au hasard.</p>
+                <p>Elle repose sur l'équilibre délicat entre :</p>
+                <ul>
+                    <li><strong>La Géométrie :</strong> Maximiser la surface alaire pour une envergure donnée.</li>
+                    <li><strong>La Physique :</strong> Comprendre la portance, l'incidence et le décrochage.</li>
+                    <li><strong>Les Mathématiques :</strong> Modéliser les performances et centrer rigoureusement les masses (CG).</li>
+                </ul>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 8;" role="region" aria-label="Tableau 9">
+                <div class="badge badge-sub">Bilan (2/2)</div>
+                <h3>Méthodologie du compte-rendu final</h3>
+                <p>Pour clôturer ce projet, vos résultats doivent être structurés avec rigueur :</p>
+                <ol>
+                    <li>Présentez vos calculs de dérivée ou d'extremum sous forme de fractions irréductibles.</li>
+                    <li>Joignez une impression soignée (ou un export PDF) de votre tableur.</li>
+                    <li>Soignez l'orthographe et la syntaxe de vos analyses (les écarts à la théorie, la modification du pliage).</li>
+                </ol>
+            </div>
+
+            <div class="board type-conclusion" style="--i: 9;" role="region" aria-label="Tableau 10">
+                <div class="badge badge-concl">Conclusion & Évaluation</div>
+                <h2 style="color: #880e4f;">Fin du Projet : Validation</h2>
+                <p>Assurez-vous que chaque membre de votre groupe maîtrise l'ensemble des concepts abordés. La note prendra en compte la rigueur scientifique, la qualité de la réalisation des prototypes et la clarté du document final.</p>
+                <div style="background-color: white; border: 3px dashed #880e4f; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                    <h3 style="margin-top: 0; color: #880e4f; border: none;">📝 Livrables à rendre pour cette séance :</h3>
+                    <ul style="margin-bottom: 0;">
+                        <li>La résolution complète de l’optimisation de $S_{\text{aile}}(x)$.</li>
+                        <li>Le graphique tableur avec le nuage de points, la courbe théorique et vos commentaires.</li>
+                        <li>Votre réponse détaillée et justifiée concernant le réglage du centre de gravité (CG).</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="controls-zone">
+        <button onclick="goToBoard(0)" aria-label="Aller au premier tableau">|◄ Premier</button>
+        <button onclick="rotateRoom(-1)" aria-label="Tableau précédent">◄ Précédent</button>
+        
+        <div id="board-counter" class="board-counter" aria-live="polite">Tableau 1 / 10</div>
+        
+        <button onclick="rotateRoom(1)" aria-label="Tableau suivant">Suivant ►</button>
+        <button onclick="goToBoard(9)" aria-label="Aller au dernier tableau">Dernier ►|</button>
+    </div>
+
+    <script>
+        const totalBoards = 10;
+        let currentIndex = 0;
+        const room = document.getElementById('room');
+        const counterElement = document.getElementById('board-counter');
+
+        function updateCounter() {
+            let actualIndex = ((currentIndex % totalBoards) + totalBoards) % totalBoards;
+            counterElement.innerText = "Tableau " + (actualIndex + 1) + " / " + totalBoards;
+        }
+
+        function applyRotation() {
+            let angle = currentIndex * -36;
+            room.style.transform = `translateZ(calc(-1 * var(--radius))) rotateY(${angle}deg)`;
+            updateCounter();
+        }
+
+        function rotateRoom(direction) {
+            currentIndex += direction;
+            applyRotation();
+        }
+
+        function goToBoard(targetIndex) {
+            let actualIndex = ((currentIndex % totalBoards) + totalBoards) % totalBoards;
+            let diff = targetIndex - actualIndex;
+            
+            if (diff > totalBoards / 2) diff -= totalBoards;
+            else if (diff < -totalBoards / 2) diff += totalBoards;
+            
+            currentIndex += diff;
+            applyRotation();
+        }
+
+        function toggleModal(show) {
+            document.getElementById('copyrightModal').style.display = show ? 'flex' : 'none';
+        }
+
+        updateCounter();
+
+        // -------------------------------------------------------------
+        // Tracé des figures Canvas
+        // -------------------------------------------------------------
+        window.onload = () => {
+            
+            // --- Canvas 1 : Optimisation de S(x) ---
+            const ctxOpti = document.getElementById('canvas-opti').getContext('2d');
+            ctxOpti.clearRect(0,0,550,250);
+            
+            // Axes
+            ctxOpti.strokeStyle = "#1a1a1a"; ctxOpti.lineWidth = 2;
+            ctxOpti.beginPath(); ctxOpti.moveTo(40, 220); ctxOpti.lineTo(520, 220); ctxOpti.stroke(); // X
+            ctxOpti.beginPath(); ctxOpti.moveTo(40, 220); ctxOpti.lineTo(40, 20); ctxOpti.stroke(); // Y
+            
+            // Flèches axes
+            ctxOpti.beginPath(); ctxOpti.moveTo(510, 215); ctxOpti.lineTo(520, 220); ctxOpti.lineTo(510, 225); ctxOpti.stroke();
+            ctxOpti.beginPath(); ctxOpti.moveTo(35, 30); ctxOpti.lineTo(40, 20); ctxOpti.lineTo(45, 30); ctxOpti.stroke();
+            
+            ctxOpti.fillStyle = "#1a1a1a"; ctxOpti.font = "bold 14px Arial";
+            ctxOpti.fillText("x (pliage)", 500, 240);
+            ctxOpti.fillText("S_aile(x)", 50, 30);
+
+            // Courbe Parabole (S = -ax^2 + bx + c)
+            ctxOpti.strokeStyle = "#1565c0"; ctxOpti.lineWidth = 3;
+            ctxOpti.beginPath();
+            for(let x=0; x<=450; x++) {
+                // Équation factice pour l'illustration
+                let y = 200 - 0.003 * Math.pow(x - 220, 2);
+                if(x===0) ctxOpti.moveTo(40 + x, 220 - y + 50);
+                else ctxOpti.lineTo(40 + x, 220 - y + 50);
+            }
+            ctxOpti.stroke();
+
+            // Maximum théorique
+            ctxOpti.strokeStyle = "#d32f2f"; ctxOpti.setLineDash([5, 5]); ctxOpti.lineWidth = 2;
+            ctxOpti.beginPath(); ctxOpti.moveTo(260, 220); ctxOpti.lineTo(260, 75); ctxOpti.stroke();
+            ctxOpti.beginPath(); ctxOpti.moveTo(40, 75); ctxOpti.lineTo(260, 75); ctxOpti.stroke();
+            ctxOpti.setLineDash([]);
+            
+            ctxOpti.fillStyle = "#d32f2f";
+            ctxOpti.beginPath(); ctxOpti.arc(260, 75, 5, 0, Math.PI*2); ctxOpti.fill();
+            ctxOpti.fillText("Maximum", 270, 70);
+
+            // Contrainte physique (Ex: Limite de la feuille)
+            ctxOpti.strokeStyle = "#388e3c"; ctxOpti.lineWidth = 3;
+            ctxOpti.beginPath(); ctxOpti.moveTo(350, 220); ctxOpti.lineTo(350, 20); ctxOpti.stroke();
+            
+            ctxOpti.fillStyle = "rgba(56, 142, 60, 0.1)";
+            ctxOpti.fillRect(350, 20, 170, 200);
+            
+            ctxOpti.fillStyle = "#388e3c"; ctxOpti.font = "italic 13px Arial";
+            ctxOpti.fillText("Contrainte (x max)", 360, 180);
+            ctxOpti.fillText("Zone impossible", 360, 200);
+
+
+            // --- Canvas 2 : Graphique Nuage de points ---
+            const ctxGraph = document.getElementById('canvas-graph').getContext('2d');
+            ctxGraph.clearRect(0,0,550,280);
+            
+            // Axes
+            ctxGraph.strokeStyle = "#1a1a1a"; ctxGraph.lineWidth = 2;
+            ctxGraph.beginPath(); ctxGraph.moveTo(50, 250); ctxGraph.lineTo(500, 250); ctxGraph.stroke(); // X
+            ctxGraph.beginPath(); ctxGraph.moveTo(50, 250); ctxGraph.lineTo(50, 30); ctxGraph.stroke(); // Y
+            
+            ctxGraph.beginPath(); ctxGraph.moveTo(490, 245); ctxGraph.lineTo(500, 250); ctxGraph.lineTo(490, 255); ctxGraph.stroke();
+            ctxGraph.beginPath(); ctxGraph.moveTo(45, 40); ctxGraph.lineTo(50, 30); ctxGraph.lineTo(55, 40); ctxGraph.stroke();
+            
+            ctxGraph.fillStyle = "#1a1a1a"; ctxGraph.font = "bold 14px Arial";
+            ctxGraph.fillText("Ratio ( S_aile / m )", 350, 275);
+            ctxGraph.fillText("Durée (T)", 60, 40);
+
+            // Courbe racine carrée : y = k * sqrt(x)
+            ctxGraph.strokeStyle = "#1565c0"; ctxGraph.lineWidth = 3;
+            ctxGraph.beginPath();
+            for(let x=0; x<=420; x++) {
+                let y = 10 * Math.sqrt(x);
+                if(x===0) ctxGraph.moveTo(50 + x, 250 - y);
+                else ctxGraph.lineTo(50 + x, 250 - y);
+            }
+            ctxGraph.stroke();
+            
+            ctxGraph.fillStyle = "#1565c0"; ctxGraph.font = "italic 14px Arial";
+            ctxGraph.fillText("Modèle : T = k * √(S/m)", 280, 70);
+
+            // Points (Prototypes)
+            const pts = [
+                {x: 100, y: 110, label: "Proto A"},
+                {x: 250, y: 150, label: "Proto B"},
+                {x: 350, y: 175, label: "Proto C"}
+            ];
+            
+            ctxGraph.fillStyle = "#d32f2f";
+            pts.forEach(p => {
+                ctxGraph.beginPath(); ctxGraph.arc(50 + p.x, 250 - p.y, 6, 0, Math.PI*2); ctxGraph.fill();
+                ctxGraph.fillStyle = "#1a1a1a"; ctxGraph.font = "bold 12px Arial";
+                ctxGraph.fillText(p.label, 50 + p.x - 20, 250 - p.y - 15);
+                ctxGraph.fillStyle = "#d32f2f";
+            });
+
+
+            // --- Canvas 3 : Ajustement du Centre de Gravité ---
+            const ctxCgShift = document.getElementById('canvas-cg-shift').getContext('2d');
+            ctxCgShift.clearRect(0,0,550,220);
+            
+            // Avion 1 (Avant modification)
+            ctxCgShift.fillStyle = "#e0e0e0"; ctxCgShift.strokeStyle = "#1a1a1a"; ctxCgShift.lineWidth = 2;
+            ctxCgShift.beginPath(); ctxCgShift.moveTo(50, 60); ctxCgShift.lineTo(200, 90); ctxCgShift.lineTo(200, 30); ctxCgShift.closePath(); ctxCgShift.fill(); ctxCgShift.stroke();
+            
+            ctxCgShift.fillStyle = "#d32f2f"; ctxCgShift.beginPath(); ctxCgShift.arc(100, 60, 5, 0, Math.PI*2); ctxCgShift.fill();
+            ctxCgShift.fillStyle = "#1a1a1a"; ctxCgShift.font = "bold 12px Arial"; ctxCgShift.fillText("CG initial", 90, 45);
+            ctxCgShift.fillText("Avant modification", 70, 120);
+
+            // Flèche
+            ctxCgShift.strokeStyle = "#388e3c"; ctxCgShift.lineWidth = 3;
+            ctxCgShift.beginPath(); ctxCgShift.moveTo(230, 60); ctxCgShift.lineTo(280, 60); ctxCgShift.stroke();
+            ctxCgShift.beginPath(); ctxCgShift.moveTo(270, 55); ctxCgShift.lineTo(280, 60); ctxCgShift.lineTo(270, 65); ctxCgShift.stroke();
+
+            // Avion 2 (Après modification : Nez replié)
+            ctxCgShift.fillStyle = "#cfd8dc"; ctxCgShift.strokeStyle = "#1a1a1a"; ctxCgShift.lineWidth = 2;
+            // Profil tronqué
+            ctxCgShift.beginPath(); ctxCgShift.moveTo(350, 60); ctxCgShift.lineTo(500, 90); ctxCgShift.lineTo(500, 30); ctxCgShift.closePath(); ctxCgShift.fill(); ctxCgShift.stroke();
+            
+            // Pli du nez (représenté par un trait vertical ou oblique)
+            ctxCgShift.strokeStyle = "#1565c0"; ctxCgShift.lineWidth = 3;
+            ctxCgShift.beginPath(); ctxCgShift.moveTo(350, 45); ctxCgShift.lineTo(350, 75); ctxCgShift.stroke();
+            ctxCgShift.fillStyle = "#1565c0"; ctxCgShift.fillText("Nez replié", 320, 30);
+            
+            // Nouveau CG
+            ctxCgShift.fillStyle = "#d32f2f"; ctxCgShift.beginPath(); ctxCgShift.arc(410, 60, 5, 0, Math.PI*2); ctxCgShift.fill();
+            ctxCgShift.fillStyle = "#1a1a1a"; ctxCgShift.fillText("Nouveau CG (reculé)", 370, 115);
+            
+            // Zone 20-30%
+            ctxCgShift.fillStyle = "rgba(76, 175, 80, 0.2)";
+            ctxCgShift.fillRect(380, 20, 40, 80);
+            ctxCgShift.fillStyle = "#388e3c"; ctxCgShift.font = "italic 11px Arial";
+            ctxCgShift.fillText("Zone 20-30%", 375, 15);
+        };
+
+        // Navigation clavier
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') rotateRoom(-1);
+            if (e.key === 'ArrowRight') rotateRoom(1);
+            if (e.key === 'Home') goToBoard(0);
+            if (e.key === 'End') goToBoard(9);
+            if (e.key === 'Escape') toggleModal(false);
+        });
+    </script>
+    <script>
+    (function() {
+        const btn = document.createElement('a');
+        btn.href = 'AVION_PAPIER_SOMMAIRE.html';
+        btn.innerHTML = '🏠 Sommaire';
+        btn.className = 'btn-sommaire';
+        btn.style.position = 'fixed';
+        btn.style.top = '15px';
+        btn.style.left = '15px';
+        btn.style.zIndex = '1000';
+        btn.style.background = '#1565c0';
+        btn.style.color = 'white';
+        btn.style.padding = '10px 20px';
+        btn.style.borderRadius = '5px';
+        btn.style.fontWeight = 'bold';
+        btn.style.textDecoration = 'none';
+        document.body.appendChild(btn);
+    })();
+</script>
+</body>
+</html>

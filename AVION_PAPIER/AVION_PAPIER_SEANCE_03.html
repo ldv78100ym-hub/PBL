@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avion en papier optimal - Séance 3</title>
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                macros: { dfrac: ['\\displaystyle\\frac{#1}{#2}', 2] }
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        /* Variables CSS - Thème clair et lisible */
+        :root {
+            --bg-room: #cfd8dc;
+            --text-color: #1a1a1a;
+            --highlight-part: #b71c1c;
+            --highlight-sub: #1565c0;
+            
+            --board-part-bg: #fffde7;
+            --board-part-border: #3e2723;
+            
+            --board-sub-bg: #fdfbf7;
+            --board-sub-border: #8b5a2b;
+
+            --radius: 125vw; 
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+            background-color: var(--bg-room);
+            font-family: Verdana, 'Segoe UI', sans-serif; color: var(--text-color);
+            font-size: clamp(0.9rem, 2vh, 1.4rem); 
+            line-height: 1.6; letter-spacing: 0.03em;
+        }
+
+        .scene {
+            width: 100vw; height: 85vh;
+            position: absolute; top: 0; left: 0;
+            perspective: 1200px;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .room {
+            width: 0; height: 0; position: relative;
+            transform-style: preserve-3d;
+            /* Suppression de la transition et de la rotation globale ici */
+        }
+
+        .board {
+            position: absolute; 
+            width: 80vw; height: 75vh;
+            left: -40vw; top: -37.5vh; 
+            border: 12px solid; border-radius: 8px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            padding: 40px 50px 30px 50px; box-sizing: border-box; 
+            overflow: hidden; 
+            display: flex; flex-direction: column; justify-content: flex-start;
+            backface-visibility: hidden;
+            
+            /* Gestion individuelle fluide des rotations */
+            transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.8s;
+            transform: translateZ(calc(-1 * var(--radius))) rotateY(calc((var(--i) - var(--current, 0)) * 36deg)) translateZ(var(--radius)); 
+        }
+
+        .type-partie { background-color: var(--board-part-bg); border-color: var(--board-part-border); }
+        .type-sous-partie { background-color: var(--board-sub-bg); border-color: var(--board-sub-border); }
+        .type-conclusion { background-color: #fce4ec; border-color: #880e4f; }
+
+        .badge {
+            position: absolute; top: 0; left: 20px;
+            padding: 5px 15px; color: white; font-weight: bold; font-size: 0.9em;
+            border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .badge-part { background-color: var(--highlight-part); }
+        .badge-sub { background-color: var(--highlight-sub); }
+        .badge-concl { background-color: #880e4f; }
+
+        h1, h2, h3 { margin: 0 0 10px 0; font-weight: 700; text-align: center; }
+        .type-partie h1, .type-partie h2 { color: var(--highlight-part); }
+        .type-sous-partie h3 { color: var(--highlight-sub); text-align: left; border-bottom: 2px solid var(--highlight-sub); padding-bottom: 5px;}
+        a { color: #0277bd; text-decoration: underline; text-underline-offset: 4px; font-weight: bold; position: relative; z-index: 10; }
+        ul, ol { padding-left: 2rem; margin: 10px 0; }
+        li { margin-bottom: 0.5rem; }
+        p { margin: 10px 0; }
+
+        /* OPTIMISATION DU TABLEAU DE DONNÉES */
+        table { 
+            width: 100%; border-collapse: collapse; 
+            margin-top: 10px; font-size: 0.75em; /* Police réduite */
+            line-height: 1.3; background: white; 
+        }
+        th, td { 
+            border: 2px solid #8b5a2b; 
+            padding: 4px 8px; /* Marges internes réduites */
+            text-align: center; 
+        }
+        th { background-color: #f0e6d2; color: #1a1a1a; padding: 6px 8px; }
+
+        .canvas-container {
+            flex-grow: 1; display: flex; justify-content: center; align-items: center;
+            min-height: 0; margin-top: 10px;
+        }
+        canvas { background: rgba(0,0,0,0.02); border: 1px dashed #ccc; border-radius: 5px; max-width: 100%; max-height: 100%; object-fit: contain; }
+
+        /* Boutons fixes du haut (Sommaire & Droits d'auteur) */
+        .btn-sommaire { position: fixed; top: 15px; left: 15px; z-index: 1000; background: #1565c0; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; }
+        .btn-sommaire:hover { background: #0d47a1; color: white; }
+        .btn-droits { position: fixed; top: 15px; right: 15px; z-index: 1000; background: #5d4037; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;}
+        .btn-droits:hover { background: #4e342e; }
+
+        .controls-zone {
+            position: absolute; bottom: 0; left: 0; width: 100vw; height: 15vh;
+            background-color: #263238; display: flex; justify-content: center; align-items: center; gap: 20px;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.3); z-index: 1000;
+        }
+
+        .controls-zone button {
+            background: #eceff1; color: #263238; border: none; padding: 12px 20px; font-size: 1.1rem; 
+            cursor: pointer; border-radius: 6px; font-weight: bold; transition: all 0.3s;
+        }
+        .controls-zone button:hover, .controls-zone button:focus { background: #ffb300; color: #000; outline: 3px solid #fff; }
+
+        .board-counter {
+            background: #1a1a1a; color: #ffb300; padding: 10px 20px; border-radius: 6px; 
+            border: 2px solid #546e7a; font-size: 1.3rem; font-weight: bold; min-width: 120px; text-align: center;
+        }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: #fff; padding: 40px; border-radius: 10px; max-width: 800px; position: relative; }
+        .close-modal { position: absolute; top: 10px; right: 20px; background: none; border: none; font-size: 2rem; color: #d32f2f; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <a href="AVION_PAPIER_SOMMAIRE.html" class="btn-sommaire">🏠 Sommaire</a>
+    <button class="btn-droits" onclick="toggleModal(true)" aria-label="Droits d'auteur">⚖️ Droits d'auteur</button>
+
+    <div class="modal" id="copyrightModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="toggleModal(false)">✖</button>
+            <h2 style="color:#d32f2f;">⚖️ Droits d'Auteur et Licence d'Utilisation</h2>
+            <p><strong>Auteur :</strong> Yann Merdy (yann.merdy@gmail.com) - Mai 2026</p>
+            <p><strong>Licence d'Utilisation Non Commerciale</strong><br>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ('Avion en papier optimal') sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
+            <p><strong>Conditions :</strong><br>
+            <em>Utilisation Privée et Éducative (Autorisée) :</em> Vous êtes autorisé.e à utiliser, copier, modifier et distribuer ce code et son contenu uniquement à des fins personnelles, éducatives et non lucratives.<br>
+            <em>Utilisation Commerciale (Interdite) :</em> Toute utilisation, distribution, intégration ou reproduction du code ou du contenu (total ou partiel) à des fins commerciales, lucratives ou professionnelles est strictement interdite sans un accord écrit préalable et explicite de l'auteur.<br>
+            <em>Attribution :</em> Toute reproduction ou modification doit conserver la mention de l'auteur originale (Yann Merdy) et la présente notice de droits d'auteur.</p>
+            <p>Pour toute demande d'utilisation commerciale ou de licence spécifique, veuillez contacter l'auteur à l'adresse indiquée ci-dessus.</p>
+        </div>
+    </div>
+
+    <div class="scene">
+        <div class="room" id="room">
+            
+            <div class="board type-partie" style="--i: 0;" role="region" aria-label="Tableau 1">
+                <div class="badge badge-part">Partie Principale 1</div>
+                <h1>Avion en papier optimal</h1>
+                <h2>Livret élève</h2>
+                <p style="text-align: center;">PBL Mathématiques & Sciences -- Classe de 3e/2nde</p>
+                <hr style="width: 100%; border:1px solid #ccc; margin: 15px 0;">
+                <h2>Séance 3 : Conception et réalisation de trois prototypes</h2>
+                <p><strong>Objectif(s) :</strong> Réaliser trois avions différents en faisant varier les paramètres géométriques. Adapter, éventuellement, les dimensions proposées à une feuille A3 (Optimisation du patron).</p>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 1;" role="region" aria-label="Tableau 2">
+                <div class="badge badge-sub">Ressources (1/2)</div>
+                <h3>Ressources en ligne recommandées (Partie 1)</h3>
+                <ul>
+                    <li><a href="https://www.foldnfly.com/" target="_blank">foldnfly.com</a><br>C'est l'une des références mondiales. Le site répertorie près d'une cinquantaine de modèles différents, classés par difficulté (facile, moyen, difficile, expert) et par type de vol (distance, temps de vol, acrobatique, décoratif). Les instructions sont disponibles sous forme de schémas, de photos étape par étape et de vidéos.</li>
+                    <li><a href="https://www.paperairplaneshq.com" target="_blank">paperairplaneshq.com</a><br>Une excellente alternative qui propose des modèles très performants. Les tutoriels sont souvent accompagnés d'explications sur l'aérodynamisme et de conseils pratiques pour le réglage.</li>
+                </ul>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 2;" role="region" aria-label="Tableau 3">
+                <div class="badge badge-sub">Ressources & Consignes</div>
+                <h3>Ressources en ligne recommandées (Partie 2)</h3>
+                <ul>
+                    <li><a href="https://origamiway.com/paper-airplanes" target="_blank">origamiway.com/paper-airplanes</a><br>Si vous appréciez la pureté géométrique du pliage traditionnel. Idéal pour s'exercer à la précision des plis de base.</li>
+                    <li><a href="https://paperairplanes.co.uk" target="_blank">paperairplanes.co.uk</a><br>Une mine d'or pour les puristes, proposant des modèles originaux et des explications poussées sur la physique du vol.</li>
+                </ul>
+                <div style="background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin-top: 15px; border-left: 5px solid #1565c0;">
+                    <p style="margin: 0; font-weight: bold; color: #1a1a1a;">Consigne 1 :</p>
+                    <p style="margin-top: 5px;">Choisissez trois modèles d’avions en papier de types différents (ex: un planeur longue distance, un planeur longue durée, un modèle acrobatique) et pliez-les soigneusement.</p>
+                </div>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 3;" role="region" aria-label="Tableau 4">
+                <div class="badge badge-sub">Mesures et Relevés</div>
+                <h3>Consigne 2 : Relevé des caractéristiques</h3>
+                <p style="margin: 5px 0;">Pour chaque prototype, mesurez et notez dans le tableau ci-dessous les grandeurs géométriques. La suite de ce document vous guidera pour chaque mesure.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Grandeur mesurée</th>
+                            <th>Prototype A</th>
+                            <th>Prototype B</th>
+                            <th>Prototype C</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Envergure $b$ (cm)</td><td></td><td></td><td></td></tr>
+                        <tr><td>Corde moyenne $\bar{c}$ (cm)</td><td></td><td></td><td></td></tr>
+                        <tr><td>Surface alaire $S_{\text{aile}}$ (cm²)</td><td></td><td></td><td></td></tr>
+                        <tr><td>Angle de flèche $\phi$ (°)</td><td></td><td></td><td></td></tr>
+                        <tr><td>Dièdre (+, -, nul)</td><td></td><td></td><td></td></tr>
+                        <tr><td>Position CG / nez (mm)</td><td></td><td></td><td></td></tr>
+                        <tr><td>CG en % de corde</td><td></td><td></td><td></td></tr>
+                    </tbody>
+                </table>
+                <p style="color: #b71c1c; font-weight: bold; text-align: center; margin-top: 5px; font-size: 0.9em;">À rendre : Les trois avions pliés + ce tableau de mesures complété.</p>
+            </div>
+
+            <div class="board type-partie" style="--i: 4;" role="region" aria-label="Tableau 5">
+                <div class="badge badge-part">Fiche outil (1/6)</div>
+                <h2>Caractéristiques géométriques d'un avion</h2>
+                <hr style="width: 100%; border:1px solid #ccc; margin: 10px 0;">
+                <h3>1. Envergure $b$</h3>
+                <p><strong>Définition :</strong> L'envergure est la distance entre les deux extrémités des ailes (les <em>bouts d'aile</em>), mesurée perpendiculairement au plan de symétrie de l'avion (le fuselage).</p>
+                <p><strong>Comment mesurer ?</strong> Posez l'avion à plat sur une table, ailes bien dépliées. Avec une règle, mesurez la distance d'un bout d'aile à l'autre.</p>
+                <div class="canvas-container">
+                    <canvas id="canvas-envergure" width="500" height="250"></canvas>
+                </div>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 5;" role="region" aria-label="Tableau 6">
+                <div class="badge badge-sub">Fiche outil (2/6)</div>
+                <h3>2. Corde moyenne $\bar{c}$</h3>
+                <p><strong>Définition :</strong> La corde est la largeur de l'aile mesurée dans le sens de l'écoulement de l'air (parallèlement au fuselage). Comme la corde varie (en forme de flèche/triangle), on utilise une <strong>corde moyenne</strong> $\bar{c}$.</p>
+                <p><strong>Formule :</strong> $\bar{c} = \dfrac{S_{\text{aile}}}{b}$ (où $S_{\text{aile}}$ est la surface alaire et $b$ l'envergure).</p>
+                <div class="canvas-container">
+                    <canvas id="canvas-corde" width="400" height="280"></canvas>
+                </div>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 6;" role="region" aria-label="Tableau 7">
+                <div class="badge badge-sub">Fiche outil (3/6)</div>
+                <h3>3. Surface alaire estimée $S_{\text{aile}}$</h3>
+                <p><strong>Définition :</strong> C'est l'aire de la projection de l'aile sur un plan horizontal (vue de dessus). Pour une fléchette, cela correspond à l'aire d'un grand triangle isocèle de base $b$ et de hauteur $L$.</p>
+                <p style="text-align: center; font-weight: bold;">Approximation : $S_{\text{aile}} \approx \dfrac{b \times L}{2}$</p>
+                <div class="canvas-container">
+                    <canvas id="canvas-surface" width="550" height="250"></canvas>
+                </div>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 7;" role="region" aria-label="Tableau 8">
+                <div class="badge badge-sub">Fiche outil (4/6)</div>
+                <h3>4. Angle de flèche $\phi$</h3>
+                <p><strong>Définition :</strong> L'angle de flèche est l'angle formé entre le bord d'attaque de l'aile et une droite perpendiculaire au fuselage. Une fléchette en papier possède par nature un angle de flèche très prononcé.</p>
+                <div class="canvas-container">
+                    <canvas id="canvas-fleche" width="500" height="250"></canvas>
+                </div>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 8;" role="region" aria-label="Tableau 9">
+                <div class="badge badge-sub">Fiche outil (5/6)</div>
+                <h3>5. Dièdre</h3>
+                <p><strong>Définition :</strong> Le dièdre est l'angle que fait chaque demi-aile avec le plan horizontal lorsque l'avion est vu de face.</p>
+                <p>Pour un avion en papier, on le règle en pliant légèrement les ailes vers le haut (dièdre positif) pour améliorer la stabilité rectiligne du vol.</p>
+                <div class="canvas-container">
+                    <canvas id="canvas-diedre" width="500" height="200"></canvas>
+                </div>
+            </div>
+
+            <div class="board type-conclusion" style="--i: 9;" role="region" aria-label="Tableau 10">
+                <div class="badge badge-concl">Fiche outil (6/6)</div>
+                <h3 style="color: #880e4f;">6. Position du centre de gravité (CG)</h3>
+                <p><strong>Définition :</strong> Le point d'équilibre. Sur une fléchette, l'accumulation des plis au niveau du nez place le CG assez en avant (souvent au premier tiers de la longueur).</p>
+                <p><strong>Calcul en pourcentage :</strong> $CG(\%) = \left( \dfrac{d_{\text{CG}}}{\bar{c}} \right) \times 100$</p>
+                <div class="canvas-container">
+                    <canvas id="canvas-cg" width="550" height="200"></canvas>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="controls-zone">
+        <button onclick="goToBoard(0)" aria-label="Aller au premier tableau">|◄ Premier</button>
+        <button onclick="rotateRoom(-1)" aria-label="Tableau précédent">◄ Précédent</button>
+        
+        <div id="board-counter" class="board-counter" aria-live="polite">Tableau 1 / 10</div>
+        
+        <button onclick="rotateRoom(1)" aria-label="Tableau suivant">Suivant ►</button>
+        <button onclick="goToBoard(9)" aria-label="Aller au dernier tableau">Dernier ►|</button>
+    </div>
+
+    <script>
+        const totalBoards = 10;
+        let currentIndex = 0;
+        const counterElement = document.getElementById('board-counter');
+        const boards = document.querySelectorAll('.board');
+
+        function updateCounter() {
+            let actualIndex = ((currentIndex % totalBoards) + totalBoards) % totalBoards;
+            counterElement.innerText = "Tableau " + (actualIndex + 1) + " / " + totalBoards;
+        }
+
+        // JS CORRIGÉ : On délègue le changement de repère et d'interaction directement à chaque élément enfant
+        function applyRotation() {
+            boards.forEach(board => {
+                board.style.setProperty('--current', currentIndex);
+                
+                let boardI = parseInt(board.style.getPropertyValue('--i'));
+                let actualIndex = ((currentIndex % totalBoards) + totalBoards) % totalBoards;
+                
+                // Isolation totale du panneau d'affichage actif (Opacité et pointeur)
+                if (boardI === actualIndex) {
+                    board.style.opacity = "1";
+                    board.style.pointerEvents = "auto";
+                } else {
+                    board.style.opacity = "0.15"; 
+                    board.style.pointerEvents = "none";
+                }
+            });
+            updateCounter();
+        }
+
+        function rotateRoom(direction) {
+            currentIndex += direction;
+            applyRotation();
+        }
+
+        function goToBoard(targetIndex) {
+            let actualIndex = ((currentIndex % totalBoards) + totalBoards) % totalBoards;
+            let diff = targetIndex - actualIndex;
+            
+            if (diff > totalBoards / 2) diff -= totalBoards;
+            else if (diff < -totalBoards / 2) diff += totalBoards;
+            
+            currentIndex += diff;
+            applyRotation();
+        }
+
+        function toggleModal(show) {
+            document.getElementById('copyrightModal').style.display = show ? 'flex' : 'none';
+        }
+
+        // Initialisation synchrone
+        applyRotation();
+
+        // -------------------------------------------------------------
+        // Tracé des figures Canvas
+        // -------------------------------------------------------------
+        window.onload = () => {
+            
+            // --- Canvas 1 : Envergure b ---
+            const ctxEnv = document.getElementById('canvas-envergure').getContext('2d');
+            ctxEnv.clearRect(0,0,500,250);
+            
+            ctxEnv.fillStyle = "#e0e0e0"; ctxEnv.strokeStyle = "#37474f"; ctxEnv.lineWidth = 2;
+            ctxEnv.beginPath(); ctxEnv.moveTo(250, 40); ctxEnv.lineTo(100, 180); ctxEnv.lineTo(250, 160); ctxEnv.closePath(); ctxEnv.fill(); ctxEnv.stroke();
+            ctxEnv.beginPath(); ctxEnv.moveTo(250, 40); ctxEnv.lineTo(400, 180); ctxEnv.lineTo(250, 160); ctxEnv.closePath(); ctxEnv.fill(); ctxEnv.stroke();
+            
+            ctxEnv.lineWidth = 3; ctxEnv.beginPath(); ctxEnv.moveTo(250, 20); ctxEnv.lineTo(250, 200); ctxEnv.stroke();
+            ctxEnv.fillStyle = "#1a1a1a"; ctxEnv.font = "italic 14px Arial"; ctxEnv.fillText("Fuselage", 255, 215);
+
+            ctxEnv.strokeStyle = "#1565c0"; ctxEnv.setLineDash([5, 5]);
+            ctxEnv.beginPath(); ctxEnv.moveTo(100, 180); ctxEnv.lineTo(100, 220); ctxEnv.stroke();
+            ctxEnv.beginPath(); ctxEnv.moveTo(400, 180); ctxEnv.lineTo(400, 220); ctxEnv.stroke();
+            ctxEnv.setLineDash([]);
+            
+            ctxEnv.lineWidth = 2; ctxEnv.beginPath(); ctxEnv.moveTo(100, 210); ctxEnv.lineTo(400, 210); ctxEnv.stroke();
+            ctxEnv.beginPath(); ctxEnv.moveTo(110, 205); ctxEnv.lineTo(100, 210); ctxEnv.lineTo(110, 215); ctxEnv.stroke();
+            ctxEnv.beginPath(); ctxEnv.moveTo(390, 205); ctxEnv.lineTo(400, 210); ctxEnv.lineTo(390, 215); ctxEnv.stroke();
+            
+            ctxEnv.fillStyle = "#1565c0"; ctxEnv.font = "bold 16px Arial";
+            ctxEnv.fillText("b (envergure)", 200, 230);
+
+
+            // --- Canvas 2 : Corde moyenne ---
+            const ctxCorde = document.getElementById('canvas-corde').getContext('2d');
+            ctxCorde.clearRect(0,0,400,280);
+            
+            ctxCorde.fillStyle = "#e0e0e0"; ctxCorde.strokeStyle = "#37474f"; ctxCorde.lineWidth = 2;
+            ctxCorde.beginPath(); ctxCorde.moveTo(100, 30); ctxCorde.lineTo(300, 200); ctxCorde.lineTo(100, 170); ctxCorde.closePath(); ctxCorde.fill(); ctxCorde.stroke();
+            
+            ctxCorde.strokeStyle = "#1565c0"; ctxCorde.lineWidth = 2;
+            ctxCorde.beginPath(); ctxCorde.moveTo(200, 115); ctxCorde.lineTo(200, 185); ctxCorde.stroke();
+            ctxCorde.beginPath(); ctxCorde.moveTo(195, 125); ctxCorde.lineTo(200, 115); ctxCorde.lineTo(205, 125); ctxCorde.stroke();
+            ctxCorde.beginPath(); ctxCorde.moveTo(195, 175); ctxCorde.lineTo(200, 185); ctxCorde.lineTo(205, 175); ctxCorde.stroke();
+            ctxCorde.fillStyle = "#1565c0"; ctxCorde.font = "italic 14px Arial"; ctxCorde.fillText("corde locale c", 210, 155);
+
+            ctxCorde.strokeStyle = "#d32f2f"; ctxCorde.lineWidth = 2;
+            ctxCorde.beginPath(); ctxCorde.moveTo(100, 30); ctxCorde.lineTo(100, 170); ctxCorde.stroke();
+            ctxCorde.beginPath(); ctxCorde.moveTo(95, 40); ctxCorde.lineTo(100, 30); ctxCorde.lineTo(105, 40); ctxCorde.stroke();
+            ctxCorde.beginPath(); ctxCorde.moveTo(95, 160); ctxCorde.lineTo(100, 170); ctxCorde.lineTo(105, 160); ctxCorde.stroke();
+            
+            ctxCorde.fillStyle = "#d32f2f"; ctxCorde.beginPath(); ctxCorde.arc(100, 30, 4, 0, Math.PI*2); ctxCorde.fill();
+            ctxCorde.beginPath(); ctxCorde.arc(100, 170, 4, 0, Math.PI*2); ctxCorde.fill();
+            ctxCorde.font = "bold 14px Arial"; ctxCorde.fillText("corde à l'emplanture (max)", 110, 100);
+
+
+            // --- Canvas 3 : Surface alaire ---
+            const ctxSurf = document.getElementById('canvas-surface').getContext('2d');
+            ctxSurf.clearRect(0,0,550,250);
+            
+            ctxSurf.fillStyle = "rgba(33, 150, 243, 0.2)";
+            ctxSurf.beginPath(); ctxSurf.moveTo(275, 40); ctxSurf.lineTo(125, 200); ctxSurf.lineTo(425, 200); ctxSurf.closePath(); ctxSurf.fill();
+            
+            ctxSurf.strokeStyle = "#1a1a1a"; ctxSurf.lineWidth = 2; ctxSurf.fillStyle = "white";
+            ctxSurf.beginPath(); ctxSurf.moveTo(275, 40); ctxSurf.lineTo(125, 200); ctxSurf.lineTo(275, 170); ctxSurf.lineTo(425, 200); ctxSurf.closePath(); ctxSurf.stroke();
+            
+            ctxSurf.fillStyle = "#1565c0"; ctxSurf.font = "bold 16px Arial";
+            ctxSurf.fillText("Surface = S_aile", 215, 130);
+
+            ctxSurf.strokeStyle = "#388e3c"; ctxSurf.setLineDash([5, 5]);
+            ctxSurf.beginPath(); ctxSurf.moveTo(275, 40); ctxSurf.lineTo(80, 40); ctxSurf.stroke();
+            ctxSurf.beginPath(); ctxSurf.moveTo(125, 200); ctxSurf.lineTo(80, 200); ctxSurf.stroke();
+            ctxSurf.beginPath(); ctxSurf.moveTo(125, 200); ctxSurf.lineTo(125, 230); ctxSurf.stroke();
+            ctxSurf.beginPath(); ctxSurf.moveTo(425, 200); ctxSurf.lineTo(425, 230); ctxSurf.stroke();
+            ctxSurf.setLineDash([]);
+            
+            ctxSurf.beginPath(); ctxSurf.moveTo(90, 40); ctxSurf.lineTo(90, 200); ctxSurf.stroke();
+            ctxSurf.fillStyle = "#388e3c"; ctxSurf.fillText("L (Hauteur)", 10, 125);
+            
+            ctxSurf.beginPath(); ctxSurf.moveTo(125, 220); ctxSurf.lineTo(425, 220); ctxSurf.stroke();
+            ctxSurf.fillText("b (Base)", 245, 240);
+
+
+            // --- Canvas 4 : Angle de flèche ---
+            const ctxFleche = document.getElementById('canvas-fleche').getContext('2d');
+            ctxFleche.clearRect(0,0,500,250);
+            
+            ctxFleche.strokeStyle = "#1a1a1a"; ctxFleche.lineWidth = 3;
+            ctxFleche.beginPath(); ctxFleche.moveTo(200, 200); ctxFleche.lineTo(200, 40); ctxFleche.stroke();
+            ctxFleche.fillStyle = "#1a1a1a"; ctxFleche.font = "italic 14px Arial"; ctxFleche.fillText("Nez / Fuselage", 155, 30);
+            
+            ctxFleche.strokeStyle = "#d32f2f"; ctxFleche.lineWidth = 3;
+            ctxFleche.beginPath(); ctxFleche.moveTo(200, 40); ctxFleche.lineTo(400, 180); ctxFleche.stroke();
+            ctxFleche.fillStyle = "#1a1a1a"; ctxFleche.fillText("Bord d'attaque", 340, 120);
+            
+            ctxFleche.strokeStyle = "#1a1a1a"; ctxFleche.lineWidth = 2;
+            ctxFleche.beginPath(); ctxFleche.moveTo(200, 200); ctxFleche.lineTo(400, 180); ctxFleche.stroke();
+            
+            ctxFleche.strokeStyle = "#1565c0"; ctxFleche.setLineDash([6, 6]);
+            ctxFleche.beginPath(); ctxFleche.moveTo(200, 40); ctxFleche.lineTo(400, 40); ctxFleche.stroke();
+            ctxFleche.setLineDash([]);
+            
+            ctxFleche.beginPath(); ctxFleche.arc(200, 40, 90, 0, Math.atan2(140, 200)); ctxFleche.stroke();
+            ctxFleche.fillStyle = "#1565c0"; ctxFleche.font = "bold 18px Arial";
+            ctxFleche.fillText("φ", 300, 80);
+
+
+            // --- Canvas 5 : Dièdre ---
+            const ctxDiedre = document.getElementById('canvas-diedre').getContext('2d');
+            ctxDiedre.clearRect(0,0,500,200);
+            
+            ctxDiedre.strokeStyle = "#1a1a1a"; ctxDiedre.lineWidth = 3;
+            ctxDiedre.beginPath(); ctxDiedre.moveTo(250, 150); ctxDiedre.lineTo(250, 100); ctxDiedre.stroke();
+            
+            ctxDiedre.beginPath(); ctxDiedre.moveTo(250, 100); ctxDiedre.lineTo(100, 50); ctxDiedre.stroke();
+            ctxDiedre.beginPath(); ctxDiedre.moveTo(250, 100); ctxDiedre.lineTo(400, 50); ctxDiedre.stroke();
+            
+            ctxDiedre.strokeStyle = "#90a4ae"; ctxDiedre.setLineDash([5, 5]);
+            ctxDiedre.beginPath(); ctxDiedre.moveTo(100, 100); ctxDiedre.lineTo(400, 100); ctxDiedre.stroke();
+            ctxDiedre.setLineDash([]);
+            
+            ctxDiedre.strokeStyle = "#1565c0"; ctxDiedre.lineWidth = 2;
+            ctxDiedre.beginPath(); ctxDiedre.arc(250, 100, 80, 0, -Math.atan2(50, 150), true); ctxDiedre.stroke();
+            
+            let endX = 250 + 80 * Math.cos(-Math.atan2(50, 150));
+            let endY = 100 + 80 * Math.sin(-Math.atan2(50, 150));
+            ctxDiedre.beginPath(); ctxDiedre.moveTo(endX-5, endY-5); ctxDiedre.lineTo(endX, endY); ctxDiedre.lineTo(endX-10, endY+5); ctxDiedre.stroke();
+
+            ctxDiedre.fillStyle = "#1565c0"; ctxDiedre.font = "bold 16px Arial";
+            ctxDiedre.fillText("Dièdre positif", 340, 80);
+
+
+            // --- Canvas 6 : Centre de Gravité ---
+            const ctxCg = document.getElementById('canvas-cg').getContext('2d');
+            ctxCg.clearRect(0,0,550,200);
+            
+            ctxCg.fillStyle = "#e0e0e0"; ctxCg.strokeStyle = "#1a1a1a"; ctxCg.lineWidth = 2;
+            ctxCg.beginPath(); ctxCg.moveTo(50, 80); ctxCg.lineTo(450, 120); ctxCg.lineTo(450, 40); ctxCg.closePath(); ctxCg.fill(); ctxCg.stroke();
+            
+            ctxCg.beginPath(); ctxCg.moveTo(50, 80); ctxCg.lineTo(150, 95); ctxCg.stroke();
+            ctxCg.beginPath(); ctxCg.moveTo(50, 80); ctxCg.lineTo(150, 65); ctxCg.stroke();
+            
+            ctxCg.fillStyle = "#1a1a1a"; ctxCg.font = "italic 14px Arial"; ctxCg.fillText("Nez", 15, 85);
+            
+            ctxCg.fillStyle = "#d32f2f";
+            ctxCg.beginPath(); ctxCg.arc(170, 80, 5, 0, Math.PI*2); ctxCg.fill();
+            ctxCg.font = "bold 16px Arial"; ctxCg.fillText("CG", 160, 65);
+            
+            ctxCg.strokeStyle = "#388e3c"; ctxCg.setLineDash([5, 5]);
+            ctxCg.beginPath(); ctxCg.moveTo(50, 80); ctxCg.lineTo(50, 150); ctxCg.stroke();
+            ctxCg.beginPath(); ctxCg.moveTo(170, 80); ctxCg.lineTo(170, 150); ctxCg.stroke();
+            ctxCg.beginPath(); ctxCg.moveTo(450, 120); ctxCg.lineTo(450, 180); ctxCg.stroke();
+            ctxCg.setLineDash([]);
+            
+            ctxCg.lineWidth = 2;
+            ctxCg.beginPath(); ctxCg.moveTo(50, 140); ctxCg.lineTo(170, 140); ctxCg.stroke();
+            ctxCg.fillStyle = "#388e3c"; ctxCg.fillText("d_CG", 95, 135);
+            
+            ctxCg.strokeStyle = "#1565c0";
+            ctxCg.beginPath(); ctxCg.moveTo(50, 175); ctxCg.lineTo(450, 175); ctxCg.stroke();
+            ctxCg.fillStyle = "#1565c0"; ctxCg.fillText("L", 245, 170);
+        };
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') rotateRoom(-1);
+            if (e.key === 'ArrowRight') rotateRoom(1);
+            if (e.key === 'Home') goToBoard(0);
+            if (e.key === 'End') goToBoard(9);
+            if (e.key === 'Escape') toggleModal(false);
+        });
+    </script>
+</body>
+</html>

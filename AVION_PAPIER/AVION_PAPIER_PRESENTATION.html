@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PBL : L'Avion en Papier Optimal - Présentation</title>
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']],
+                macros: { dfrac: ['\\displaystyle\\frac{#1}{#2}', 2] }
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* Variables CSS - Thème clair, optimisé Dys/Malvoyants (fort contraste) */
+        :root {
+            --bg-room: #cfd8dc;
+            --text-color: #1a1a1a;
+            --highlight-part: #1e293b;
+            --highlight-sub: #2563eb;
+            
+            /* Styles des Tableaux */
+            --board-part-bg: #fffde7;
+            --board-part-border: #3e2723;
+            --board-sub-bg: #fdfbf7;
+            --board-sub-border: #1e3a8a;
+            --board-concl-bg: #fce4ec;
+            --board-concl-border: #880e4f;
+
+            /* Rayon du dodécagone 3D (12 faces pour 12 slides) */
+            --radius: 140vw; 
+        }
+
+        /* 1. LAYOUT STRICT POUR ÉVITER LA SUPERPOSITION */
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+            background-color: var(--bg-room);
+            font-family: Verdana, 'Segoe UI', sans-serif; color: var(--text-color);
+            font-size: clamp(0.9rem, 2vh, 1.4rem); 
+            line-height: 1.6; letter-spacing: 0.03em;
+            display: flex;
+            flex-direction: column; /* Sépare strictement la scène et les contrôles */
+        }
+
+        /* Conteneur principal de la scène (prend tout l'espace sauf la barre de contrôle) */
+        .scene-wrapper {
+            flex: 1 1 auto;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1200px;
+            overflow: hidden;
+        }
+
+        /* Zone des Boutons Fixe (Strictement en bas, hauteur fixe) */
+        .controls-zone {
+            flex: 0 0 100px; /* Hauteur fixe de 100px, ne bouge jamais */
+            background-color: #263238; 
+            display: flex; justify-content: center; align-items: center; gap: 20px;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.3); z-index: 1000;
+        }
+
+        /* 2. SCÈNE 3D */
+        .room {
+            width: 0; height: 0; position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            transform: translateZ(calc(-1 * var(--radius))) rotateY(0deg);
+        }
+
+        .board {
+            position: absolute; 
+            width: 75vw; height: 75vh;
+            left: -37.5vw; top: -37.5vh; 
+            border: 12px solid; border-radius: 8px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            padding: 50px 60px 40px 60px; box-sizing: border-box; 
+            overflow: hidden;
+            display: flex; flex-direction: column; justify-content: flex-start;
+            backface-visibility: hidden;
+            /* 12 faces = 360 / 12 = 30 degrés par face */
+            transform: rotateY(calc(var(--i) * 30deg)) translateZ(var(--radius)); 
+        }
+
+        /* Différenciation visuelle des tableaux */
+        .type-partie { background-color: var(--board-part-bg); border-color: var(--board-part-border); }
+        .type-sous-partie { background-color: var(--board-sub-bg); border-color: var(--board-sub-border); }
+        .type-conclusion { background-color: var(--board-concl-bg); border-color: var(--board-concl-border); }
+
+        /* Badges d'identification */
+        .badge {
+            position: absolute; top: 0; left: 20px;
+            padding: 8px 20px; color: white; font-weight: bold; font-size: 0.9em;
+            border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .badge-part { background-color: var(--board-part-border); }
+        .badge-sub { background-color: var(--board-sub-border); }
+        .badge-concl { background-color: var(--board-concl-border); }
+
+        /* Typographie */
+        h1, h2, h3 { margin: 0 0 15px 0; font-weight: 700; text-align: center; }
+        .type-partie h1, .type-partie h2 { color: var(--board-part-border); }
+        .type-sous-partie h3 { color: var(--highlight-sub); text-align: left; border-bottom: 2px solid var(--highlight-sub); padding-bottom: 5px;}
+        .type-conclusion h2 { color: var(--board-concl-border); }
+        ul, ol { padding-left: 2rem; margin: 15px 0; }
+        li { margin-bottom: 1rem; }
+        p { margin: 15px 0; }
+
+        /* Layouts internes */
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; height: 100%; }
+        .center-content { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center; }
+        
+        .table-layout table { border-collapse: collapse; width: 100%; margin-top: 20px; border: 2px solid #333; }
+        .table-layout th, .table-layout td { padding: 15px; text-align: left; border: 1px solid #999; }
+        .table-layout th { background-color: var(--highlight-part); color: white; }
+        .table-layout tr:nth-child(even) td { background-color: rgba(0,0,0,0.05); }
+
+        /* Canvas */
+        .canvas-container {
+            flex-grow: 1; display: flex; justify-content: center; align-items: center;
+            min-height: 0; margin-top: 20px; width: 100%;
+        }
+        canvas { background: rgba(255,255,255,0.8); border: 2px dashed #475569; border-radius: 8px; max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+        /* Boutons de contrôle */
+        .controls-zone button {
+            background: #eceff1; color: #263238; border: none;
+            padding: 15px 25px; font-size: 1.2rem; cursor: pointer;
+            border-radius: 6px; font-weight: bold; transition: all 0.3s;
+        }
+        .controls-zone button:hover, .controls-zone button:focus { 
+            background: #ffb300; color: #000; outline: 3px solid #fff; 
+        }
+
+        .board-counter {
+            background: #1a1a1a; color: #ffb300;
+            padding: 12px 25px; border-radius: 6px; border: 2px solid #546e7a;
+            font-size: 1.4rem; font-weight: bold; min-width: 140px; text-align: center;
+        }
+
+        /* Droits d'auteur */
+        .btn-droits { position: fixed; top: 15px; right: 15px; z-index: 1000; background: #5d4037; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.3);}
+        .btn-droits:hover { background: #3e2723; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: #fff; padding: 40px; border-radius: 10px; max-width: 800px; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        .close-modal { position: absolute; top: 10px; right: 20px; background: none; border: none; font-size: 2.5rem; color: #d32f2f; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <button class="btn-droits" onclick="toggleModal(true)" aria-label="Droits d'auteur">⚖️ Droits d'auteur</button>
+
+    <div class="modal" id="copyrightModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="toggleModal(false)">&times;</button>
+            <h2 style="color:#d32f2f;">⚖️ Droits d'Auteur et Licence d'Utilisation</h2>
+            <p><strong>Auteur :</strong> Yann Merdy (yann.merdy@gmail.com) - Mai 2026</p>
+            <p><strong>Licence d'Utilisation Non Commerciale</strong><br>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ('L'Avion en Papier Optimal') sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
+            <p><strong>Conditions :</strong><br>
+            <em>Utilisation Privée et Éducative (Autorisée) :</em> Vous êtes autorisé.e à utiliser, copier, modifier et distribuer ce code et son contenu uniquement à des fins personnelles, éducatives et non lucratives.<br>
+            <em>Utilisation Commerciale (Interdite) :</em> Toute utilisation, distribution, intégration ou reproduction du code ou du contenu (total ou partiel) à des fins commerciales, lucratives ou professionnelles est strictement interdite sans un accord écrit préalable et explicite de l'auteur.<br>
+            <em>Attribution :</em> Toute reproduction ou modification doit conserver la mention de l'auteur originale (Yann Merdy) et la présente notice de droits d'auteur.</p>
+            <p>Pour toute demande d'utilisation commerciale ou de licence spécifique, veuillez contacter l'auteur à l'adresse indiquée ci-dessus.</p>
+        </div>
+    </div>
+
+    <div class="scene-wrapper">
+        <div class="room" id="room">
+            
+            <div class="board type-partie" style="--i: 0;" role="region" aria-label="Tableau 1">
+                <div class="badge badge-part">Introduction</div>
+                <div class="center-content">
+                    <i class="fa-solid fa-paper-plane" style="font-size: 80px; color: #3e2723; margin-bottom: 30px;"></i>
+                    <h1 style="font-size: 3rem;">L'Apprentissage par Problème (PBL)</h1>
+                    <h2>Cas d'étude : L'Avion en Papier Optimal</h2>
+                    <p style="font-size: 1.4rem; color: #555; margin-top: 30px;">Analyse d'une séquence interdisciplinaire Mathématiques & Sciences</p>
+                    <p style="font-weight: bold; color: #d32f2f; margin-top: 50px;">Session de présentation — Liaison Collège - Lycée</p>
+                </div>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 1;" role="region" aria-label="Tableau 2">
+                <div class="badge badge-sub">Théorie</div>
+                <h3>1/ Qu'est-ce qu'un PBL ?</h3>
+                <p>Le <strong>Problem-Based Learning</strong> (Apprentissage par Problème) est une rupture pédagogique majeure avec le modèle transmissif.</p>
+                <div class="two-column" style="margin-top: 30px;">
+                    <div style="background: rgba(37,99,235,0.1); padding: 25px; border-radius: 8px;">
+                        <h4 style="color:#1e3a8a; margin-top:0;"><i class="fa-solid fa-compass-drafting"></i> Posture active</h4>
+                        <p>L'apprentissage s'initie autour d'un problème complexe et ouvert. L'élève modélise, teste ses hypothèses et construit ses connaissances par l'erreur rectifiée.</p>
+                    </div>
+                    <div style="background: rgba(37,99,235,0.1); padding: 25px; border-radius: 8px;">
+                        <h4 style="color:#1e3a8a; margin-top:0;"><i class="fa-solid fa-chalkboard-user"></i> Enseignant guide</h4>
+                        <p>Le professeur n'est plus le diffuseur vertical du savoir, il devient un tuteur de la démarche d'investigation.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 2;" role="region" aria-label="Tableau 3">
+                <div class="badge badge-sub">Enjeux</div>
+                <h3>2/ Intérêts de la démarche</h3>
+                <div class="two-column">
+                    <div>
+                        <p style="font-weight: bold; color: #1565c0; border-bottom: 2px solid #ccc; padding-bottom: 5px;">Pour les Élèves</p>
+                        <ul>
+                            <li>Développement massif de l'<strong>autonomie</strong>.</li>
+                            <li>Compréhension de la portée concrète de l'outil mathématique.</li>
+                            <li>Valorisation du travail de groupe et de l'argumentation scientifique.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <p style="font-weight: bold; color: #1565c0; border-bottom: 2px solid #ccc; padding-bottom: 5px;">Pour les Enseignants</p>
+                        <ul>
+                            <li>Observation fine des processus cognitifs réels de l'élève.</li>
+                            <li>Interdisciplinarité authentique (Maths / Physique / SI).</li>
+                            <li>Évaluation dynamique par compétences facilitée.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="board type-partie" style="--i: 3;" role="region" aria-label="Tableau 4">
+                <div class="badge badge-part">Le Projet</div>
+                <h2>3/ La Séquence "Avion Optimal"</h2>
+                <div class="center-content" style="text-align: left; align-items: flex-start;">
+                    <p><strong>La situation-problème :</strong></p>
+                    <blockquote style="font-size: 1.5rem; font-style: italic; border-left: 5px solid #3e2723; padding-left: 20px; background: rgba(0,0,0,0.05); padding: 20px;">
+                        « Concevoir un prototype d'avion en papier capable de maximiser la durée de vol, de modéliser sa géométrie et de justifier ses performances scientifiquement. »
+                    </blockquote>
+                    <p>Loin du simple pliage récréatif, ce projet force l'élève à passer d'une approche empirique à une véritable <strong>ingénierie aérodynamique et mathématique</strong>.</p>
+                    <p><em>Contrainte :</em> Les valeurs approchées sont interdites dans l'analyse théorique (fractions irréductibles exigées pour le calcul des surfaces).</p>
+                </div>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 4;" role="region" aria-label="Tableau 5">
+                <div class="badge badge-sub">Technique</div>
+                <h3>Schéma d'analyse aérodynamique alaire</h3>
+                <p>La modélisation physique exige de comprendre l'équilibre des forces sur le profil de l'avion en vol stabilisé.</p>
+                <div class="canvas-container" style="height: 450px;">
+                    <canvas id="canvas-aero" width="900" height="400"></canvas>
+                </div>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 5;" role="region" aria-label="Tableau 6">
+                <div class="badge badge-sub">Déroulement</div>
+                <h3>4/ Structure des séances</h3>
+                <ol style="font-size: 1.2rem;">
+                    <li><strong>S1 : Situation d'ancrage.</strong> Mesures (aires, masse, grammage) et conception de la rampe de lancement standardisée.</li>
+                    <li><strong>S2 : Étude géométrique et aérodynamique.</strong> Modélisation de la surface portante et calcul du centre de gravité exact.</li>
+                    <li><strong>S3 : Sélection des prototypes.</strong> Choix argumenté de 3 modèles distincts.</li>
+                    <li><strong>S4 : Campagne d'essais.</strong> Collecte des données de vol (chronométrage vidéo).</li>
+                    <li><strong>S5 : Traitement statistique.</strong> Calculs des moyennes, écart-types et optimisation.</li>
+                    <li><strong>S6 : Soutenance orale.</strong> Présentation des rapports scientifiques.</li>
+                </ol>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 6;" role="region" aria-label="Tableau 7">
+                <div class="badge badge-sub">Programmes</div>
+                <h3>5/ Articulation avec les programmes</h3>
+                <div class="table-layout">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Discipline</th>
+                                <th>Concepts abordés</th>
+                                <th>Compétences visées</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Mathématiques</strong></td>
+                                <td>Géométrie, calculs d'aires exactes (fractions), statistiques descriptives, fonctions.</td>
+                                <td>Chercher, Modéliser, Calculer, Communiquer.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Physique-Chimie</strong></td>
+                                <td>Mécanique des fluides, bilan des forces (Portance, Poids), centre de gravité.</td>
+                                <td>S'approprier, Analyser, Réaliser, Valider.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>SNT / SI</strong></td>
+                                <td>Collecte de données, tableur-grapheur, simulation logicielle.</td>
+                                <td>Traiter des données numériques.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 7;" role="region" aria-label="Tableau 8">
+                <div class="badge badge-sub">Comparaison</div>
+                <h3>6/ Rupture avec le modèle classique</h3>
+                <div class="two-column">
+                    <div style="border-right: 2px dashed #ccc; padding-right: 30px;">
+                        <h4 style="color: #64748b; text-align: center;"><i class="fa-solid fa-arrow-down"></i> Modèle Déductif</h4>
+                        <p>1. Le professeur expose la théorie (cours magistral).</p>
+                        <p>2. Exercices d'application standardisés.</p>
+                        <p>3. Contrôle des connaissances.</p>
+                        <p style="font-style: italic; background:#f1f5f9; padding: 10px; border-radius:5px;">Le sens de l'outil est souvent perdu. L'élève l'applique mécaniquement.</p>
+                    </div>
+                    <div>
+                        <h4 style="color: #16a34a; text-align: center;"><i class="fa-solid fa-arrow-up"></i> Modèle Inductif (PBL)</h4>
+                        <p>1. Confrontation à l'obstacle réel (l'avion chute).</p>
+                        <p>2. Émergence du besoin d'outil pour résoudre le problème.</p>
+                        <p>3. Conceptualisation du savoir mathématique/physique.</p>
+                        <p style="font-style: italic; background:#f0fdf4; padding: 10px; border-radius:5px;">La théorie devient la clé indispensable de la réussite.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 8;" role="region" aria-label="Tableau 9">
+                <div class="badge badge-sub">Mise en œuvre</div>
+                <h3>7/ Organiser le PBL</h3>
+                <p>La réussite d'un PBL repose sur un <strong>cadrage logistique extrêmement strict</strong> :</p>
+                <ul>
+                    <li><i class="fa-solid fa-box-archive" style="color: var(--highlight-sub); width: 30px;"></i> <strong>Matériel :</strong> Fournir des kits identiques (feuilles A3 de même grammage, rapporteurs, règles).</li>
+                    <li><i class="fa-solid fa-rocket" style="color: var(--highlight-sub); width: 30px;"></i> <strong>Protocole :</strong> Imposer la construction d'une rampe de lancement calibrée pour neutraliser le biais du "lancer humain".</li>
+                    <li><i class="fa-solid fa-file-contract" style="color: var(--highlight-sub); width: 30px;"></i> <strong>Évaluation :</strong> Fournir une grille de compétences explicite dès la séance 1.</li>
+                    <li><i class="fa-solid fa-desktop" style="color: var(--highlight-sub); width: 30px;"></i> <strong>Numérique :</strong> Préparer des espaces cloud partagés pour la saisie des tableaux de mesures.</li>
+                </ul>
+            </div>
+
+            <div class="board type-sous-partie" style="--i: 9;" role="region" aria-label="Tableau 10">
+                <div class="badge badge-sub">Exigences</div>
+                <h3>Facteurs de succès</h3>
+                <div class="center-content" style="align-items: flex-start; text-align: left;">
+                    <p><strong><i class="fa-solid fa-video"></i> Rigueur métrologique :</strong></p>
+                    <p style="margin-left: 30px; margin-top: 5px;">Interdire l'évaluation "à l'œil". Obliger l'utilisation de l'enregistrement vidéo (ralenti smartphone) pour objectiver les temps de vol exacts.</p>
+                    
+                    <p><strong><i class="fa-solid fa-square-root-variable"></i> Exigence scientifique :</strong></p>
+                    <p style="margin-left: 30px; margin-top: 5px;">Refuser les valeurs décimales approchées pour l'étude théorique. L'aire alaire doit être exprimée sous forme de fraction irréductible \(\dfrac{a}{b}\).</p>
+
+                    <p><strong><i class="fa-solid fa-bullhorn"></i> Valorisation de l'oralité :</strong></p>
+                    <p style="margin-left: 30px; margin-top: 5px;">Préparer au "Grand Oral" en exigeant une posture professionnelle lors de la restitution des rapports.</p>
+                </div>
+            </div>
+
+            <div class="board type-conclusion" style="--i: 10;" role="region" aria-label="Tableau 11">
+                <div class="badge badge-concl">Bilan</div>
+                <h2>En conclusion</h2>
+                <div class="center-content">
+                    <i class="fa-solid fa-lightbulb" style="font-size: 70px; color: #880e4f; margin-bottom: 20px;"></i>
+                    <p style="font-size: 1.6rem; max-width: 80%; line-height: 1.5;">
+                        Le PBL transforme un objet récréatif banal en un puissant <strong>laboratoire d'investigation</strong>.
+                    </p>
+                    <p style="font-size: 1.3rem; max-width: 90%; margin-top: 20px;">
+                        Il réconcilie les élèves avec l'exigence mathématique et la rigueur physique, tout en valorisant la posture de chercheur indispensable pour la réussite dans le supérieur.
+                    </p>
+                </div>
+            </div>
+
+            <div class="board type-conclusion" style="--i: 11;" role="region" aria-label="Tableau 12">
+                <div class="badge badge-concl">Fin</div>
+                <div class="center-content">
+                    <h2 style="font-size: 4rem; margin-bottom: 30px;">Échanges & Questions</h2>
+                    <p style="font-size: 1.5rem;">Merci pour votre attention et votre engagement dans l'innovation pédagogique.</p>
+                    
+                    <div style="background: white; border: 2px solid #880e4f; padding: 20px; border-radius: 8px; margin-top: 40px; text-align: left;">
+                        <p style="margin: 0;"><strong>Auteur de la séquence :</strong> Yann Merdy</p>
+                        <p style="margin: 5px 0 0 0;"><em>Équipe de Mathématiques & Sciences</em></p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="controls-zone">
+        <button onclick="goToBoard(0)" aria-label="Aller au premier tableau">|◄ Premier</button>
+        <button onclick="rotateRoom(-1)" aria-label="Tableau précédent">◄ Précédent</button>
+        
+        <div id="board-counter" class="board-counter" aria-live="polite">Slide 1 / 12</div>
+        
+        <button onclick="rotateRoom(1)" aria-label="Tableau suivant">Suivant ►</button>
+        <button onclick="goToBoard(11)" aria-label="Aller au dernier tableau">Dernier ►|</button>
+    </div>
+
+    <script>
+        // --- GESTION DU CARROUSEL 3D ---
+        const totalBoards = 12; // 12 faces désormais
+        let currentIndex = 0;
+        const room = document.getElementById('room');
+        const counterElement = document.getElementById('board-counter');
+
+        function updateCounter() {
+            let actualIndex = ((currentIndex % totalBoards) + totalBoards) % totalBoards;
+            counterElement.innerText = "Slide " + (actualIndex + 1) + " / " + totalBoards;
+        }
+
+        function applyRotation() {
+            // 360 degrés / 12 slides = 30 degrés par rotation
+            let angle = currentIndex * -30;
+            room.style.transform = `translateZ(calc(-1 * var(--radius))) rotateY(${angle}deg)`;
+            updateCounter();
+        }
+
+        function rotateRoom(direction) {
+            currentIndex += direction;
+            applyRotation();
+        }
+
+        function goToBoard(targetIndex) {
+            let actualIndex = ((currentIndex % totalBoards) + totalBoards) % totalBoards;
+            let diff = targetIndex - actualIndex;
+            
+            // Optimisation du chemin le plus court
+            if (diff > totalBoards / 2) diff -= totalBoards;
+            else if (diff < -totalBoards / 2) diff += totalBoards;
+            
+            currentIndex += diff;
+            applyRotation();
+        }
+
+        updateCounter();
+
+        // --- GESTION DU CANVAS (SCHÉMA AÉRODYNAMIQUE) ---
+        window.onload = () => {
+            const canvas = document.getElementById('canvas-aero');
+            const ctx = canvas.getContext('2d');
+            
+            // Fonction utilitaire pour dessiner une flèche
+            function drawArrow(context, fromX, fromY, toX, toY, color, width=3) {
+                const headlen = 15; // longueur de la tête
+                const dx = toX - fromX;
+                const dy = toY - fromY;
+                const angle = Math.atan2(dy, dx);
+                
+                context.strokeStyle = color;
+                context.fillStyle = color;
+                context.lineWidth = width;
+                
+                context.beginPath();
+                context.moveTo(fromX, fromY);
+                context.lineTo(toX, toY);
+                context.stroke();
+                
+                context.beginPath();
+                context.moveTo(toX, toY);
+                context.lineTo(toX - headlen * Math.cos(angle - Math.PI / 6), toY - headlen * Math.sin(angle - Math.PI / 6));
+                context.lineTo(toX - headlen * Math.cos(angle + Math.PI / 6), toY - headlen * Math.sin(angle + Math.PI / 6));
+                context.lineTo(toX, toY);
+                context.fill();
+            }
+
+            // Paramètres globaux du schéma
+            const offsetX = 100;
+            const offsetY = 50;
+
+            // Ligne d'horizon / Vent relatif
+            ctx.setLineDash([10, 10]);
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(50, 200 + offsetY);
+            ctx.lineTo(850, 200 + offsetY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Dessin du profil d'aile (Airfoil asymétrique avec incidence)
+            ctx.save();
+            ctx.translate(350, 200 + offsetY); // Déplacement au centre
+            ctx.rotate(-12 * Math.PI / 180); // Angle d'incidence alpha (12 degrés cabré)
+            
+            // Tracé de l'airfoil
+            ctx.beginPath();
+            ctx.moveTo(-200, 0); // Bord d'attaque
+            ctx.bezierCurveTo(-200, -80, 50, -60, 300, 0); // Extrados (dessus)
+            ctx.bezierCurveTo(50, 20, -150, 40, -200, 0); // Intrados (dessous)
+            ctx.fillStyle = '#cbd5e1';
+            ctx.fill();
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#334155';
+            ctx.stroke();
+
+            // Ligne de corde (interne à l'aile)
+            ctx.setLineDash([5, 5]);
+            ctx.strokeStyle = '#475569';
+            ctx.beginPath();
+            ctx.moveTo(-200, 0);
+            ctx.lineTo(300, 0);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.restore(); // Retour au repère normal
+
+            // --- VECTEURS FORCES ---
+            // Coordonnées absolues estimées après rotation
+            const cgX = 400, cgY = 250; // Centre de gravité (Poids)
+            const cpX = 300, cpY = 220; // Centre de poussée (Portance & Traînée)
+
+            // Centre de Gravité (CG) - Marqueur
+            ctx.fillStyle = '#000';
+            ctx.beginPath(); ctx.arc(cgX, cgY, 6, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#1e40af'; ctx.font = "bold 18px Arial";
+            ctx.fillText("CG", cgX + 15, cgY - 10);
+
+            // Centre de Pression / Foyer (CP) - Marqueur
+            ctx.fillStyle = '#000';
+            ctx.beginPath(); ctx.arc(cpX, cpY, 6, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#166534';
+            ctx.fillText("FA (Foyer Aérodynamique)", cpX - 100, cpY - 15);
+
+            // Poids (Bleu, vers le bas depuis CG)
+            drawArrow(ctx, cgX, cgY, cgX, cgY + 120, '#2563eb', 4);
+            ctx.fillStyle = '#2563eb'; ctx.font = "bold 20px Arial";
+            ctx.fillText("Poids (P)", cgX + 10, cgY + 110);
+
+            // Portance (Vert, perpendiculaire au vent, vers le haut depuis CP)
+            drawArrow(ctx, cpX, cpY, cpX, cpY - 150, '#16a34a', 4);
+            ctx.fillStyle = '#16a34a'; ctx.font = "bold 20px Arial";
+            ctx.fillText("Portance (Rz)", cpX - 130, cpY - 130);
+
+            // Traînée (Rouge, parallèle au vent, vers l'arrière depuis CP)
+            drawArrow(ctx, cpX, cpY, cpX + 120, cpY, '#dc2626', 4);
+            ctx.fillStyle = '#dc2626'; ctx.font = "bold 20px Arial";
+            ctx.fillText("Traînée (Rx)", cpX + 130, cpY + 5);
+
+            // --- VECTEUR VITESSE (Vent Relatif) ---
+            drawArrow(ctx, 150, 250, 250, 250, '#0ea5e9', 3);
+            ctx.fillStyle = '#0ea5e9'; ctx.font = "italic bold 18px Arial";
+            ctx.fillText("Vitesse (V)", 150, 240);
+
+            // --- ANGLE D'INCIDENCE ---
+            ctx.strokeStyle = '#ea580c'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(150, 250, 100, 0, -12 * Math.PI/180, true); ctx.stroke();
+            ctx.fillStyle = '#ea580c'; ctx.font = "bold 18px Arial";
+            ctx.fillText("Angle d'incidence \u03B1", 260, 280);
+        };
+
+        // --- GESTION NAVIGATION CLAVIER ---
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') rotateRoom(-1);
+            if (e.key === 'ArrowRight') rotateRoom(1);
+            if (e.key === 'Home') goToBoard(0);
+            if (e.key === 'End') goToBoard(11);
+            if (e.key === 'Escape') toggleModal(false);
+        });
+
+        // --- GESTION MODALE DROITS D'AUTEUR ---
+        function toggleModal(show) {
+            document.getElementById('copyrightModal').style.display = show ? 'flex' : 'none';
+        }
+    </script>
+    <script>
+    (function() {
+        const btn = document.createElement('a');
+        btn.href = 'AVION_PAPIER_SOMMAIRE.html';
+        btn.innerHTML = '🏠 Sommaire';
+        btn.className = 'btn-sommaire';
+        btn.style.position = 'fixed';
+        btn.style.top = '15px';
+        btn.style.left = '15px';
+        btn.style.zIndex = '1000';
+        btn.style.background = '#1565c0';
+        btn.style.color = 'white';
+        btn.style.padding = '10px 20px';
+        btn.style.borderRadius = '5px';
+        btn.style.fontWeight = 'bold';
+        btn.style.textDecoration = 'none';
+        document.body.appendChild(btn);
+    })();
+</script>
+
+</body>
+</html>

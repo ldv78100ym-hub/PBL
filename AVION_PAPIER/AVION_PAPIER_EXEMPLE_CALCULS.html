@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calcul de la Portance - Avion en Papier "The Bird"</title>
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']],
+                macros: { dfrac: ['\\displaystyle\\frac{#1}{#2}', 2] }
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* ========== CSS ISSU DE AVION_PAPIER_SEANCE_03.html (scroll ajouté) ========== */
+        :root {
+            --bg-room: #cfd8dc;
+            --text-color: #1a1a1a;
+            --highlight-part: #b71c1c;
+            --highlight-sub: #1565c0;
+            --board-part-bg: #fffde7;
+            --board-part-border: #3e2723;
+            --board-sub-bg: #fdfbf7;
+            --board-sub-border: #8b5a2b;
+            --radius: 210vw; 
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+            background-color: var(--bg-room);
+            font-family: Verdana, 'Segoe UI', sans-serif; color: var(--text-color);
+            font-size: clamp(0.9rem, 2vh, 1.4rem); 
+            line-height: 1.6; letter-spacing: 0.03em;
+        }
+
+        .scene {
+            width: 100vw; height: 85vh;
+            position: absolute; top: 0; left: 0;
+            perspective: 1200px;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .room {
+            width: 0; height: 0; position: relative;
+            transform-style: preserve-3d;
+        }
+
+        .board {
+            position: absolute; 
+            width: 80vw; height: 75vh;
+            left: -40vw; top: -37.5vh; 
+            border: 12px solid; border-radius: 8px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            padding: 40px 50px 30px 50px; box-sizing: border-box; 
+            overflow-y: auto;    /* ← ASCENSEUR VERTICAL pour les longs contenus */
+            display: flex; flex-direction: column; justify-content: flex-start;
+            backface-visibility: hidden;
+            
+            transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.8s;
+            transform: translateZ(calc(-1 * var(--radius))) rotateY(calc((var(--i) - var(--current, 0)) * 27.6923deg)) translateZ(var(--radius)); 
+        }
+
+        /* Personnalisation de la scrollbar (optionnelle, pour plus de lisibilité) */
+        .board::-webkit-scrollbar {
+            width: 10px;
+        }
+        .board::-webkit-scrollbar-track {
+            background: #e0e0e0;
+            border-radius: 5px;
+        }
+        .board::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 5px;
+        }
+        .board::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .type-partie { background-color: var(--board-part-bg); border-color: var(--board-part-border); }
+        .type-sous-partie { background-color: var(--board-sub-bg); border-color: var(--board-sub-border); }
+        .type-conclusion { background-color: #fce4ec; border-color: #880e4f; }
+
+        .badge {
+            position: absolute; top: 0; left: 20px;
+            padding: 5px 15px; color: white; font-weight: bold; font-size: 0.9em;
+            border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .badge-part { background-color: var(--highlight-part); }
+        .badge-sub { background-color: var(--highlight-sub); }
+        .badge-concl { background-color: #880e4f; }
+
+        h1, h2, h3 { margin: 0 0 10px 0; font-weight: 700; text-align: center; }
+        .type-partie h1, .type-partie h2 { color: var(--highlight-part); }
+        .type-sous-partie h3 { color: var(--highlight-sub); text-align: left; border-bottom: 2px solid var(--highlight-sub); padding-bottom: 5px;}
+        ul, ol { padding-left: 2rem; margin: 10px 0; }
+        li { margin-bottom: 0.5rem; }
+        p { margin: 10px 0; }
+
+        .formula {
+            background: rgba(21, 101, 192, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 1.2rem;
+        }
+        .step {
+            margin: 25px 0;
+            padding: 15px;
+            background: #f8fafc;
+            border-left: 4px solid var(--highlight-sub);
+            border-radius: 8px;
+        }
+        .tip {
+            background: #eef6fb;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .center-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            text-align: center;
+        }
+
+        /* Bouton personnalisé pour le lien vers l'équation différentielle */
+        .euler-link-btn {
+            display: inline-block;
+            background-color: #ff8f00;
+            color: #1a1a1a;
+            padding: 10px 20px;
+            margin-top: 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: 0.2s;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .euler-link-btn:hover {
+            background-color: #ffb300;
+            transform: scale(1.02);
+        }
+
+        .btn-sommaire { position: fixed; top: 15px; left: 15px; z-index: 1000; background: #1565c0; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; }
+        .btn-sommaire:hover { background: #0d47a1; color: white; }
+        .btn-droits { position: fixed; top: 15px; right: 15px; z-index: 1000; background: #5d4037; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;}
+        .btn-droits:hover { background: #4e342e; }
+
+        .controls-zone {
+            position: absolute; bottom: 0; left: 0; width: 100vw; height: 15vh;
+            background-color: #263238; display: flex; justify-content: center; align-items: center; gap: 20px;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.3); z-index: 1000;
+        }
+
+        .controls-zone button {
+            background: #eceff1; color: #263238; border: none; padding: 12px 20px; font-size: 1.1rem; 
+            cursor: pointer; border-radius: 6px; font-weight: bold; transition: all 0.3s;
+        }
+        .controls-zone button:hover, .controls-zone button:focus { background: #ffb300; color: #000; outline: 3px solid #fff; }
+
+        .board-counter {
+            background: #1a1a1a; color: #ffb300; padding: 10px 20px; border-radius: 6px; 
+            border: 2px solid #546e7a; font-size: 1.3rem; font-weight: bold; min-width: 120px; text-align: center;
+        }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: #fff; padding: 40px; border-radius: 10px; max-width: 800px; position: relative; }
+        .close-modal { position: absolute; top: 10px; right: 20px; background: none; border: none; font-size: 2rem; color: #d32f2f; cursor: pointer; }
+
+        @media (max-width: 700px) {
+            .board { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <a href="AVION_PAPIER_SOMMAIRE.html" class="btn-sommaire">🏠 Sommaire</a>
+    <button class="btn-droits" onclick="toggleModal(true)" aria-label="Droits d'auteur">⚖️ Droits d'auteur</button>
+
+    <!-- Modal des droits d'auteur - structure corrigée (plus de double id) -->
+    <div class="modal" id="copyrightModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="toggleModal(false)">✖</button>
+            <h2 style="color:#d32f2f;">⚖️ Droits d'Auteur et Licence d'Utilisation</h2>
+            <p><strong>Auteur :</strong> Yann Merdy (yann.merdy@gmail.com) - Mai 2026</p>
+            <p><strong>Licence d'Utilisation Non Commerciale</strong><br>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ('Avion en papier optimal') sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
+            <p><strong>Conditions :</strong><br>
+            <em>Utilisation Privée et Éducative (Autorisée) :</em> Vous êtes autorisé.e à utiliser, copier, modifier et distribuer ce code et son contenu uniquement à des fins personnelles, éducatives et non lucratives.<br>
+            <em>Utilisation Commerciale (Interdite) :</em> Toute utilisation, distribution, intégration ou reproduction du code ou du contenu (total ou partiel) à des fins commerciales, lucratives ou professionnelles est strictement interdite sans un accord écrit préalable et explicite de l'auteur.<br>
+            <em>Attribution :</em> Toute reproduction ou modification doit conserver la mention de l'auteur originale (Yann Merdy) et la présente notice de droits d'auteur.</p>
+            <p>Pour toute demande d'utilisation commerciale ou de licence spécifique, veuillez contacter l'auteur à l'adresse indiquée ci-dessus.</p>
+        </div>
+    </div>
+
+    <div class="scene">
+        <div class="room" id="room">
+            <!-- 13 slides (contenu inchangé) -->
+            <div class="board type-partie" style="--i: 0;">
+                <div class="badge badge-part">Introduction</div>
+                <div class="center-content">
+                    <i class="fa-solid fa-calculator" style="font-size: 80px; color: #3e2723; margin-bottom: 30px;"></i>
+                    <h1 style="font-size: 2.5rem;">Calcul de la Portance</h1>
+                    <h2>Application à l'avion "The Bird"</h2>
+                    <p>Un lâcher à bout de bras horizontal, sans vitesse initiale, dans un espace clos.</p>
+                    <p style="font-weight: bold; color: #d32f2f; margin-top: 30px;">Comprendre la physique du vol plané</p>
+                </div>
+            </div>
+            <div class="board type-sous-partie" style="--i: 1;">
+                <div class="badge badge-sub">Théorie</div>
+                <h3>📖 Qu'est-ce que la portance ?</h3>
+                <p>La <strong>portance</strong> est la force aérodynamique qui s'oppose au poids et maintient l'avion en l'air. Elle est générée par l'interaction entre les ailes et l'air. Pour un avion en papier, même avec des ailes plates, cette force existe : la pression sous l'aile est plus élevée qu'au-dessus.</p>
+                <div class="formula">
+                    <p style="font-weight: bold; margin-bottom: 10px;">Formule fondamentale :</p>
+                    \[ F = \frac{1}{2} \cdot \rho \cdot V^2 \cdot S \cdot C_L \]
+                </div>
+                <p>Chaque terme a une signification physique précise que nous allons détailler.</p>
+            </div>
+            <div class="board type-sous-partie" style="--i: 2;">
+                <div class="badge badge-sub">Paramètres</div>
+                <h3>📊 Les paramètres de la formule</h3>
+                <ul>
+                    <li><strong>\( \rho \) (rho)</strong> : densité de l'air. Au niveau de la mer, \( \rho \approx 1,225 \, \text{kg/m}^3 \).</li>
+                    <li><strong>\( V \)</strong> : vitesse de l'avion par rapport à l'air. Élevée au carré, elle a un effet majeur sur la portance.</li>
+                    <li><strong>\( S \)</strong> : surface alaire (surface totale des ailes). Exprimée en \( \text{m}^2 \).</li>
+                    <li><strong>\( C_L \)</strong> : coefficient de portance. Sans dimension, il dépend de la forme de l'aile et de son angle d'attaque. Pour une aile plate, \( C_L \) est généralement compris entre <strong>0,2 et 0,7</strong>.</li>
+                </ul>
+            </div>
+            <div class="board type-sous-partie" style="--i: 3;">
+                <div class="badge badge-sub">Conditions expérimentales</div>
+                <h3>✋ Lâcher à bout de bras horizontal</h3>
+                <p>Dans cette configuration, l'avion est <strong>lâché sans être lancé</strong>. Sa vitesse initiale est donc nulle (\( V_0 = 0 \)).</p>
+                <div class="step">
+                    <p><strong>Quelle est la conséquence ?</strong></p>
+                    <p>Sans vitesse initiale, l'avion n'a pas de vitesse relative par rapport à l'air. La formule de portance \( \frac{1}{2} \rho V^2 S C_L \) donne alors \( F = 0 \) à l'instant du lâcher.</p>
+                    <p>L'avion va donc <strong>chuter verticalement</strong> au début, sous l'effet de son poids uniquement. Ce n'est qu'en prenant de la vitesse qu'une portance pourra apparaître et éventuellement le faire planer.</p>
+                </div>
+                <p>Nous allons calculer la <strong>vitesse minimale nécessaire</strong> pour que la portance équilibre le poids, puis la <strong>hauteur minimale de chute libre</strong> pour atteindre cette vitesse.</p>
+            </div>
+            <div class="board type-sous-partie" style="--i: 4;">
+                <div class="badge badge-sub">Application (1/5)</div>
+                <h3>📏 Étape 1 : Masse de l'avion</h3>
+                <p>Pesons l'avion "The Bird" après pliage. Une feuille A4 standard (80 g/m²) pèse environ 5 grammes. Avec le pliage, la masse reste voisine de <strong>5 g</strong>.</p>
+                <div class="formula">\[ m = 5 \, \text{g} = 0,005 \, \text{kg} \]</div>
+                <p>Le poids \( P \) se calcule par \( P = m \cdot g \), avec \( g \approx 9,81 \, \text{m/s}^2 \) :</p>
+                <div class="formula">\[ P = 0,005 \times 9,81 = 0,04905 \, \text{N} \]</div>
+                <p><strong>Résultat :</strong> Le poids de l'avion est d'environ \( \mathbf{0,049 \, N} \).</p>
+            </div>
+            <div class="board type-sous-partie" style="--i: 5;">
+                <div class="badge badge-sub">Application (2/5)</div>
+                <h3>📐 Étape 2 : Surface alaire S</h3>
+                <p>Pour "The Bird", les ailes sont larges. En mesurant sur le modèle fini (envergure ≈ 20 cm, corde moyenne ≈ 8 cm), on obtient :</p>
+                <div class="formula">\[ S \approx 0,016 \, \text{m}^2 \]</div>
+                <p><em>Remarque :</em> Cette valeur est une estimation. Pour un calcul précis, il faudrait mesurer directement sur l'avion.</p>
+            </div>
+            <div class="board type-sous-partie" style="--i: 6;">
+                <div class="badge badge-sub">Application (3/5)</div>
+                <h3>🎯 Étape 3 : Coefficient de portance \( C_L \)</h3>
+                <p>Pour une aile plate en papier, avec un angle d'attaque faible (avion à l'horizontale), on peut prendre une valeur moyenne :</p>
+                <div class="formula">\[ C_L = 0,4 \]</div>
+                <p>Cette valeur se situe dans la fourchette typique de 0,2 à 0,7 pour un vol de croisière.</p>
+            </div>
+            <div class="board type-sous-partie" style="--i: 7;">
+                <div class="badge badge-sub">Application (4/5)</div>
+                <h3>⚡ Étape 4 : Vitesse minimale de vol</h3>
+                <p>On cherche \( V \) telle que la portance égale le poids. On utilise la formule \( F = P \).</p>
+                <div class="formula">\[ \frac{1}{2} \rho V^2 S C_L = P \]</div>
+                <p>On isole \( V^2 \) :</p>
+                <div class="formula">\[ V^2 = \frac{2P}{\rho S C_L} \]</div>
+                <p>On remplace avec \( \rho = 1,225 \), \( S = 0,016 \), \( C_L = 0,4 \), \( P = 0,04905 \) :</p>
+                <div class="formula">\[ V^2 = \frac{2 \times 0,04905}{1,225 \times 0,016 \times 0,4} = \frac{0,0981}{0,00784} \approx 12,51 \]</div>
+                <p>Donc :</p>
+                <div class="formula">\[ V \approx \sqrt{12,51} \approx 3,54 \, \text{m/s} \]</div>
+                <p><strong>Résultat :</strong> Pour voler horizontalement, l'avion doit atteindre une vitesse d'environ <strong>3,5 m/s</strong> (soit environ 12,6 km/h).</p>
+            </div>
+            <div class="board type-sous-partie" style="--i: 8;">
+                <div class="badge badge-sub">Application (5/5)</div>
+                <h3>📏 Étape 5 : Hauteur minimale de lâcher</h3>
+                <p>Pour que l'avion ait une chance de planer, il doit acquérir la vitesse \( V_{\text{crit}} = 3,54 \, \text{m/s} \) <strong>avant de toucher le sol</strong>. Lors d'un lâcher sans vitesse initiale, l'avion est en chute libre verticale (on néglige la traînée dans un premier temps).</p>
+                <div class="step">
+                    <p><strong>Rappel de cinématique :</strong> En chute libre, la vitesse atteinte après une chute de hauteur \( h \) est donnée par :</p>
+                    <div class="formula">\[ V = \sqrt{2 g h} \]</div>
+                    <p>On inverse pour obtenir la hauteur nécessaire :</p>
+                    <div class="formula">\[ h_{\text{min}} = \frac{V_{\text{crit}}^2}{2g} \]</div>
+                    <p>Application numérique :</p>
+                    <div class="formula">\[ h_{\text{min}} = \frac{(3,54)^2}{2 \times 9,81} = \frac{12,53}{19,62} \approx 0,639 \, \text{m} \]</div>
+                    <p><strong>Soit environ 64 cm</strong> (hauteur de chute libre).</p>
+                </div>
+                <p><strong>Interprétation :</strong> Si l'avion est lâché d'une hauteur inférieure à 64 cm, il ne pourra jamais atteindre la vitesse de sustentation et touchera le sol avant que la portance ne devienne suffisante. À l'inverse, d'une hauteur supérieure, il dépassera cette vitesse et pourra théoriquement entrer en vol plané (à condition d'avoir une assiette adaptée).</p>
+            </div>
+            <div class="board type-sous-partie" style="--i: 9;">
+                <div class="badge badge-sub">Analyse physique</div>
+                <h3>🔍 Affinement : prise en compte de la traînée</h3>
+                <p>Le calcul précédent suppose une chute libre sans frottement. En réalité, la <strong>traînée aérodynamique</strong> s'oppose à la chute et réduit l'accélération. La vitesse limite est alors plus faible, et la hauteur nécessaire pour atteindre \( V_{\text{crit}} \) est <strong>plus grande</strong> que 64 cm.</p>
+                <p>Pour une estimation plus réaliste, on peut utiliser l'équation différentielle du mouvement vertical :</p>
+                <div class="formula">\[ m \frac{dV}{dt} = mg - \frac{1}{2} \rho V^2 S C_D \]</div>
+                <p>où \( C_D \) est le coefficient de traînée (environ 0,5 pour une plaque plane). La résolution montre qu'il faut environ <strong>1,2 m</strong> pour atteindre 3,5 m/s avec un tel coefficient. Ainsi, dans un couloir standard (hauteur sous plafond ~2,5 m), l'avion a largement le temps d'accélérer.</p>
+                <div class="tip"><strong>💡 Conclusion pratique :</strong> Pour un lâcher à bout de bras, la hauteur minimale conseillée est d'environ <strong>1,20 m</strong> (hauteur d'un bras tendu d'une personne de taille moyenne). Les plafonds de salles ou couloirs sont généralement suffisants.</div>
+		
+                <!-- Bouton ajouté pour lien vers l'équation différentielle / méthode d'Euler -->
+                <div style="text-align: center; margin-top: 25px;">
+                    <a href="AVION_PAPIER_EQUATION_DIFFERENTIELLE_EN_COLLEGE.html" class="euler-link-btn">
+                        <i class="fa-solid fa-chart-line" style="margin-right: 8px;"></i> Découvrir la méthode d'Euler (pas à pas) <br> Méthode adaptée aux collégiens
+                    </a>
+                </div>
+            </div>
+            <!-- SLIDE 10 : Optimisation -->
+            <div class="board type-sous-partie" style="--i: 10;">
+                <div class="badge badge-sub">Optimisation</div>
+                <h3>🔧 Comment améliorer la portance ?</h3>
+                <ul>
+                    <li><strong>Augmenter \( S \)</strong> : des ailes plus larges augmentent la portance à vitesse égale. "The Bird" maximise déjà cette surface.</li>
+                    <li><strong>Augmenter \( C_L \)</strong> : en cabrant légèrement l'avion (angle d'attaque positif), on peut gagner en portance, mais attention au décrochage.</li>
+                    <li><strong>Réduire la masse</strong> : un papier plus léger (ex: 70 g/m²) diminue le poids et abaisse la vitesse minimale requise.</li>
+                </ul>
+                <div class="tip" style="margin-top: 15px;">
+                    💡 <strong>Pour aller plus loin :</strong> La méthode d'Euler permet de simuler la chute en tenant compte à la fois de la portance et de la traînée, étape par étape.
+                </div>
+            </div>
+            <div class="board type-conclusion" style="--i: 11;">
+                <div class="badge badge-concl">Résumé</div>
+                <h2>📌 En résumé</h2>
+                <div class="center-content" style="text-align: left; align-items: flex-start;">
+                    <p><strong>Pour calculer la portance d'un avion en papier :</strong></p>
+                    <ol>
+                        <li>Utilisez la formule \( F = \frac{1}{2} \rho V^2 S C_L \).</li>
+                        <li>Mesurez la surface alaire \( S \).</li>
+                        <li>Estimez le coefficient \( C_L \) (≈ 0,4 pour une aile plate).</li>
+                        <li>Comparez \( F \) au poids \( P = m \cdot g \).</li>
+                    </ol>
+                    <p>Dans le cas d'un lâcher sans vitesse initiale, l'avion doit chuter d'au moins <strong>64 cm en théorie</strong> (ou plutôt 1,2 m en tenant compte de la traînée) pour atteindre la vitesse de vol (≈ 3,5 m/s).</p>
+                </div>
+            </div>
+            <div class="board type-conclusion" style="--i: 12;">
+                <div class="badge badge-concl">Pour aller plus loin</div>
+                <div class="center-content">
+                    <i class="fa-solid fa-chalkboard-user" style="font-size: 60px; color: #880e4f; margin-bottom: 20px;"></i>
+                    <h2>✨ Expérimentez !</h2>
+                    <p>Vous pouvez vérifier ces calculs en réalisant des mesures :</p>
+                    <ul style="text-align: left;">
+                        <li><strong>Chronométrez</strong> la chute et le temps de vol.</li>
+                        <li><strong>Filmez au ralenti</strong> pour estimer la vitesse.</li>
+                        <li><strong>Comparez</strong> différents modèles d'avions.</li>
+                    </ul>
+                    <p style="margin-top: 30px;">La physique est une science expérimentale : à vos pliages ! ✈️</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls-zone">
+        <button onclick="goToBoard(0)" aria-label="Premier tableau">|◄ Premier</button>
+        <button onclick="rotateRoom(-1)" aria-label="Précédent">◄ Précédent</button>
+        <div id="board-counter" class="board-counter" aria-live="polite">Slide 1 / 13</div>
+        <button onclick="rotateRoom(1)" aria-label="Suivant">Suivant ►</button>
+        <button onclick="goToBoard(12)" aria-label="Dernier tableau">Dernier ►|</button>
+    </div>
+
+    <script>
+        const totalBoards = 13;
+        let currentIndex = 0;
+        const counterElement = document.getElementById('board-counter');
+        const boards = document.querySelectorAll('.board');
+
+        function updateCounter() {
+            let actualIndex = ((currentIndex % totalBoards) + totalBoards) % totalBoards;
+            counterElement.innerText = "Slide " + (actualIndex + 1) + " / " + totalBoards;
+        }
+
+        function applyRotation() {
+            boards.forEach(board => {
+                board.style.setProperty('--current', currentIndex);
+                let boardI = parseInt(board.style.getPropertyValue('--i'));
+                let actualIndex = ((currentIndex % totalBoards) + totalBoards) % totalBoards;
+                if (boardI === actualIndex) {
+                    board.style.opacity = "1";
+                    board.style.pointerEvents = "auto";
+                } else {
+                    board.style.opacity = "0.15"; 
+                    board.style.pointerEvents = "none";
+                }
+            });
+            updateCounter();
+        }
+
+        function rotateRoom(direction) {
+            currentIndex += direction;
+            applyRotation();
+        }
+
+        function goToBoard(targetIndex) {
+            let actualIndex = ((currentIndex % totalBoards) + totalBoards) % totalBoards;
+            let diff = targetIndex - actualIndex;
+            if (diff > totalBoards / 2) diff -= totalBoards;
+            else if (diff < -totalBoards / 2) diff += totalBoards;
+            currentIndex += diff;
+            applyRotation();
+        }
+
+        function toggleModal(show) {
+            document.getElementById('copyrightModal').style.display = show ? 'flex' : 'none';
+        }
+
+        applyRotation();
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') rotateRoom(-1);
+            if (e.key === 'ArrowRight') rotateRoom(1);
+            if (e.key === 'Home') goToBoard(0);
+            if (e.key === 'End') goToBoard(12);
+            if (e.key === 'Escape') toggleModal(false);
+        });
+    </script>
+</body>
+</html>

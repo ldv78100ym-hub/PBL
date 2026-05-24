@@ -1,1 +1,223 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sommaire - Avion en papier optimal</title>
 
+    <style>
+        /* Variables CSS - Thème clair et lisible, optimisé Dys/Malvoyants */
+        :root {
+            --bg-main: #cfd8dc;
+            --text-color: #1a1a1a;
+            --card-bg: #fdfbf7;
+            --border-color: #8b5a2b;
+            --hover-bg: #fffde7;
+            --accent: #b71c1c;
+            --accent-blue: #1565c0;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; min-height: 100vh;
+            background-color: var(--bg-main);
+            font-family: Verdana, 'Segoe UI', sans-serif; 
+            color: var(--text-color);
+            font-size: clamp(1rem, 2vh, 1.4rem); 
+            line-height: 1.6; letter-spacing: 0.03em;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        /* En-tête de la page */
+        header {
+            text-align: center;
+            margin: 50px 20px 40px 20px;
+        }
+
+        h1 {
+            color: var(--accent);
+            font-size: 2.5rem;
+            margin: 0 0 10px 0;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: var(--accent-blue);
+            font-size: 1.5rem;
+            margin: 0;
+            font-weight: normal;
+        }
+
+        /* Grille de navigation */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            width: 90%;
+            margin-bottom: 60px;
+        }
+
+        /* Cartes de navigation (Liens) */
+        .card {
+            background-color: var(--card-bg);
+            border: 5px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px 25px;
+            text-decoration: none;
+            color: var(--text-color);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .card:hover, .card:focus {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+            background-color: var(--hover-bg);
+            border-color: var(--accent);
+            outline: none;
+        }
+        
+        .card.presentation-card {
+            border-color: var(--accent);
+            background-color: #fff8e1;
+        }
+
+        .card-number {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--accent);
+            margin-bottom: 12px;
+            border-bottom: 3px solid var(--accent-blue);
+            padding-bottom: 5px;
+            width: 100%;
+        }
+
+        .card-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        /* Bouton des droits d'auteur */
+        .btn-droits { 
+            position: fixed; top: 15px; right: 15px; z-index: 1000; 
+            background: #5d4037; color: white; border: none; 
+            padding: 10px 20px; border-radius: 5px; cursor: pointer; 
+            font-weight: bold; transition: background 0.3s;
+        }
+        .btn-droits:hover, .btn-droits:focus {
+            background: #3e2723; outline: 3px solid #fff;
+        }
+
+        /* Modale */
+        .modal { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; 
+        }
+        .modal-content { 
+            background: #fff; padding: 40px; border-radius: 10px; 
+            max-width: 800px; width: 90%; position: relative; 
+        }
+        .close-modal { 
+            position: absolute; top: 10px; right: 20px; background: none; 
+            border: none; font-size: 2rem; color: #d32f2f; cursor: pointer; 
+        }
+        .close-modal:hover, .close-modal:focus {
+            color: #b71c1c; outline: 2px solid #1a1a1a;
+        }
+    </style>
+</head>
+<body>
+
+    <button class="btn-droits" onclick="toggleModal(true)" aria-label="Droits d'auteur">⚖️ Droits d'auteur</button>
+
+    <div class="modal" id="copyrightModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-content">
+            <button class="close-modal" onclick="toggleModal(false)" aria-label="Fermer la fenêtre">✖</button>
+            <h2 id="modalTitle" style="color:#d32f2f;">⚖️ Droits d'Auteur et Licence d'Utilisation</h2>
+            <p>Auteur : Yann Merdy (yann.merdy@gmail.com) - Mai 2026</p>
+            <p>Licence d'Utilisation Non Commerciale<br>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ('Avion en papier optimal') sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
+            <p>Conditions :<br>
+            Utilisation Privée et Éducative (Autorisée) : Vous êtes autorisé·e à utiliser, copier, modifier et distribuer ce code et son contenu uniquement à des fins personnelles, éducatives et non lucratives.<br>
+            Utilisation Commerciale (Interdite) : Toute utilisation, distribution, intégration ou reproduction du code ou du contenu (total ou partiel) à des fins commerciales, lucratives ou professionnelles est strictement interdite sans un accord écrit préalable et explicite de l'auteur.<br>
+            Attribution : Toute reproduction ou modification doit conserver la mention de l'auteur originale (Yann Merdy) et la présente notice de droits d'auteur.</p>
+            <p>Pour toute demande d'utilisation commerciale ou de licence spécifique, veuillez contacter l'auteur à l'adresse indiquée ci-dessus.</p>
+        </div>
+    </div>
+
+    <header>
+        <h1>Avion en papier optimal</h1>
+        <h2>Sommaire des séances - Livret élève</h2>
+    </header>
+
+    <main class="grid-container" aria-label="Navigation des séances">
+
+	<a href="AVION_PAPIER_PRESENTATION.html" class="card presentation-card" aria-label="Ouvrir la présentation : L'Avion en Papier Optimal">
+            <div class="card-number">Présentation</div>
+            <div class="card-title">Support de présentation (PBL)</div>
+        </a>
+
+	<a href="AVION_PAPIER_BAREME.html" class="card presentation-card" aria-label="Ouvrir la présentation : L'Avion en Papier Optimal">
+            <div class="card-number">Barème</div>
+            <div class="card-title">Proposition de barème détaillé sur 100 points (PBL)</div>
+        </a>
+
+        <a href="AVION_PAPIER_SEANCE_01.html" class="card" aria-label="Ouvrir la Séance 1 : Découverte et premières mesures">
+            <div class="card-number">Séance 1</div>
+            <div class="card-title">Découverte et premières mesures</div>
+        </a>
+        
+        <a href="AVION_PAPIER_SEANCE_02.html" class="card" aria-label="Ouvrir la Séance 2 : Analyse géométrique et aérodynamique">
+            <div class="card-number">Séance 2</div>
+            <div class="card-title">Analyse géométrique et aérodynamique</div>
+        </a>
+
+        <a href="AVION_PAPIER_SEANCE_03.html" class="card" aria-label="Ouvrir la Séance 3 : Conception et réalisation de trois prototypes">
+            <div class="card-number">Séance 3</div>
+            <div class="card-title">Conception et réalisation de trois prototypes</div>
+        </a>
+
+	<a href="AVION_PAPIER_EXEMPLE_CALCULS.html" class="card" aria-label="Ouvrir l'exemple de caluls">
+            <div class="card-number">Méthode de calculs</div>
+            <div class="card-title">Comment déterminer la portance et la hauteur minimale du lâcher</div>
+
+
+        <a href="AVION_PAPIER_SEANCE_04.html" class="card" aria-label="Ouvrir la Séance 4 : Tests en vol et collecte de données">
+            <div class="card-number">Séance 4</div>
+            <div class="card-title">Tests en vol et collecte de données</div>
+        </a>
+
+        <a href="AVION_PAPIER_SEANCE_05.html" class="card" aria-label="Ouvrir la Séance 5 : Analyse mathématique et optimisation">
+            <div class="card-number">Séance 5</div>
+            <div class="card-title">Analyse mathématique et optimisation</div>
+        </a>
+
+        <a href="AVION_PAPIER_SEANCE_06.html" class="card" aria-label="Ouvrir la Séance 6 : Rédaction et présentation">
+            <div class="card-number">Séance 6</div>
+            <div class="card-title">Rédaction et présentation</div>
+        </a>
+
+    </main>
+
+    <script>
+        // Gestion de la modale des droits d'auteur
+        function toggleModal(show) {
+            const modal = document.getElementById('copyrightModal');
+            modal.style.display = show ? 'flex' : 'none';
+            if (show) {
+                modal.querySelector('.close-modal').focus();
+            }
+        }
+
+        // Accessibilité : Fermeture au clavier avec Echap
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') toggleModal(false);
+        });
+    </script>
+    
+</body>
+</html>

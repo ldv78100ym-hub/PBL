@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Grille d'évaluation - Avion en papier optimal</title>
+    
+    <!-- MathJax facultatif mais gardé pour homogénéité -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        /* ==================== VARIABLES (identique aux livrets) ==================== */
+        :root {
+            --bg-room: #cfd8dc;
+            --text-color: #1a1a1a;
+            --highlight-part: #b71c1c;
+            --highlight-sub: #1565c0;
+            --board-part-bg: #fffde7;
+            --board-part-border: #3e2723;
+            --board-sub-bg: #fdfbf7;
+            --board-sub-border: #8b5a2b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 100%;
+            min-height: 100vh;
+            background-color: var(--bg-room);
+            font-family: Verdana, 'Segoe UI', sans-serif;
+            color: var(--text-color);
+            font-size: clamp(0.9rem, 2vh, 1.3rem);
+            line-height: 1.5;
+            letter-spacing: 0.02em;
+            padding: 30px 20px 60px 20px;
+            overflow-x: auto;
+        }
+
+        /* Conteneur principal style "board" – même apparence que les panneaux des livrets */
+        .evaluation-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: var(--board-part-bg);
+            border: 12px solid var(--board-part-border);
+            border-radius: 8px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            padding: 30px 40px 40px 40px;
+            transition: all 0.2s;
+        }
+
+        /* Badge (comme dans les livrets) */
+        .badge {
+            display: inline-block;
+            background-color: var(--highlight-part);
+            color: white;
+            padding: 6px 20px;
+            font-weight: bold;
+            font-size: 0.85em;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        h1 {
+            color: var(--highlight-part);
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+
+        h2 {
+            color: var(--highlight-part);
+            text-align: center;
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #ffcc80;
+            display: inline-block;
+            width: auto;
+            padding-bottom: 5px;
+        }
+
+        .sous-titre {
+            text-align: center;
+            font-style: italic;
+            margin-bottom: 30px;
+            color: #5d4037;
+            font-weight: 500;
+        }
+
+        /* Grille principale (tableau responsive) */
+        .grille-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            margin: 20px 0;
+            font-size: 0.9rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .grille-table th,
+        .grille-table td {
+            border: 2px solid var(--board-sub-border);
+            padding: 12px 10px;
+            vertical-align: top;
+        }
+
+        .grille-table th {
+            background-color: #f0e6d2;
+            color: #2c1e12;
+            font-weight: bold;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .grille-table td {
+            background-color: #fffef7;
+        }
+
+        .col-critere {
+            font-weight: bold;
+            width: 35%;
+        }
+
+        .col-points {
+            text-align: center;
+            width: 12%;
+            font-weight: bold;
+            background-color: #fff3e0;
+        }
+
+        .col-competences {
+            width: 53%;
+        }
+
+        .total-row {
+            background-color: #fce4ec;
+            font-weight: bold;
+            font-size: 1.05rem;
+        }
+
+        .total-row td {
+            background-color: #fce4ec;
+            border-top: 4px solid #880e4f;
+        }
+
+        .mention {
+            margin-top: 25px;
+            background: #e3f2fd;
+            padding: 15px 20px;
+            border-left: 6px solid var(--highlight-sub);
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .btn-droits {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: #5d4037;
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85rem;
+            transition: 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .btn-droits:hover {
+            background: #3e2a24;
+            transform: scale(1.02);
+        }
+
+        /* Modal droits d'auteur (identique aux livrets) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #fff;
+            padding: 35px;
+            border-radius: 12px;
+            max-width: 750px;
+            position: relative;
+            margin: 20px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .close-modal {
+            position: absolute;
+            top: 12px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: #d32f2f;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Responsive */
+        @media (max-width: 850px) {
+            .evaluation-container {
+                padding: 20px 15px;
+            }
+            .grille-table th, .grille-table td {
+                padding: 8px 6px;
+            }
+            .col-critere {
+                width: 40%;
+            }
+            .col-competences {
+                width: 48%;
+            }
+        }
+
+        footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #5d4037;
+            border-top: 1px dashed #bc9a6c;
+            padding-top: 20px;
+        }
+
+        a {
+            color: #0277bd;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<button class="btn-droits" onclick="toggleModal(true)" aria-label="Droits d'auteur">⚖️ Droits d'auteur</button>
+
+<div class="modal" id="copyrightModal">
+    <div class="modal-content">
+        <button class="close-modal" onclick="toggleModal(false)">✖</button>
+        <h2 style="color:#d32f2f;">⚖️ Droits d'Auteur et Licence d'Utilisation</h2>
+        <p><strong>Auteur :</strong> Yann Merdy (yann.merdy@gmail.com) - Mai 2026</p>
+        <p><strong>Licence d'Utilisation Non Commerciale</strong><br>Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ('Avion en papier optimal') sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.</p>
+        <p><strong>Conditions :</strong><br>
+        <em>Utilisation Privée et Éducative (Autorisée) :</em> Vous êtes autorisé·e à utiliser, copier, modifier et distribuer ce code et son contenu uniquement à des fins personnelles, éducatives et non lucratives.<br>
+        <em>Utilisation Commerciale (Interdite) :</em> Toute utilisation, distribution, intégration ou reproduction du code ou du contenu (total ou partiel) à des fins commerciales, lucratives ou professionnelles est strictement interdite sans accord écrit préalable.<br>
+        <em>Attribution :</em> Toute reproduction ou modification doit conserver la mention de l'auteur originale (Yann Merdy) et la présente notice de droits d'auteur.</p>
+        <p>Contact : yann.merdy@gmail.com</p>
+    </div>
+</div>
+
+<div class="evaluation-container">
+    <div class="badge">📋 Grille d'évaluation finale</div>
+    <h1>Avion en papier optimal</h1>
+    <h2>Projet interdisciplinaire (Maths / Sciences / Technologie)</h2>
+    <div class="sous-titre">Grille de notation détaillée – <strong>100 points</strong> – compétences explicitées</div>
+
+    <table class="grille-table">
+        <thead>
+            <tr>
+                <th>Critère d'évaluation</th>
+                <th>Points</th>
+                <th>Compétences scientifiques et méthodologiques mises en œuvre</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 1 -->
+            <tr>
+                <td class="col-critere">1. Mesures initiales et calcul de la masse de la feuille A3</td>
+                <td class="col-points">5 pts</td>
+                <td class="col-competences">
+                    • Utiliser des instruments de mesure (règle, balance ou calcul) avec précision.<br>
+                    • Appliquer la formule $m = \text{grammage} \times S_{\text{feuille}}$ (conversion d'unités).<br>
+                    • Respecter les ordres de grandeur et la rigueur expérimentale.
+                </td>
+            </tr>
+            <!-- 2 -->
+            <tr>
+                <td class="col-critere">2. Recherche documentaire & comparaison de trois prototypes</td>
+                <td class="col-points">5 pts</td>
+                <td class="col-competences">
+                    • Savoir extraire des informations pertinentes sur des sites spécialisés (foldnfly, paperairplaneshq…).<br>
+                    • Classer et différencier les modèles selon leur géométrie (flèche, dièdre, surface).<br>
+                    • Formuler une première hypothèse sur les paramètres influençant la durée de vol.
+                </td>
+            </tr>
+            <!-- 3 -->
+            <tr>
+                <td class="col-critere">3. Construction de la règle de lancement (rampe normalisée)</td>
+                <td class="col-points">5 pts</td>
+                <td class="col-competences">
+                    • Lire et suivre un protocole de pliage complexe (étapes 1 à 4).<br>
+                    • Maîtriser la précision gestuelle (angles, replis).<br>
+                    • Adapter la rampe pour obtenir une inclinaison constante ($10^\circ$ – $15^\circ$).
+                </td>
+            </tr>
+            <!-- 4 -->
+            <tr>
+                <td class="col-critere">4. Mise en œuvre du protocole de lancement & chronométrage</td>
+                <td class="col-points">10 pts</td>
+                <td class="col-competences">
+                    • Appliquer une procédure standardisée (bras tendu, hauteur $h_0$, déclenchement synchrone).<br>
+                    • Travailler en équipe (chronométreur, lanceur, relevé).<br>
+                    • Identifier les sources d’erreur (déclenchement anticipé, courant d’air).<br>
+                    • Respecter la rigueur des mesures (5 lancers par prototype).
+                </td>
+            </tr>
+            <!-- 5 -->
+            <tr>
+                <td class="col-critere">5. Relevé des caractéristiques géométriques des prototypes</td>
+                <td class="col-points">10 pts</td>
+                <td class="col-competences">
+                    • Mesurer l'envergure $b$, la corde moyenne $\bar{c}$, la surface alaire $S_{\text{aile}}$.<br>
+                    • Déterminer l'angle de flèche $\phi$ et le dièdre.<br>
+                    • Localiser le centre de gravité (équilibrage) et exprimer sa position en pourcentage de la corde.<br>
+                    • Utiliser les formules $S_{\text{aile}} \approx \frac{b \times L}{2}$ et $\bar{c} = S_{\text{aile}} / b$.
+                </td>
+            </tr>
+            <!-- 6 -->
+            <tr>
+                <td class="col-critere">6. Compréhension des concepts aérodynamiques (portance, incidence, décrochage)</td>
+                <td class="col-points">10 pts</td>
+                <td class="col-competences">
+                    • Expliquer qualitativement l'origine de la portance (déviation de l'air, principe action/réaction).<br>
+                    • Définir l'angle d'incidence $\alpha$ et son effet sur la portance / traînée.<br>
+                    • Décrire le phénomène de décrochage et son seuil critique.<br>
+                    • Relier cambrure et incidence pour optimiser la finesse.
+                </td>
+            </tr>
+            <!-- 7 -->
+            <tr>
+                <td class="col-critere">7. Optimisation mathématique de la surface alaire $S_{\text{aile}}(x)$</td>
+                <td class="col-points">15 pts</td>
+                <td class="col-competences">
+                    • Établir l'expression littérale de $S_{\text{aile}}$ en fonction de $x$, $L$ et $\ell$ (géométrie du pliage).<br>
+                    • Étudier la fonction (dérivée, signe, tableau de variation).<br>
+                    • Déterminer la valeur $x_{opt}$ qui maximise la surface.<br>
+                    • Vérifier la cohérence avec les contraintes physiques (respect des limites de la feuille).<br>
+                    • Rédiger une solution rigoureuse (calcul littéral, fraction irréductible).
+                </td>
+            </tr>
+            <!-- 8 -->
+            <tr>
+                <td class="col-critere">8. Traitement statistique des vols : moyenne & écart-type</td>
+                <td class="col-points">10 pts</td>
+                <td class="col-competences">
+                    • Calculer la moyenne des durées et des distances pour chaque prototype.<br>
+                    • Calculer l'écart-type (formule $\sigma = \sqrt{\frac{\sum (x_i - \bar{x})^2}{n}}$) pour estimer la répétabilité.<br>
+                    • Interpréter les résultats : quel prototype est le plus stable ? Le plus performant ?<br>
+                    • Présenter les données dans un tableau clair et structuré.
+                </td>
+            </tr>
+            <!-- 9 -->
+            <tr>
+                <td class="col-critere">9. Modélisation sur tableur : $T = k \sqrt{S_{\text{aile}}/m}$</td>
+                <td class="col-points">10 pts</td>
+                <td class="col-competences">
+                    • Utiliser un tableur (Excel, Sheets) pour créer un nuage de points $(\frac{S}{m} \, , \, T)$.<br>
+                    • Ajuster la constante $k$ pour faire coïncider la courbe théorique avec les points expérimentaux.<br>
+                    • Commenter l'adéquation modèle / expérience (analyser les écarts, proposer des causes).<br>
+                    • Démontrer une capacité à extraire une relation mathématique à partir de données réelles.
+                </td>
+            </tr>
+            <!-- 10 -->
+            <tr>
+                <td class="col-critere">10. Rapport final écrit (synthèse, rigueur rédactionnelle)</td>
+                <td class="col-points">10 pts</td>
+                <td class="col-competences">
+                    • Structurer le document (introduction, développement, conclusion, annexes).<br>
+                    • Utiliser un vocabulaire scientifique adapté (portance, incidence, CG, envergure, etc.).<br>
+                    • Intégrer les schémas cotés, les tableaux de mesures et la capture d'écran du tableur.<br>
+                    • Soigner l'orthographe, la mise en page et la clarté des raisonnements.<br>
+                    • Rédiger une conclusion répondant à la problématique initiale.
+                </td>
+            </tr>
+            <!-- 11 -->
+            <tr>
+                <td class="col-critere">11. Présentation orale & défense devant le groupe</td>
+                <td class="col-points">10 pts</td>
+                <td class="col-competences">
+                    • Synthétiser le projet en 5 minutes (diaporama ou support visuel).<br>
+                    • Répartir la parole entre les membres de l’équipe.<br>
+                    • Argumenter avec les données chiffrées pour justifier le "prototype optimal".<br>
+                    • Répondre aux questions du jury avec aisance et esprit critique.<br>
+                    • Faire preuve de capacités de communication scientifique.
+                </td>
+            </tr>
+            <!-- Ligne total -->
+            <tr class="total-row">
+                <td><strong>📌 TOTAL GÉNÉRAL (sur 100 points)</strong></td>
+                <td class="col-points"><strong>100 pts</strong></td>
+                <td><em>Note finale = somme des points obtenus dans chaque rubrique</em></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="mention">
+        <strong>🔍 Barème indicatif de conversion :</strong><br>
+        • 90 – 100 points : Excellence (maîtrise complète, démarche innovante)<br>
+        • 75 – 89 points : Très bonne maîtrise (quelques réserves mineures)<br>
+        • 60 – 74 points : Satisfaisant (compétences essentiellement acquises)<br>
+        • 45 – 59 points : Fragile, des lacunes à combler<br>
+        • &lt; 45 points : Insuffisant, travail à reprendre<br>
+        <br>
+        ⚙️ <strong>Compétences transversales évaluées :</strong> autonomie, travail en équipe, respect des délais, esprit d’initiative et précision expérimentale.
+    </div>
+
+    <footer>
+        © Yann Merdy – Projet "Avion en papier optimal" – Licence éducative non commerciale.<br>
+        Document évaluateur conforme au référentiel de cycle 4 / 2nde (Mathématiques, Physique-Chimie, Technologie).
+    </footer>
+</div>
+
+<script>
+    // Gestion de la modale des droits d'auteur
+    function toggleModal(show) {
+        const modal = document.getElementById('copyrightModal');
+        if (show) {
+            modal.style.display = 'flex';
+        } else {
+            modal.style.display = 'none';
+        }
+    }
+
+    // Fermer la modale avec la touche Echap
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            toggleModal(false);
+        }
+    });
+
+    // Aucun polyfill .fill() utilisé dans cette page – interdiction respectée.
+    // Script minimaliste garantissant la compatibilité sans ajout de library externe.
+</script>
+<script>
+    (function() {
+        const btn = document.createElement('a');
+        btn.href = 'AVION_PAPIER_SOMMAIRE.html';
+        btn.innerHTML = '🏠 Sommaire';
+        btn.className = 'btn-sommaire';
+        btn.style.position = 'fixed';
+        btn.style.top = '15px';
+        btn.style.left = '15px';
+        btn.style.zIndex = '1000';
+        btn.style.background = '#1565c0';
+        btn.style.color = 'white';
+        btn.style.padding = '10px 20px';
+        btn.style.borderRadius = '5px';
+        btn.style.fontWeight = 'bold';
+        btn.style.textDecoration = 'none';
+        document.body.appendChild(btn);
+    })();
+</script>
+
+</body>
+</html>
