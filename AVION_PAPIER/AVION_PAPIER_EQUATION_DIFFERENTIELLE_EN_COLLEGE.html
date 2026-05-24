@@ -651,7 +651,7 @@
             if (times.length > 300) break;
         }
 
-        let html = `°<td>°<td><th>⏱️ Temps (s)</th><th>📊 Vitesse (m/s)</th></tr>`;
+        let html = `<table><tr><th>⏱️ Temps (s)</th><th>📊 Vitesse (m/s)</th></tr>`;
         let maxDisplay = Math.min(times.length, 12);
         for (let i = 0; i < maxDisplay; i++) {
             html += `<tr><td>${times[i].toFixed(2)}</td><td>${velocities[i].toFixed(3)}</td></tr>`;
