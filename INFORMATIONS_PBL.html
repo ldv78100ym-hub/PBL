@@ -105,19 +105,10 @@
             border-radius: 30px;
         }
 
-        .breadcrumb .root {
-            color: #475569;
-            text-decoration: none;
-            transition: 0.2s;
-        }
-        .breadcrumb .root:hover {
-            color: #3b82f6;
-        }
-
         .tabs {
             display: flex;
             gap: 0.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             flex-wrap: wrap;
         }
 
@@ -160,6 +151,54 @@
         }
         .tab-btn.active .badge-tab {
             background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* ----- PRÉSENTATION DU PROJET ----- */
+        .project-presentation {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            border-radius: 20px;
+            padding: 1.2rem 1.8rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        }
+
+        .project-presentation h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 0.3rem;
+        }
+
+        .project-presentation .subtitle {
+            font-size: 0.9rem;
+            color: #475569;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .project-presentation .desc {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #334155;
+        }
+
+        .project-presentation .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.6rem;
+        }
+
+        .project-presentation .tags span {
+            background: rgba(59, 130, 246, 0.08);
+            color: #3b82f6;
+            padding: 0.15rem 0.7rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border: 1px solid rgba(59, 130, 246, 0.06);
         }
 
         .search-wrap {
@@ -362,6 +401,9 @@
                 font-size: 0.8rem;
                 padding: 0.4rem 0.8rem;
             }
+            .project-presentation {
+                padding: 1rem;
+            }
         }
     </style>
 </head>
@@ -378,23 +420,29 @@
             </p>
         </header>
 
+        <!-- FIL D'ARIANE -->
         <nav class="breadcrumb" id="breadcrumb">
-            <a href="#" class="root" data-tab="all">📁 Tous les dossiers</a>
-            <span class="separator">›</span>
-            <span class="current" id="currentFolder">Tous</span>
+            <span class="current" id="currentFolder">ARC</span>
         </nav>
 
+        <!-- ONGLETS (sans "Tous") -->
         <div class="tabs" id="tabContainer">
-            <button class="tab-btn active" data-tab="all">📂 Tous <span class="badge-tab" id="badgeAll">0</span></button>
-            <button class="tab-btn" data-tab="ARC">⚙️ ARC <span class="badge-tab" id="badgeARC">0</span></button>
+            <button class="tab-btn active" data-tab="ARC">⚙️ ARC <span class="badge-tab" id="badgeARC">0</span></button>
             <button class="tab-btn" data-tab="AVION_PAPIER">✈️ Avion papier <span class="badge-tab" id="badgeAVION">0</span></button>
             <button class="tab-btn" data-tab="MOTO_DRONE">🏍️ Moto-Drone <span class="badge-tab" id="badgeMOTO">0</span></button>
         </div>
 
+        <!-- PRÉSENTATION DU PROJET (affichée dynamiquement) -->
+        <div id="projectPresentation" class="project-presentation">
+            <!-- Rempli par JavaScript -->
+        </div>
+
+        <!-- RECHERCHE -->
         <div class="search-wrap">
             <input type="text" id="searchInput" placeholder="🔍  Rechercher un document (titre, type, mot‑clé)…" />
         </div>
 
+        <!-- GRILLE -->
         <div class="doc-grid" id="docGrid">
             <div class="status">
                 <div class="spinner"></div>
@@ -417,9 +465,40 @@
             const GITHUB_API_BASE = 'https://api.github.com/repos/ldv78100ym-hub/PBL/contents/';
             const BASE_URL = 'https://ldv78100ym-hub.github.io/PBL/';
 
+            // ----- PRÉSENTATIONS DES PROJETS -----
+            const PRESENTATIONS = {
+                'ARC': {
+                    title: '⚙️ Projet ARC – Modélisation par équations différentielles',
+                    subtitle: 'Mathématiques · Algorithmique · Physique · SVT',
+                    description: `Un projet de 6 séances pour initier les élèves à la modélisation mathématique. 
+                    Ils découvrent les équations différentielles à travers des situations concrètes (croissance, circuits électriques, proie-prédateur) 
+                    et apprennent à les résoudre numériquement avec tableur ou Python. 
+                    L’accent est mis sur la démarche scientifique, l’esprit critique et le travail collaboratif. 
+                    Une approche qui donne du sens aux mathématiques et prépare aux études supérieures.`,
+                    tags: ['Modélisation', 'Numérique', 'Équations différentielles', 'Python', 'Tableur']
+                },
+                'AVION_PAPIER': {
+                    title: '✈️ Projet Avion en papier – Démarche expérimentale et statistiques',
+                    subtitle: 'Physique · Mathématiques · Technologie',
+                    description: `Un projet de 5 séances ludique et exigeant. Les élèves fabriquent des avions en papier, 
+                    mesurent leurs performances (distance, durée de vol) et analysent les données avec des outils statistiques. 
+                    Ils optimisent leur modèle en modifiant les paramètres (envergure, poids, angle) et mènent une véritable démarche d’ingénierie. 
+                    Ce projet développe la rigueur expérimentale, la gestion de données et l’aisance orale lors de la restitution finale.`,
+                    tags: ['Expérimentation', 'Statistiques', 'Optimisation', 'Tableur', 'Présentation orale']
+                },
+                'MOTO_DRONE': {
+                    title: '🏍️ Projet Moto‑Drone – Pluritechnologie et programmation',
+                    subtitle: 'Mécanique · Électronique · Programmation · Régulation',
+                    description: `Un projet fédérateur de 6 séances qui associe mécanique, électronique et programmation. 
+                    Les élèves conçoivent un véhicule hybride mêlant moto et drone, en abordant la physique du vol, 
+                    la régulation PID, la conception de châssis et la programmation embarquée. 
+                    Ce projet pluridisciplinaire prépare aux métiers de l’ingénierie et de la mobilité durable, 
+                    tout en développant la persévérance et l’esprit d’équipe.`,
+                    tags: ['Programmation', 'Arduino', 'Python', 'Mécanique', 'Électronique', 'Régulation']
+                }
+            };
+
             // ----- DICTIONNAIRE DES RÉSUMÉS "VENDEURS" -----
-            // Chaque description met en avant les bénéfices pédagogiques, les compétences, la transdisciplinarité,
-            // les outils, et l'engagement des élèves.
             const SUMMARY_MAP = {
                 // ---- ARC ----
                 'ARC_SOMMAIRE.html': {
@@ -440,7 +519,7 @@
                 },
                 'ARC_SEANCE_4.html': {
                     type: 'Séance 4',
-                    description: '🔄 Systèmes proie‑prédateur : simulation interactive. Les élèves manipul nt un simulateur, observent les cycles et ajustent les paramètres. L’occasion d’aborder la complexité des écosystèmes et de donner du sens aux équations différentielles. Travail en groupe, oral et argumentation.'
+                    description: '🔄 Systèmes proie‑prédateur : simulation interactive. Les élèves manipulent un simulateur, observent les cycles et ajustent les paramètres. L’occasion d’aborder la complexité des écosystèmes et de donner du sens aux équations différentielles. Travail en groupe, oral et argumentation.'
                 },
                 'ARC_SEANCE_5.html': {
                     type: 'Séance 5',
@@ -569,29 +648,22 @@
             const searchInput = document.getElementById('searchInput');
             const tabBtns = document.querySelectorAll('.tab-btn');
             const currentFolderSpan = document.getElementById('currentFolder');
-            const breadcrumbRoot = document.querySelector('.breadcrumb .root');
+            const projectPresentationDiv = document.getElementById('projectPresentation');
 
-            const badgeAll = document.getElementById('badgeAll');
             const badgeARC = document.getElementById('badgeARC');
             const badgeAVION = document.getElementById('badgeAVION');
             const badgeMOTO = document.getElementById('badgeMOTO');
 
             let allDocs = [];
-            let filteredDocs = [];
-            let currentTab = 'all';
+            let currentTab = 'ARC'; // par défaut, pas de "Tous"
 
-            // ----- GÉNÉRATION D'UN RÉSUMÉ (avec fallback engageant) -----
+            // ----- GÉNÉRATION D'UN RÉSUMÉ (avec fallback) -----
             function getSummary(name, folder) {
                 if (SUMMARY_MAP[name]) {
                     return SUMMARY_MAP[name];
                 }
-
-                // Résumé générique mais incitatif pour les fichiers non répertoriés
-                let s = name
-                    .replace(/\.html$/i, '')
-                    .replace(/\.pdf$/i, '')
-                    .replace(/_/g, ' ');
-
+                // Résumé générique incitatif
+                let s = name.replace(/\.html$/i, '').replace(/\.pdf$/i, '').replace(/_/g, ' ');
                 const prefixes = ['ARC ', 'AVION PAPIER ', 'MOTO DRONE '];
                 for (const p of prefixes) {
                     if (s.toUpperCase().startsWith(p)) {
@@ -599,11 +671,9 @@
                         break;
                     }
                 }
-
                 const lower = s.toLowerCase();
                 let type = 'Document';
                 let desc = `Découvrez ce document du projet ${folder}. Il apporte des éclairages et des méthodes pour mener à bien votre projet en classe. N’hésitez pas à l’adapter à vos élèves !`;
-
                 if (lower.includes('sommaire')) {
                     type = 'Sommaire';
                     desc = `Structure et organisation du projet ${folder}. Un guide pour vous repérer et planifier les séances.`;
@@ -636,7 +706,6 @@
                 } else {
                     desc = `Document du projet ${folder} : une ressource supplémentaire pour enrichir votre enseignement par projet.`;
                 }
-
                 return { type, description: desc };
             }
 
@@ -669,7 +738,6 @@
                                 }));
                         })
                     );
-
                     return results.flat();
                 } catch (err) {
                     console.error('Erreur lors de la récupération des documents:', err);
@@ -677,14 +745,28 @@
                 }
             }
 
-            // ----- FILTRAGE ET RENDU -----
+            // ----- AFFICHAGE DE LA PRÉSENTATION -----
+            function renderPresentation(folder) {
+                const pres = PRESENTATIONS[folder];
+                if (!pres) {
+                    projectPresentationDiv.innerHTML = '';
+                    return;
+                }
+                const tagsHtml = pres.tags.map(t => `<span>${t}</span>`).join('');
+                projectPresentationDiv.innerHTML = `
+                    <h2>${pres.title}</h2>
+                    <div class="subtitle">${pres.subtitle}</div>
+                    <div class="desc">${pres.description}</div>
+                    <div class="tags">${tagsHtml}</div>
+                `;
+            }
+
+            // ----- FILTRAGE ET RENDU (uniquement pour le projet actif) -----
             function filterAndRender() {
                 const query = searchInput.value.toLowerCase().trim();
 
-                let docs = allDocs;
-                if (currentTab !== 'all') {
-                    docs = docs.filter(d => d.folder === currentTab);
-                }
+                // Filtrer les documents du projet courant
+                let docs = allDocs.filter(d => d.folder === currentTab);
 
                 if (query) {
                     docs = docs.filter(d => {
@@ -696,17 +778,14 @@
                     });
                 }
 
-                filteredDocs = docs;
-                render(filteredDocs);
-                updateBadges();
+                render(docs);
 
-                const tabLabel = REPOS.find(r => r.folder === currentTab)?.label || 'Tous';
-                currentFolderSpan.textContent = query ? `${tabLabel} (filtré)` : tabLabel;
-                if (currentTab === 'all') {
-                    breadcrumbRoot.textContent = '📁 Tous les dossiers';
-                } else {
-                    breadcrumbRoot.textContent = `📁 ${tabLabel}`;
-                }
+                // Mettre à jour le fil d'ariane
+                const tabLabel = REPOS.find(r => r.folder === currentTab)?.label || currentTab;
+                currentFolderSpan.textContent = tabLabel;
+
+                // Mettre à jour les badges
+                updateBadges();
             }
 
             function render(docs) {
@@ -715,7 +794,7 @@
                         <div class="status">
                             <div style="font-size:2rem; margin-bottom:0.5rem;">🔍</div>
                             <div>Aucun document ne correspond à votre sélection.</div>
-                            <div style="font-size:0.9rem; color:#94a3b8; margin-top:0.5rem;">Essayez de modifier votre recherche ou choisissez un autre onglet.</div>
+                            <div style="font-size:0.9rem; color:#94a3b8; margin-top:0.5rem;">Essayez de modifier votre recherche ou choisissez un autre projet.</div>
                         </div>
                     `;
                     return;
@@ -756,22 +835,22 @@
             }
 
             function updateBadges() {
-                const total = allDocs.length;
                 const arc = allDocs.filter(d => d.folder === 'ARC').length;
                 const avion = allDocs.filter(d => d.folder === 'AVION_PAPIER').length;
                 const moto = allDocs.filter(d => d.folder === 'MOTO_DRONE').length;
-
-                badgeAll.textContent = total;
                 badgeARC.textContent = arc;
                 badgeAVION.textContent = avion;
                 badgeMOTO.textContent = moto;
             }
 
+            // ----- CHANGEMENT D'ONGLET -----
             function setTab(tabId) {
                 currentTab = tabId;
                 tabBtns.forEach(btn => {
                     btn.classList.toggle('active', btn.dataset.tab === tabId);
                 });
+                renderPresentation(tabId);
+                // Réinitialiser la recherche ? On garde le texte mais on refiltre
                 filterAndRender();
             }
 
@@ -792,7 +871,16 @@
                     });
 
                     updateBadges();
-                    setTab('all');
+                    // Activer le premier onglet (ARC) par défaut
+                    const defaultTab = 'ARC';
+                    // S'assurer que le bouton ARC est actif
+                    tabBtns.forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.tab === defaultTab);
+                    });
+                    renderPresentation(defaultTab);
+                    currentTab = defaultTab;
+                    filterAndRender();
+
                     if (searchInput.value.trim()) {
                         filterAndRender();
                     }
@@ -897,11 +985,6 @@
                 debounceTimer = setTimeout(() => {
                     filterAndRender();
                 }, 200);
-            });
-
-            breadcrumbRoot.addEventListener('click', function(e) {
-                e.preventDefault();
-                setTab('all');
             });
 
             // ----- LANCEMENT -----
