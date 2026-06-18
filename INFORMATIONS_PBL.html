@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PBL · Documents par sujet</title>
+
+    <!-- MathJax 3 (LaTeX) -->
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async>
+    </script>
+
+    <style>
+        /* ----- RESET & GLOBAL (fond clair) ----- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            background: #f5f7fc;
+            color: #1e293b;
+            min-height: 100vh;
+            padding: 2rem 1.5rem 4rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            padding: 1.5rem 0 1.5rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            margin-bottom: 2rem;
+        }
+
+        header h1 {
+            font-size: 2.6rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            color: #1e293b;
+        }
+
+        header h1 span {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        header p {
+            color: #475569;
+            font-size: 1.05rem;
+            margin-top: 0.2rem;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: #64748b;
+            padding: 0.6rem 1rem;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(4px);
+            border-radius: 40px;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            flex-wrap: wrap;
+        }
+
+        .breadcrumb .separator {
+            color: #94a3b8;
+        }
+
+        .breadcrumb .current {
+            font-weight: 600;
+            color: #1e293b;
+            background: #e2e8f0;
+            padding: 0.1rem 0.8rem;
+            border-radius: 30px;
+        }
+
+        .breadcrumb .root {
+            color: #475569;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        .breadcrumb .root:hover {
+            color: #3b82f6;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 0.6rem 1.6rem;
+            border-radius: 40px;
+            border: none;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #475569;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        .tab-btn:hover {
+            background: #ffffff;
+            border-color: #b1c5e0;
+            transform: translateY(-1px);
+        }
+
+        .tab-btn.active {
+            background: #1e293b;
+            color: #f8fafc;
+            border-color: #1e293b;
+            box-shadow: 0 4px 12px rgba(30, 41, 59, 0.15);
+        }
+
+        .tab-btn .badge-tab {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            padding: 0 0.5rem;
+            font-size: 0.7rem;
+            margin-left: 0.4rem;
+            font-weight: 400;
+        }
+        .tab-btn.active .badge-tab {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .search-wrap {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .search-wrap input {
+            width: 100%;
+            max-width: 450px;
+            padding: 0.7rem 1.5rem;
+            border-radius: 60px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(4px);
+            color: #1e293b;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.25s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        }
+
+        .search-wrap input::placeholder {
+            color: #94a3b8;
+        }
+        .search-wrap input:focus {
+            border-color: #3b82f6;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.08);
+        }
+
+        .doc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .doc-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            border-radius: 20px;
+            padding: 1.5rem 1.6rem;
+            transition: 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
+        }
+
+        .doc-card:hover {
+            transform: translateY(-4px);
+            border-color: #b1c5e0;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
+        }
+
+        .doc-card .folder {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #3b82f6;
+            background: rgba(59, 130, 246, 0.08);
+            padding: 0.2rem 0.8rem;
+            border-radius: 40px;
+            display: inline-block;
+            align-self: flex-start;
+            margin-bottom: 0.6rem;
+            border: 1px solid rgba(59, 130, 246, 0.06);
+        }
+
+        .doc-card .doc-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: 0.4rem;
+            word-break: break-word;
+            color: #0f172a;
+        }
+
+        .doc-card .doc-name a {
+            color: inherit;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .doc-card .doc-name a:hover {
+            color: #3b82f6;
+        }
+
+        .doc-card .summary {
+            font-size: 0.92rem;
+            line-height: 1.5;
+            color: #334155;
+            flex: 1;
+            margin: 0.2rem 0 0.9rem;
+        }
+
+        .doc-card .summary .doc-type {
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.04);
+            padding: 0.05rem 0.6rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: #1e293b;
+            margin-right: 0.3rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .doc-card .summary .desc {
+            display: block;
+            margin-top: 0.3rem;
+        }
+
+        .doc-card .meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.78rem;
+            color: #64748b;
+            border-top: 1px solid rgba(0, 0, 0, 0.04);
+            padding-top: 0.8rem;
+            margin-top: 0.2rem;
+        }
+
+        .doc-card .meta .size {
+            background: rgba(0, 0, 0, 0.02);
+            padding: 0.15rem 0.7rem;
+            border-radius: 30px;
+        }
+
+        .doc-card .meta .link-icon {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            color: #475569;
+            text-decoration: none;
+            transition: 0.2s;
+            font-weight: 500;
+        }
+
+        .doc-card .meta .link-icon:hover {
+            color: #3b82f6;
+        }
+
+        .doc-card .meta .link-icon svg {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .status {
+            text-align: center;
+            padding: 4rem 1rem;
+            color: #64748b;
+            font-size: 1.05rem;
+            grid-column: 1 / -1;
+        }
+
+        .status .spinner {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(0, 0, 0, 0.06);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .status .error-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 1.2rem 0.8rem 3rem;
+            }
+            header h1 {
+                font-size: 2rem;
+            }
+            .doc-grid {
+                grid-template-columns: 1fr;
+            }
+            .tabs {
+                justify-content: center;
+            }
+            .breadcrumb {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bgCanvas"></canvas>
+
+    <div class="container">
+        <header>
+            <h1>📚 PBL · <span>Documents</span></h1>
+            <p>Projets <strong>ARC</strong>, <strong>Avion en papier</strong> &amp; <strong>Moto-Drone</strong></p>
+            <p style="margin-top:0.5rem; color:#475569; font-size:0.95rem; max-width:600px; margin-left:auto; margin-right:auto;">
+                Des ressources clés en main pour faire vivre l’Apprentissage Par Projet dans vos classes.
+            </p>
+        </header>
+
+        <nav class="breadcrumb" id="breadcrumb">
+            <a href="#" class="root" data-tab="all">📁 Tous les dossiers</a>
+            <span class="separator">›</span>
+            <span class="current" id="currentFolder">Tous</span>
+        </nav>
+
+        <div class="tabs" id="tabContainer">
+            <button class="tab-btn active" data-tab="all">📂 Tous <span class="badge-tab" id="badgeAll">0</span></button>
+            <button class="tab-btn" data-tab="ARC">⚙️ ARC <span class="badge-tab" id="badgeARC">0</span></button>
+            <button class="tab-btn" data-tab="AVION_PAPIER">✈️ Avion papier <span class="badge-tab" id="badgeAVION">0</span></button>
+            <button class="tab-btn" data-tab="MOTO_DRONE">🏍️ Moto-Drone <span class="badge-tab" id="badgeMOTO">0</span></button>
+        </div>
+
+        <div class="search-wrap">
+            <input type="text" id="searchInput" placeholder="🔍  Rechercher un document (titre, type, mot‑clé)…" />
+        </div>
+
+        <div class="doc-grid" id="docGrid">
+            <div class="status">
+                <div class="spinner"></div>
+                <div>Chargement des documents…</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ----- CONFIGURATION -----
+            const REPOS = [
+                { folder: 'ARC', label: 'ARC' },
+                { folder: 'AVION_PAPIER', label: 'Avion en papier' },
+                { folder: 'MOTO_DRONE', label: 'Moto-Drone' }
+            ];
+
+            const GITHUB_API_BASE = 'https://api.github.com/repos/ldv78100ym-hub/PBL/contents/';
+            const BASE_URL = 'https://ldv78100ym-hub.github.io/PBL/';
+
+            // ----- DICTIONNAIRE DES RÉSUMÉS "VENDEURS" -----
+            // Chaque description met en avant les bénéfices pédagogiques, les compétences, la transdisciplinarité,
+            // les outils, et l'engagement des élèves.
+            const SUMMARY_MAP = {
+                // ---- ARC ----
+                'ARC_SOMMAIRE.html': {
+                    type: 'Sommaire',
+                    description: '📌 Vision d’ensemble du projet ARC : 6 séances pour initier les élèves à la modélisation par équations différentielles. Vous trouverez le fil conducteur, les objectifs disciplinaires (maths, physique, SVT) et le calendrier. Un document qui vous permettra de vous projeter et d’organiser sereinement votre année.'
+                },
+                'ARC_SEANCE_1.html': {
+                    type: 'Séance 1',
+                    description: '🚀 Découverte active de la modélisation exponentielle. Les élèves explorent la croissance d’une population, expérimentent avec un tableur et construisent leur première représentation graphique. Objectif : susciter la curiosité et montrer la puissance des maths pour décrire le réel. Compétences : modélisation, raisonnement, travail en binôme.'
+                },
+                'ARC_SEANCE_2.html': {
+                    type: 'Séance 2',
+                    description: '💻 Mise en œuvre de la méthode d’Euler sur tableur. Les élèves programment pas à pas la résolution numérique d’une équation différentielle. L’occasion de lier algorithmique et mathématiques, de développer l’autonomie et la pensée computationnelle. Un vrai moment de fierté quand ils voient la courbe s’afficher !'
+                },
+                'ARC_SEANCE_3.html': {
+                    type: 'Séance 3',
+                    description: '🌱 Modèle logistique avec saturation : comparaison analytique / numérique. Les élèves confrontent leurs résultats à une solution exacte, découvrent les limites d’un modèle et apprennent à critiquer une modélisation. Une étape clé pour développer l’esprit critique et la rigueur scientifique.'
+                },
+                'ARC_SEANCE_4.html': {
+                    type: 'Séance 4',
+                    description: '🔄 Systèmes proie‑prédateur : simulation interactive. Les élèves manipul nt un simulateur, observent les cycles et ajustent les paramètres. L’occasion d’aborder la complexité des écosystèmes et de donner du sens aux équations différentielles. Travail en groupe, oral et argumentation.'
+                },
+                'ARC_SEANCE_5.html': {
+                    type: 'Séance 5',
+                    description: '⚡ Circuit électrique RLC : modélisation du second ordre. Les élèves relient les maths à la physique, résolvent une équation avec un tableur ou Python, puis comparent avec des mesures réelles (simulation). Une belle synergie entre disciplines, qui prépare aux études supérieures.'
+                },
+                'ARC_SEANCE_6.html': {
+                    type: 'Séance 6',
+                    description: '🎤 Synthèse et évaluation : chaque groupe présente son projet de modélisation. Auto‑évaluation, co‑évaluation et retour de l’enseignant. Un temps fort qui valorise le travail accompli, développe l’aisance orale et la capacité à restituer une démarche scientifique.'
+                },
+                'ARC_BAREME.html': {
+                    type: 'Barème',
+                    description: '📊 Grille d’évaluation par compétences : modélisation, résolution numérique, analyse critique, collaboration, communication. Transparente et formative, elle permet aux élèves de se situer et de progresser. Un outil précieux pour une évaluation juste et motivante.'
+                },
+                'ARC_EQUATION_DIFFERENTIELLE.html': {
+                    type: 'Ressource',
+                    description: '📖 Fiche synthétique sur les équations différentielles : définitions, méthodes (Euler, Runge‑Kutta), exemples commentés. Une aide pour les élèves en difficulté, mais aussi pour l’enseignant qui souhaite approfondir. À distribuer sans modération !'
+                },
+                'ARC_EXEMPLE_CALCUL.html': {
+                    type: 'Exemple',
+                    description: '✏️ Un calcul pas‑à‑pas commenté, d’un problème concret à la solution numérique. Les élèves peuvent s’y référer pour structurer leur propre démarche. Un modèle de rigueur qui les rassure et les guide.'
+                },
+                'ARC_PRESENTATION.html': {
+                    type: 'Présentation',
+                    description: '📽️ Diaporama de présentation du projet ARC (contexte, objectifs, organisation). Idéal pour convaincre vos collègues ou informer les parents. Montre la plus‑value de l’approche PBL et son ancrage dans les programmes.'
+                },
+                'ARC_OUTILS.html': {
+                    type: 'Outils',
+                    description: '🛠️ Liste des outils numériques (Python, NumPy, Matplotlib, tableur) avec des tutoriels courts. Permet aux élèves de prendre en main les logiciels rapidement, et aux enseignants de gagner un temps précieux.'
+                },
+                'ARC_V0.html': {
+                    type: 'Version initiale',
+                    description: '📝 Première ébauche du projet : idées, pistes, questionnements. Un document de travail qui montre la genèse du projet et peut inspirer d’autres adaptations. L’occasion de voir que la conception est itérative et collaborative.'
+                },
+                'ARC_COMMUNICATION_PREPARATOIRE.html': {
+                    type: 'Communication',
+                    description: '📬 Lettre aux familles et aux élèves pour présenter le projet ARC, ses enjeux et le calendrier. Favorise l’implication des parents et clarifie les attendus. Un outil essentiel pour instaurer une relation de confiance.'
+                },
+
+                // ---- AVION_PAPIER ----
+                'AVION_PAPIER_SOMMAIRE.html': {
+                    type: 'Sommaire',
+                    description: '📌 Structure complète du projet « Avion en papier » : 5 séances pour aborder la démarche expérimentale, les statistiques et la physique du vol. Un projet ludique mais exigeant, qui donne du sens aux mathématiques et à la physique.'
+                },
+                'AVION_PAPIER_SEANCE_1.html': {
+                    type: 'Séance 1',
+                    description: '✈️ Lancement du projet : les élèves fabriquent plusieurs modèles, mesurent distances et temps de vol. Découverte des paramètres influents (envergure, poids, angle). Une activité concrète qui met en jeu la mesure, l’observation et la formulation d’hypothèses.'
+                },
+                'AVION_PAPIER_SEANCE_2.html': {
+                    type: 'Séance 2',
+                    description: '📐 Conception et expérimentation : les élèves testent différentes configurations, collectent des données et les organisent dans un tableur. Développement de la rigueur expérimentale et de la gestion de données. Un vrai travail de chercheur en herbe !'
+                },
+                'AVION_PAPIER_SEANCE_3.html': {
+                    type: 'Séance 3',
+                    description: '📊 Traitement statistique des résultats : moyenne, médiane, écart‑type, boîte à moustaches. Les élèves interprètent les données, comparent les modèles et tirent des conclusions. Une approche concrète des statistiques qui donne du sens aux indicateurs.'
+                },
+                'AVION_PAPIER_SEANCE_4.html': {
+                    type: 'Séance 4',
+                    description: '🔧 Optimisation du modèle : modification des paramètres et analyse des effets. Mise en place d’un protocole rigoureux (variables contrôlées). Les élèves expérimentent la démarche d’ingénierie et comprennent l’importance de la reproductibilité.'
+                },
+                'AVION_PAPIER_SEANCE_5.html': {
+                    type: 'Séance 5',
+                    description: '🎤 Restitution orale : chaque groupe présente ses résultats, ses graphiques, ses conclusions. Un exercice d’expression orale et d’argumentation scientifique. Valorisation du travail et développement de la confiance en soi.'
+                },
+                'AVION_PAPIER_BAREME.html': {
+                    type: 'Barème',
+                    description: '📊 Grille d’évaluation : qualité de la démarche expérimentale, analyse des données, présentation orale, travail d’équipe. Une évaluation équilibrée qui encourage la persévérance et la collaboration.'
+                },
+                'AVION_PAPIER_PRESENTATION.html': {
+                    type: 'Présentation',
+                    description: '📽️ Diaporama de présentation du projet Avion en papier : intérêt pédagogique, organisation, liens avec les programmes. Idéal pour convaincre et recruter des collègues intéressés par la démarche PBL.'
+                },
+
+                // ---- MOTO_DRONE ----
+                'MOTO_DRONE_SOMMAIRE.html': {
+                    type: 'Sommaire',
+                    description: '📌 Présentation du projet pluritechnologique « Moto‑Drone » : 6 séances pour allier mécanique, électronique, programmation et régulation. Un projet fédérateur qui prépare aux métiers de l’ingénierie et de la mobilité durable.'
+                },
+                'MOTO_DRONE_SEANCE_1.html': {
+                    type: 'Séance 1',
+                    description: '🚁 Introduction au monde des drones : composants, principes de vol, capteurs. Les élèves découvrent les enjeux de la mobilité aérienne et les défis techniques. Une motivation immédiate pour aborder la physique et la technologie.'
+                },
+                'MOTO_DRONE_SEANCE_2.html': {
+                    type: 'Séance 2',
+                    description: '⚙️ Physique du vol : portance, poussée, moments. Les élèves modélisent les forces et simulent le comportement d’un drone. Lien direct avec le programme de physique et les équations du mouvement.'
+                },
+                'MOTO_DRONE_SEANCE_3.html': {
+                    type: 'Séance 3',
+                    description: '💻 Programmation d’un drone (simulateur) : boucles, capteurs, régulation PID. Les élèves écrivent du code pour stabiliser le vol. Un apprentissage par l’action qui rend la programmation concrète et motivante.'
+                },
+                'MOTO_DRONE_SEANCE_4.html': {
+                    type: 'Séance 4',
+                    description: '🏍️ Conception de la partie « moto » : châssis, roues, moteur, direction. Les élèves abordent la mécanique, la transmission et l’électronique de puissance. Un projet de technologie pure qui complète la partie aérienne.'
+                },
+                'MOTO_DRONE_SEANCE_5.html': {
+                    type: 'Séance 5',
+                    description: '🔗 Fusion des systèmes : commande mixte (vol + sol). Programmation des transitions automatiques. Les élèves résolvent des problèmes complexes (communication entre composants, gestion des priorités). Un vrai défi d’ingénierie !'
+                },
+                'MOTO_DRONE_SEANCE_6.html': {
+                    type: 'Séance 6',
+                    description: '🎬 Finalisation et démonstration : tests, réglages, optimisation. Chaque groupe présente son prototype et ses performances. Un moment de fierté et de partage qui clôture le projet en beauté.'
+                },
+                'MOTO_DRONE_BAREME.html': {
+                    type: 'Barème',
+                    description: '📊 Grille d’évaluation : conception, programmation, performance du système, travail en équipe, présentation. Une évaluation encourageante qui met en avant les compétences techniques et transversales.'
+                },
+                'MOTO_DRONE_PRESENTATION.html': {
+                    type: 'Présentation',
+                    description: '📽️ Présentation du projet Moto‑Drone pour informer l’équipe pédagogique et les parents. Montre l’ancrage disciplinaire, les partenariats possibles et les retombées sur l’orientation des élèves.'
+                },
+                'MOTO_DRONE_OUTILS.html': {
+                    type: 'Outils',
+                    description: '🛠️ Liste des ressources : simulateurs de vol, environnements Arduino/Python, logiciels de CAO. Des tutoriels et des liens pour prendre en main chaque outil rapidement. Un gain de temps considérable pour l’enseignant.'
+                },
+                'MOTO_DRONE_V0.html': {
+                    type: 'Version initiale',
+                    description: '📝 Ébauche du projet : premières idées, choix technologiques, maquette 3D. Document de travail qui témoigne de la démarche de conception et peut servir de base pour d’autres adaptations.'
+                },
+                'MOTO_DRONE_COMMUNICATION_PREPARATOIRE.html': {
+                    type: 'Communication',
+                    description: '📬 Lettre d’information aux familles : présentation du projet, du matériel nécessaire, du calendrier. Permet d’impliquer les parents et de créer une dynamique positive autour du projet.'
+                }
+            };
+
+            // ----- ÉLÉMENTS DOM -----
+            const grid = document.getElementById('docGrid');
+            const searchInput = document.getElementById('searchInput');
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const currentFolderSpan = document.getElementById('currentFolder');
+            const breadcrumbRoot = document.querySelector('.breadcrumb .root');
+
+            const badgeAll = document.getElementById('badgeAll');
+            const badgeARC = document.getElementById('badgeARC');
+            const badgeAVION = document.getElementById('badgeAVION');
+            const badgeMOTO = document.getElementById('badgeMOTO');
+
+            let allDocs = [];
+            let filteredDocs = [];
+            let currentTab = 'all';
+
+            // ----- GÉNÉRATION D'UN RÉSUMÉ (avec fallback engageant) -----
+            function getSummary(name, folder) {
+                if (SUMMARY_MAP[name]) {
+                    return SUMMARY_MAP[name];
+                }
+
+                // Résumé générique mais incitatif pour les fichiers non répertoriés
+                let s = name
+                    .replace(/\.html$/i, '')
+                    .replace(/\.pdf$/i, '')
+                    .replace(/_/g, ' ');
+
+                const prefixes = ['ARC ', 'AVION PAPIER ', 'MOTO DRONE '];
+                for (const p of prefixes) {
+                    if (s.toUpperCase().startsWith(p)) {
+                        s = s.slice(p.length);
+                        break;
+                    }
+                }
+
+                const lower = s.toLowerCase();
+                let type = 'Document';
+                let desc = `Découvrez ce document du projet ${folder}. Il apporte des éclairages et des méthodes pour mener à bien votre projet en classe. N’hésitez pas à l’adapter à vos élèves !`;
+
+                if (lower.includes('sommaire')) {
+                    type = 'Sommaire';
+                    desc = `Structure et organisation du projet ${folder}. Un guide pour vous repérer et planifier les séances.`;
+                } else if (lower.includes('seance') || lower.includes('séance')) {
+                    type = 'Séance';
+                    const num = s.match(/\d+/);
+                    const n = num ? num[0] : '';
+                    desc = `Séance ${n} : activités, objectifs et supports pour faire progresser vos élèves dans le projet ${folder}.`;
+                } else if (lower.includes('bareme') || lower.includes('barème')) {
+                    type = 'Barème';
+                    desc = `Grille d’évaluation pour le projet ${folder}. Un outil clair et transparent pour valoriser les compétences de vos élèves.`;
+                } else if (lower.includes('presentation')) {
+                    type = 'Présentation';
+                    desc = `Présentation du projet ${folder} : diaporama clé en main pour informer et convaincre.`;
+                } else if (lower.includes('outils')) {
+                    type = 'Outils';
+                    desc = `Ressources et logiciels pour le projet ${folder}. Gagnez du temps et facilitez la prise en main par vos élèves.`;
+                } else if (lower.includes('v0')) {
+                    type = 'Version initiale';
+                    desc = `Première version du projet ${folder} : un document de travail pour nourrir votre réflexion.`;
+                } else if (lower.includes('communication preparatoire')) {
+                    type = 'Communication';
+                    desc = `Lettre aux familles pour présenter le projet ${folder} et susciter l’engagement de tous.`;
+                } else if (lower.includes('equation differentielle')) {
+                    type = 'Ressource';
+                    desc = `Fiche sur les équations différentielles : un soutien théorique pour vos élèves.`;
+                } else if (lower.includes('exemple calcul')) {
+                    type = 'Exemple';
+                    desc = `Exemple de calcul commenté pour guider vos élèves dans leur démarche.`;
+                } else {
+                    desc = `Document du projet ${folder} : une ressource supplémentaire pour enrichir votre enseignement par projet.`;
+                }
+
+                return { type, description: desc };
+            }
+
+            function formatSize(bytes) {
+                if (bytes === undefined || bytes === null) return '—';
+                if (bytes < 1024) return bytes + ' o';
+                if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' Ko';
+                return (bytes / 1048576).toFixed(1) + ' Mo';
+            }
+
+            // ----- RÉCUPÉRATION VIA L'API -----
+            async function fetchDocuments() {
+                try {
+                    const results = await Promise.all(
+                        REPOS.map(async (repo) => {
+                            const url = GITHUB_API_BASE + repo.folder;
+                            const resp = await fetch(url);
+                            if (!resp.ok) {
+                                throw new Error(`HTTP ${resp.status} — ${resp.statusText}`);
+                            }
+                            const data = await resp.json();
+                            return data
+                                .filter(item => item.type === 'file')
+                                .map(item => ({
+                                    folder: repo.folder,
+                                    label: repo.label,
+                                    name: item.name,
+                                    size: item.size,
+                                    html_url: BASE_URL + repo.folder + '/' + item.name,
+                                }));
+                        })
+                    );
+
+                    return results.flat();
+                } catch (err) {
+                    console.error('Erreur lors de la récupération des documents:', err);
+                    throw err;
+                }
+            }
+
+            // ----- FILTRAGE ET RENDU -----
+            function filterAndRender() {
+                const query = searchInput.value.toLowerCase().trim();
+
+                let docs = allDocs;
+                if (currentTab !== 'all') {
+                    docs = docs.filter(d => d.folder === currentTab);
+                }
+
+                if (query) {
+                    docs = docs.filter(d => {
+                        const summary = getSummary(d.name, d.folder);
+                        return d.name.toLowerCase().includes(query) ||
+                            d.label.toLowerCase().includes(query) ||
+                            summary.type.toLowerCase().includes(query) ||
+                            summary.description.toLowerCase().includes(query);
+                    });
+                }
+
+                filteredDocs = docs;
+                render(filteredDocs);
+                updateBadges();
+
+                const tabLabel = REPOS.find(r => r.folder === currentTab)?.label || 'Tous';
+                currentFolderSpan.textContent = query ? `${tabLabel} (filtré)` : tabLabel;
+                if (currentTab === 'all') {
+                    breadcrumbRoot.textContent = '📁 Tous les dossiers';
+                } else {
+                    breadcrumbRoot.textContent = `📁 ${tabLabel}`;
+                }
+            }
+
+            function render(docs) {
+                if (!docs || docs.length === 0) {
+                    grid.innerHTML = `
+                        <div class="status">
+                            <div style="font-size:2rem; margin-bottom:0.5rem;">🔍</div>
+                            <div>Aucun document ne correspond à votre sélection.</div>
+                            <div style="font-size:0.9rem; color:#94a3b8; margin-top:0.5rem;">Essayez de modifier votre recherche ou choisissez un autre onglet.</div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                for (const doc of docs) {
+                    const summary = getSummary(doc.name, doc.folder);
+                    const safeName = doc.name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    const safeType = summary.type.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    const safeDesc = summary.description.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+                    html += `
+                        <div class="doc-card" data-folder="${doc.folder}">
+                            <span class="folder">${doc.label}</span>
+                            <div class="doc-name">
+                                <a href="${doc.html_url}" target="_blank" rel="noopener">${safeName}</a>
+                            </div>
+                            <div class="summary">
+                                <span class="doc-type">${safeType}</span>
+                                <span class="desc">${safeDesc}</span>
+                            </div>
+                            <div class="meta">
+                                <span class="size">${formatSize(doc.size)}</span>
+                                <a href="${doc.html_url}" target="_blank" rel="noopener" class="link-icon">
+                                    <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                        <polyline points="15 3 21 3 21 9" />
+                                        <line x1="10" y1="14" x2="21" y2="3" />
+                                    </svg>
+                                    Ouvrir
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                }
+                grid.innerHTML = html;
+            }
+
+            function updateBadges() {
+                const total = allDocs.length;
+                const arc = allDocs.filter(d => d.folder === 'ARC').length;
+                const avion = allDocs.filter(d => d.folder === 'AVION_PAPIER').length;
+                const moto = allDocs.filter(d => d.folder === 'MOTO_DRONE').length;
+
+                badgeAll.textContent = total;
+                badgeARC.textContent = arc;
+                badgeAVION.textContent = avion;
+                badgeMOTO.textContent = moto;
+            }
+
+            function setTab(tabId) {
+                currentTab = tabId;
+                tabBtns.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.tab === tabId);
+                });
+                filterAndRender();
+            }
+
+            // ----- INITIALISATION -----
+            async function init() {
+                grid.innerHTML = `
+                    <div class="status">
+                        <div class="spinner"></div>
+                        <div>Chargement des documents…</div>
+                    </div>
+                `;
+
+                try {
+                    allDocs = await fetchDocuments();
+                    allDocs.sort((a, b) => {
+                        if (a.folder !== b.folder) return a.folder.localeCompare(b.folder);
+                        return a.name.localeCompare(b.name);
+                    });
+
+                    updateBadges();
+                    setTab('all');
+                    if (searchInput.value.trim()) {
+                        filterAndRender();
+                    }
+                } catch (err) {
+                    grid.innerHTML = `
+                        <div class="status">
+                            <div class="error-icon">⚠️</div>
+                            <div style="font-weight:600; color:#b91c1c;">Impossible de charger les documents</div>
+                            <div style="font-size:0.9rem; color:#64748b; margin-top:0.5rem;">${err.message}</div>
+                            <div style="font-size:0.85rem; color:#94a3b8; margin-top:0.3rem;">
+                                Vérifiez votre connexion ou que les dépôts sont accessibles.
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            // ----- CANVAS (particules) -----
+            function initCanvas() {
+                const canvas = document.getElementById('bgCanvas');
+                const ctx = canvas.getContext('2d');
+                let w, h;
+                let particles = [];
+                const COUNT = 50;
+                const MAX_SPEED = 0.2;
+
+                function resize() {
+                    w = canvas.width = window.innerWidth;
+                    h = canvas.height = window.innerHeight;
+                }
+
+                function createParticles() {
+                    particles = [];
+                    for (let i = 0; i < COUNT; i++) {
+                        particles.push({
+                            x: Math.random() * w,
+                            y: Math.random() * h,
+                            vx: (Math.random() - 0.5) * MAX_SPEED * 2,
+                            vy: (Math.random() - 0.5) * MAX_SPEED * 2,
+                            r: 1.5 + Math.random() * 2.5,
+                            a: 0.10 + Math.random() * 0.15
+                        });
+                    }
+                }
+
+                function draw() {
+                    ctx.clearRect(0, 0, w, h);
+
+                    for (const p of particles) {
+                        p.x += p.vx;
+                        p.y += p.vy;
+
+                        if (p.x < 0 || p.x > w) p.vx *= -1;
+                        if (p.y < 0 || p.y > h) p.vy *= -1;
+
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(59, 130, 246, ${p.a})`;
+                        ctx.fill();
+                    }
+
+                    for (let i = 0; i < particles.length; i++) {
+                        for (let j = i + 1; j < particles.length; j++) {
+                            const dx = particles[i].x - particles[j].x;
+                            const dy = particles[i].y - particles[j].y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            if (dist < 120) {
+                                const alpha = (1 - dist / 120) * 0.08;
+                                ctx.beginPath();
+                                ctx.moveTo(particles[i].x, particles[i].y);
+                                ctx.lineTo(particles[j].x, particles[j].y);
+                                ctx.strokeStyle = `rgba(59, 130, 246, ${alpha})`;
+                                ctx.lineWidth = 0.5;
+                                ctx.stroke();
+                            }
+                        }
+                    }
+
+                    requestAnimationFrame(draw);
+                }
+
+                window.addEventListener('resize', () => {
+                    resize();
+                    createParticles();
+                });
+
+                resize();
+                createParticles();
+                draw();
+            }
+
+            // ----- ÉVÉNEMENTS -----
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    setTab(this.dataset.tab);
+                });
+            });
+
+            let debounceTimer;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    filterAndRender();
+                }, 200);
+            });
+
+            breadcrumbRoot.addEventListener('click', function(e) {
+                e.preventDefault();
+                setTab('all');
+            });
+
+            // ----- LANCEMENT -----
+            init();
+            initCanvas();
+
+        })();
+    </script>
+
+</body>
+</html>
