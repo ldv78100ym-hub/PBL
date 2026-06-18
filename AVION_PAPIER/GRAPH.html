@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Graphe PBL Avion – Projet cliquable</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+        }
+        #canvas3d {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            background: #0a1a2a;
+            transition: opacity 1s ease;
+        }
+        #graph-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 20;
+            background: #fefaf0;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.9s ease;
+        }
+        .transition-message {
+            position: fixed;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            z-index: 25;
+            color: white;
+            background: rgba(0,0,0,0.7);
+            padding: 12px 24px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            backdrop-filter: blur(8px);
+            border-radius: 60px;
+            width: fit-content;
+            margin: 0 auto;
+            pointer-events: none;
+            font-family: monospace;
+            letter-spacing: 1px;
+            transition: opacity 0.8s ease;
+        }
+        button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 35;
+            background: #1565c0;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 28px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+            transition: all 0.2s ease;
+            font-family: inherit;
+            letter-spacing: 0.5px;
+        }
+        button:hover {
+            background: #0d47a1;
+            transform: scale(1.02);
+        }
+        @media (max-width: 800px) {
+            button { top: 12px; right: 12px; padding: 8px 16px; font-size: 1rem; }
+            .transition-message { font-size: 1rem; bottom: 20px; padding: 8px 18px; }
+        }
+        .vis-network div.vis-tooltip {
+            background-color: #1e2a2e !important;
+            color: #fff3cf !important;
+            font-size: 22px !important;
+            padding: 14px 24px !important;
+            border-radius: 50px !important;
+            border-left: 10px solid #ffaa44 !important;
+            font-weight: bold !important;
+            max-width: 550px !important;
+            pointer-events: none !important;
+            font-family: 'Segoe UI', 'Roboto', monospace !important;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.6) !important;
+            line-height: 1.4 !important;
+        }
+        .vis-network .vis-label {
+            font-weight: 800;
+            text-shadow: 1px 1px 0 rgba(255,255,200,0.6);
+            font-size: 1.35rem !important;
+        }
+        #graph-container {
+            background: radial-gradient(circle at 20% 30%, #fff8ed, #fff3e0);
+        }
+        .vis-network .vis-node {
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+        }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/vis-network@9.1.6/dist/vis-network.min.js"></script>
+</head>
+<body>
+
+<div id="canvas3d"></div>
+<div id="graph-container"></div>
+<div class="transition-message" id="transitionMsg">✈️ Chargement du projet</div>
+<button id="resetGraphBtn">⟳ Recentrer</button>
+
+<script type="module">
+    import * as THREE from 'three';
+    import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+    // ----- Animation 3D d'attente (avion stylisé) -----
+    const scene3d = new THREE.Scene();
+    scene3d.background = new THREE.Color(0x0a1a2a);
+    scene3d.fog = new THREE.FogExp2(0x0a1a2a, 0.008);
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(3, 2, 5);
+    camera.lookAt(0, 0, 0);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    document.getElementById('canvas3d').appendChild(renderer.domElement);
+    const labelRenderer = new CSS2DRenderer();
+    labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    labelRenderer.domElement.style.position = 'absolute';
+    labelRenderer.domElement.style.top = '0px';
+    labelRenderer.domElement.style.left = '0px';
+    labelRenderer.domElement.style.pointerEvents = 'none';
+    document.getElementById('canvas3d').appendChild(labelRenderer.domElement);
+
+    const ambientLight = new THREE.AmbientLight(0x404060);
+    scene3d.add(ambientLight);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+    dirLight.position.set(2, 5, 3);
+    dirLight.castShadow = true;
+    scene3d.add(dirLight);
+    const backLight = new THREE.PointLight(0x4466cc, 0.6);
+    backLight.position.set(-1, 1, -2);
+    scene3d.add(backLight);
+    const fillLight = new THREE.PointLight(0xffaa66, 0.5);
+    fillLight.position.set(1, 1, 2);
+    scene3d.add(fillLight);
+
+    const planeGroup = new THREE.Group();
+    const fuselageGeo = new THREE.ConeGeometry(0.25, 1.2, 16);
+    const fuselageMat = new THREE.MeshStandardMaterial({ color: 0xe8eef4, metalness: 0.3, roughness: 0.4 });
+    const fuselage = new THREE.Mesh(fuselageGeo, fuselageMat);
+    fuselage.rotation.x = Math.PI / 2;
+    fuselage.position.z = -0.2;
+    planeGroup.add(fuselage);
+    const wingGeo = new THREE.BoxGeometry(1.6, 0.05, 0.6);
+    const wingMat = new THREE.MeshStandardMaterial({ color: 0xc0d0e0, metalness: 0.2 });
+    const wings = new THREE.Mesh(wingGeo, wingMat);
+    wings.position.y = 0.1;
+    wings.position.z = -0.1;
+    planeGroup.add(wings);
+    const tailGeo = new THREE.BoxGeometry(0.6, 0.05, 0.4);
+    const tail = new THREE.Mesh(tailGeo, wingMat);
+    tail.position.y = 0.15;
+    tail.position.z = -0.7;
+    planeGroup.add(tail);
+    const finGeo = new THREE.ConeGeometry(0.15, 0.4, 4);
+    const finMat = new THREE.MeshStandardMaterial({ color: 0x9fb6d0 });
+    const fin = new THREE.Mesh(finGeo, finMat);
+    fin.position.y = 0.35;
+    fin.position.z = -0.65;
+    planeGroup.add(fin);
+    const glowMat = new THREE.MeshStandardMaterial({ color: 0x88aaff, emissive: 0x2266aa });
+    const glow = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), glowMat);
+    glow.position.z = -1.1;
+    planeGroup.add(glow);
+    scene3d.add(planeGroup);
+    
+    const titleDiv = document.createElement('div');
+    titleDiv.textContent = '✈️ PROJET PBL AVION EN PAPIER';
+    titleDiv.style.color = '#ffdd99';
+    titleDiv.style.fontSize = '26px';
+    titleDiv.style.fontWeight = 'bold';
+    titleDiv.style.textShadow = '2px 2px 6px #000';
+    titleDiv.style.backgroundColor = 'rgba(0,0,0,0.6)';
+    titleDiv.style.padding = '8px 20px';
+    titleDiv.style.borderRadius = '50px';
+    titleDiv.style.border = '1px solid #ffaa44';
+    titleDiv.style.backdropFilter = 'blur(8px)';
+    const titleLabel = new CSS2DObject(titleDiv);
+    titleLabel.position.set(0, 1.2, 0.6);
+    planeGroup.add(titleLabel);
+    
+    const starGeometry = new THREE.BufferGeometry();
+    const starCount = 1200;
+    const starPositions = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount; i++) {
+        starPositions[i*3] = (Math.random() - 0.5) * 240;
+        starPositions[i*3+1] = (Math.random() - 0.5) * 140;
+        starPositions[i*3+2] = (Math.random() - 0.5) * 100 - 45;
+    }
+    starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+    const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.18, transparent: true, opacity: 0.8 });
+    const stars = new THREE.Points(starGeometry, starMaterial);
+    scene3d.add(stars);
+    const ringGeo = new THREE.TorusGeometry(1.3, 0.04, 64, 200);
+    const ringMat = new THREE.MeshStandardMaterial({ color: 0x88aaff, emissive: 0x2255aa });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = Math.PI / 2;
+    scene3d.add(ring);
+    
+    let time = 0;
+    function animate3d() {
+        requestAnimationFrame(animate3d);
+        time += 0.012;
+        planeGroup.position.y = Math.sin(time * 1.2) * 0.1;
+        planeGroup.rotation.y = Math.sin(time * 0.5) * 0.35;
+        planeGroup.rotation.z = Math.sin(time * 0.8) * 0.12;
+        ring.rotation.z = time * 0.3;
+        ring.rotation.x = Math.PI / 2 + Math.sin(time * 0.2) * 0.15;
+        stars.rotation.y += 0.0006;
+        stars.rotation.x += 0.0004;
+        camera.position.x = 4.2 * Math.sin(time * 0.1);
+        camera.position.z = 5.2 + Math.sin(time * 0.2) * 0.4;
+        camera.lookAt(0, 0.2, 0);
+        renderer.render(scene3d, camera);
+        labelRenderer.render(scene3d, camera);
+    }
+    animate3d();
+    
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        if (network) network.fit({ animation: true, duration: 280 });
+    });
+    
+    // ========== DONNÉES DU GRAPHE – RÉPARTITION HARMONIEUSE ==========
+    const nodes = [
+        { id: "INTRODUCTION", label: "📘 INTRODUCTION", file: "AVION_PBL_INTRODUCTION.html", group: "presentation", x: -400, y: -10, title: "📘 PRÉSENTATION GÉNÉRALE – 6 faces 3D, sommaire, objectifs PBL" },
+        { id: "COMPORTEMENT", label: "📊 COMPORTEMENT EN VOL", file: "AVION_PBL_COMPORTEMENT_EN_VOL.html", group: "outil", x: -120, y: -140, title: "📊 ANALYSEUR DE VOL : direction, tangage, conseils précis" },
+        { id: "FICHE_REFLEXIVE", label: "📓 FICHE RÉFLEXIVE", file: "AVION_PBL_FICHE_REFLEXIVE.html", group: "eleve", x: -220, y: 160, title: "📓 FICHE RÉFLEXIVE 3D – 6 faces, suivi des 4 étapes" },
+        { id: "GUIDE_ENSEIGNANT", label: "👩‍🏫 GUIDE ENSEIGNANT", file: "AVION_PBL_GUIDE_ENSEIGNANT.html", group: "guide", x: 480, y: -30, title: "👩‍🏫 GUIDE ENSEIGNANT enrichi – 10 faces, dispositif complet" },
+        { id: "METHODE_EULER", label: "🧮 MÉTHODE D'EULER", file: "AVION_PBL_METHODE_EULER.html", group: "simulation", x: -580, y: -80, title: "🧮 SIMULATION chute libre / méthode d'Euler interactive" },
+        { id: "PLUS_VALUES", label: "✨ PLUS-VALUES PÉDAGOGIQUES", file: "AVION_PBL_PLUS_VALUES_A_ENVISAGER.html", group: "ressource", x: 380, y: 180, title: "✨ Plus-values pédagogiques – 10 faces, version projecteur" },
+        { id: "PORTANCE", label: "✈️ PORTANCE & THE BIRD", file: "AVION_PBL_PORTANCE.html", group: "theorie", x: 60, y: -40, title: "✈️ CALCUL DE LA PORTANCE – Avion The Bird, 10 diapos" },
+        { id: "QCM", label: "❓ QCM STABILITÉ", file: "AVION_PBL_QCM.html", group: "quiz", x: 160, y: 130, title: "❓ QCM stabilité / centrage – dictionnaire interactif" },
+        { id: "QUIZ_PORTANCE", label: "📝 QUIZ PORTANCE", file: "AVION_PBL_QUIZ_PORTANCE.html", group: "quiz", x: 320, y: 50, title: "📝 Quiz portance – 5 questions, correction automatique" },
+        { id: "RELEVE", label: "📋 RELEVÉ DES VALEURS", file: "AVION_PBL_RELEVE_DES_VALEURS.html", group: "outil", x: 40, y: -210, title: "📋 Feuille relevés – 20 lancers, IQR, export CSV" }
+    ];
+    
+    const edges = [
+        { from: "INTRODUCTION", to: "COMPORTEMENT", title: "🔗 Analyseur de vol" },
+        { from: "INTRODUCTION", to: "QCM", title: "🔗 QCM stabilité" },
+        { from: "INTRODUCTION", to: "RELEVE", title: "🔗 Feuille relevés" },
+        { from: "INTRODUCTION", to: "PORTANCE", title: "🔗 Théorie portance" },
+        { from: "INTRODUCTION", to: "QUIZ_PORTANCE", title: "🔗 Quiz portance" },
+        { from: "INTRODUCTION", to: "METHODE_EULER", title: "🔗 Simulateur Euler" },
+        { from: "INTRODUCTION", to: "FICHE_REFLEXIVE", title: "🔗 Fiche réflexive" },
+        { from: "GUIDE_ENSEIGNANT", to: "INTRODUCTION", title: "📌 Présentation générale" },
+        { from: "GUIDE_ENSEIGNANT", to: "COMPORTEMENT", title: "📌 Outil diagnostic" },
+        { from: "GUIDE_ENSEIGNANT", to: "RELEVE", title: "📌 Relevés terrain" },
+        { from: "GUIDE_ENSEIGNANT", to: "PORTANCE", title: "📌 Calcul portance" },
+        { from: "GUIDE_ENSEIGNANT", to: "METHODE_EULER", title: "📌 Méthode Euler" },
+        { from: "GUIDE_ENSEIGNANT", to: "QCM", title: "📌 QCM stabilité" },
+        { from: "GUIDE_ENSEIGNANT", to: "QUIZ_PORTANCE", title: "📌 Quiz portance" },
+        { from: "GUIDE_ENSEIGNANT", to: "PLUS_VALUES", title: "📌 Plus-values" },
+        { from: "PORTANCE", to: "METHODE_EULER", title: "🔁 Modélisation" },
+        { from: "METHODE_EULER", to: "PORTANCE", title: "🔁 Retour portance" },
+        { from: "FICHE_REFLEXIVE", to: "COMPORTEMENT", title: "📝 Lien analyseur" },
+        { from: "FICHE_REFLEXIVE", to: "RELEVE", title: "📝 Export CSV" },
+        { from: "COMPORTEMENT", to: "RELEVE", title: "📊 Paramètres vol" },
+        { from: "QUIZ_PORTANCE", to: "PORTANCE", title: "✅ Auto-évaluation" },
+        { from: "QCM", to: "COMPORTEMENT", title: "🧠 Diagnostic" }
+    ];
+    
+    const options = {
+        nodes: {
+            shape: 'box',
+            margin: 18,
+            widthConstraint: { minimum: 200, maximum: 320 },
+            heightConstraint: { minimum: 65 },
+            font: { size: 26, face: 'Segoe UI, Roboto', color: '#0a2a3a', bold: true },
+            borderWidth: 5,
+            shadow: { enabled: true, size: 14, x: 5, y: 5, color: 'rgba(0,0,0,0.3)' },
+            color: {
+                background: '#fff7e8',
+                border: '#1a5f9e',
+                highlight: { background: '#ffefcf', border: '#c4450c' }
+            },
+            chosen: { node: { borderWidth: 7 } }
+        },
+        edges: {
+            arrows: { to: { enabled: true, scaleFactor: 1.6 } },
+            color: { color: '#3a6282', highlight: '#e67e22', hover: '#f39c12', opacity: 0.9 },
+            font: { size: 18, align: 'middle', background: '#fff8e8', strokeWidth: 1.5, color: '#1e4663' },
+            smooth: { type: 'curvedCW', roundness: 0.25 },
+            width: 4,
+            hoverWidth: 5.5,
+            label: false,
+            title: true
+        },
+        physics: { enabled: false },
+        interaction: {
+            hover: true,
+            tooltipDelay: 150,
+            zoomView: true,
+            dragView: true,
+            dragNodes: true
+        },
+        layout: { improvedLayout: false },
+        groups: {
+            presentation: { color: { background: '#c8e6e0', border: '#00796b' }, shape: 'ellipse' },
+            outil: { color: { background: '#e3f2fd', border: '#1565c0' }, shape: 'box' },
+            eleve: { color: { background: '#f3e5f5', border: '#8e24aa' }, shape: 'diamond' },
+            guide: { color: { background: '#ffecb3', border: '#ff8f00' }, shape: 'star' },
+            simulation: { color: { background: '#e8f5e9', border: '#2e7d32' }, shape: 'hexagon' },
+            ressource: { color: { background: '#fbe9e7', border: '#d84315' }, shape: 'box' },
+            theorie: { color: { background: '#d1c4e9', border: '#5e35b1' }, shape: 'triangle' },
+            quiz: { color: { background: '#ffccbc', border: '#e65100' }, shape: 'dot' }
+        }
+    };
+    
+    let network = null;
+    const container = document.getElementById('graph-container');
+    
+    function initGraph() {
+        if (network) network.destroy();
+        const data = { nodes: new vis.DataSet(nodes), edges: new vis.DataSet(edges) };
+        network = new vis.Network(container, data, options);
+        
+        network.once('afterDrawing', () => {
+            setTimeout(() => {
+                if (network) {
+                    network.fit({ animation: true, duration: 600, easing: "easeInOutQuad" });
+                    setTimeout(() => {
+                        if (network) {
+                            const scale = network.getScale();
+                            if (scale < 0.55) network.moveTo({ scale: 0.65, animation: true });
+                            else if (scale > 0.85) network.fit({ animation: true, duration: 400 });
+                        }
+                    }, 500);
+                }
+            }, 100);
+        });
+        
+        network.on("click", function(params) {
+            if (params.nodes && params.nodes.length > 0) {
+                const nodeId = params.nodes[0];
+                const node = nodes.find(n => n.id === nodeId);
+                if (node && node.file) window.open(node.file, '_blank');
+            }
+        });
+    }
+    
+    // Transition depuis l'animation 3D
+    const canvas3dDiv = document.getElementById('canvas3d');
+    const graphDiv = document.getElementById('graph-container');
+    const transitionMsgDiv = document.getElementById('transitionMsg');
+    
+    function finalizeGraphDisplay() {
+        graphDiv.style.display = 'block';
+        graphDiv.style.opacity = '1';
+        if (!network) initGraph();
+        // Faire disparaître le message de transition
+        transitionMsgDiv.style.opacity = '0';
+        setTimeout(() => transitionMsgDiv.style.display = 'none', 800);
+    }
+    
+    setTimeout(() => {
+        canvas3dDiv.style.opacity = '0';
+        setTimeout(() => {
+            canvas3dDiv.style.display = 'none';
+            finalizeGraphDisplay();
+        }, 800);
+    }, 3800);
+    
+    document.getElementById('resetGraphBtn').addEventListener('click', () => {
+        if (network) {
+            network.fit({ animation: true, duration: 550 });
+            setTimeout(() => {
+                if (network) {
+                    const scale = network.getScale();
+                    if (scale < 0.6) network.moveTo({ scale: 0.7, animation: true });
+                    else if (scale > 0.9) network.fit({ animation: true });
+                }
+            }, 560);
+        }
+    });
+    
+    canvas3dDiv.addEventListener('click', () => {
+        if (canvas3dDiv.style.display !== 'none') {
+            canvas3dDiv.style.opacity = '0';
+            setTimeout(() => {
+                canvas3dDiv.style.display = 'none';
+                finalizeGraphDisplay();
+            }, 200);
+        }
+    });
+    
+    const styleExtras = document.createElement('style');
+    styleExtras.textContent = `
+        .vis-network .vis-node .vis-label { font-size: 27px !important; font-weight: 800 !important; text-shadow: 1px 1px 0 rgba(255,255,200,0.5); }
+        .vis-network .vis-edge .vis-label { font-size: 17px !important; font-weight: bold; background: rgba(255,250,225,0.9); padding: 4px 10px; border-radius: 30px; }
+        .vis-network .vis-tooltip { font-size: 22px !important; line-height: 1.4; background: #102a2c !important; border-left: 10px solid #ffaa44; }
+        #graph-container { cursor: grab; }
+        #graph-container:active { cursor: grabbing; }
+    `;
+    document.head.appendChild(styleExtras);
+    
+    window.addEventListener('load', () => {
+        if (graphDiv.style.display === 'block' && !network) finalizeGraphDisplay();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Chute d'un avion en papier - Méthode d'Euler pas à pas</title>
+    
+    <!-- MathJax -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <style>
+        /* === Styles inchangés, identiques à la version précédente === */
+        :root {
+            --bg-room: #cfd8dc;
+            --text-color: #1a1a1a;
+            --highlight-main: #1565c0;
+            --highlight-alert: #b71c1c;
+            --highlight-success: #2e7d32;
+            --board-bg: #fdfbf7;
+            --board-border: #3e2723;
+            --radius: min(1500px, 100vw);
+            --boards-count: 8;
+        }
+        * { box-sizing: border-box; }
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background-color: var(--bg-room);
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            overflow: hidden;
+            color: var(--text-color);
+        }
+        .scene {
+            width: 100vw; height: 100vh;
+            perspective: 1500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .room {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: transform 0.9s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+        .board {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--board-bg);
+            border: 3px solid var(--board-border);
+            border-radius: 0;
+            box-shadow: none;
+            backface-visibility: hidden;
+            transform: rotateY(calc(var(--i) * (360deg / var(--boards-count)))) translateZ(var(--radius));
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.6s ease;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: clamp(18px, 4vh, 35px);
+        }
+        .board.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .tech-term {
+            border-bottom: 1px dashed #1565c0;
+            cursor: help;
+            font-weight: 500;
+        }
+        h1 { font-size: clamp(1.8rem, 5vh, 2.6rem); color: var(--highlight-main); text-align: center; border-bottom: 3px double var(--highlight-main); padding-bottom: 0.8vh; margin: 0 0 1.5vh 0; }
+        h2 { font-size: clamp(1.4rem, 3.6vh, 2rem); color: var(--highlight-alert); border-left: 6px solid var(--highlight-alert); padding-left: 15px; margin: 0 0 1.8vh 0; }
+        .defi-box, .tip { background: #ffe0b5; border-radius: 28px; padding: 12px 20px; margin: 1.5vh 0; border-left: 8px solid #e67e22; font-weight: bold; }
+        .science-note { background: #e8eaf6; padding: 12px 18px; border-radius: 18px; margin: 1.5vh 0; border-right: 4px solid #3949ab; }
+        .formula { background: #e3f2fd; border-radius: 32px; padding: 12px 20px; text-align: center; margin: 20px auto; font-size: 1.2rem; font-weight: bold; display: inline-block; width: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .formula-fit { display: table; margin-left: auto; margin-right: auto; }
+        .step { background: #f1f8e9; border-radius: 20px; padding: 12px 18px; margin: 15px 0; border-left: 6px solid #558b2f; }
+        ul, ol { font-size: clamp(1rem, 2.3vh, 1.3rem); line-height: 1.45; margin: 0.8vh 0 1.2vh 0; padding-left: 1.8rem; }
+        li { margin-bottom: 0.6vh; }
+        .input-group { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 10px 0; }
+        .input-group label { width: 150px; font-weight: bold; }
+        input { padding: 6px 10px; border-radius: 30px; border: 1px solid #aaa; width: 100px; text-align: center; }
+        .btn-test { background-color: var(--highlight-success); color: white; border: none; border-radius: 40px; padding: 8px 20px; font-size: 1rem; cursor: pointer; margin-top: 12px; transition: 0.2s; }
+        .btn-test:hover { background-color: #1b5e20; transform: scale(1.02); }
+        .nav-buttons { position: fixed; bottom: 20px; left: 0; right: 0; display: flex; justify-content: center; gap: 25px; z-index: 1100; }
+        .round-nav { background: var(--highlight-main); color: white; border: none; width: 60px; height: 60px; border-radius: 60px; font-size: 2rem; font-weight: bold; cursor: pointer; box-shadow: 0 6px 14px rgba(0,0,0,0.3); transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .round-nav:hover { background-color: #0d47a1; transform: scale(1.05); }
+        .copyright-btn { position: fixed; bottom: 20px; right: 20px; background: #37474f; color: white; border: none; padding: 8px 14px; border-radius: 30px; cursor: pointer; z-index: 1100; font-size: 0.8rem; }
+        .modal { visibility: hidden; opacity: 0; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .modal.active { visibility: visible; opacity: 1; }
+        .modal-content { background: #fff9ef; max-width: 650px; width: 90%; padding: 25px; border-radius: 28px; border-top: 8px solid var(--highlight-alert); }
+        .close-modal { float: right; font-size: 2rem; cursor: pointer; color: var(--highlight-alert); }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 16px; overflow: hidden; margin: 10px 0; }
+        th, td { border: 1px solid #bcaaa4; padding: 6px; text-align: center; font-size: 0.85rem; }
+        th { background: #d7ccc8; }
+        canvas { width: 100%; height: auto; background: white; border-radius: 20px; margin-top: 10px; border: 1px solid #bbb; }
+        .correction { background: #e8f5e9; margin-top: 12px; padding: 10px; border-radius: 16px; display: none; }
+        .correction.visible { display: block; }
+        .tech-popup {
+            position: fixed;
+            background: #1e2a1e;
+            color: #ffd966;
+            padding: 10px 15px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: normal;
+            max-width: 300px;
+            z-index: 10000;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            border-left: 4px solid #ffaa44;
+            pointer-events: none;
+            font-family: 'Segoe UI', sans-serif;
+            line-height: 1.4;
+            transition: opacity 0.1s;
+            word-wrap: break-word;
+        }
+        .fluctuation-info {
+            background: #f0f4c3;
+            border-radius: 20px;
+            padding: 12px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<button class="copyright-btn" onclick="toggleModal(true)">📜 Droits & Licence</button>
+
+<div class="scene">
+    <div class="room" id="room">
+        <!-- Diapo 0 : Introduction (inchangée) -->
+        <div class="board" style="--i:0;">
+            <div>
+                <h1>📉 <span class="tech-term" title="Méthode numérique d’approximation pas à pas inventée par Leonhard Euler.">Méthode d’Euler</span></h1>
+                <h2>Simuler la chute d’un avion en papier</h2>
+                <div class="defi-box">🎯 Objectif : prédire la <span class="tech-term" title="Norme du vecteur vitesse (m/s).">vitesse</span> de l’avion.</div>
+                <p>On va découvrir une méthode <strong>pas à pas</strong> inventée par le mathématicien <span class="tech-term" title="Leonhard Euler (1707-1783).">Euler</span>.</p>
+                <div class="science-note">💡 Le <span class="tech-term" title="Force de résistance aérodynamique.">frottement de l’air</span> dépend de la vitesse, donc l’<span class="tech-term" title="Taux de variation de la vitesse (m/s²).">accélération</span> change tout le temps.</div>
+                <footer>➡️ Utilise les boutons ronds pour naviguer</footer>
+            </div>
+        </div>
+
+        <!-- Diapo 1 : Rappels physique (inchangée) -->
+        <div class="board" style="--i:1;">
+            <div>
+                <h2>🚀 <span class="tech-term" title="Norme du vecteur vitesse.">Vitesse</span> et <span class="tech-term" title="Taux de variation de la vitesse.">accélération</span></h2>
+                <ul><li>Vitesse : mètres par seconde (m/s).</li><li>Accélération : augmentation de la vitesse chaque seconde (m/s²).</li></ul>
+                <div class="step">Exemple : la <span class="tech-term" title="Accélération de la pesanteur, 9,81 m/s².">gravité</span> donne une accélération de 9,81 m/s². L’air freine : plus la vitesse est grande, plus le freinage est fort.</div>
+                <div class="formula formula-fit">Accélération = \( g - k \times V^2 \)   (avec \( k = \frac{\rho S C_D}{2m} \))</div>
+                <p>On va calculer la vitesse petit à petit, en tenant compte du freinage.</p>
+            </div>
+        </div>
+
+        <!-- Diapo 2 : Méthode pas à pas (inchangée) -->
+        <div class="board" style="--i:2;">
+            <div>
+                <h2>🧮 La méthode d’Euler (Explication)</h2>
+                <div class="step">
+                    🔁 On répète :<br>
+                    <strong>Nouvelle vitesse = ancienne vitesse + (<span class="tech-term" title="Petit intervalle de temps noté h.">petit intervalle de temps</span> × accélération actuelle)</strong>
+                </div>
+                <p>On choisit un petit <span class="tech-term" title="Valeur de h.">pas de temps</span> \( h \) (exemple 0,05 s).</p>
+                <ol>
+                    <li>On connaît la vitesse au départ : \( V_0 \) (lancer du poignet).</li>
+                    <li>On calcule l’accélération.</li>
+                    <li>On multiplie par \( h \).</li>
+                    <li>On ajoute à la vitesse actuelle.</li>
+                    <li>On avance dans le temps.</li>
+                </ol>
+                <div class="science-note">
+                    <strong>📐 Détermination de \( V_0 \)</strong><br>
+                    Bras bloqué, seul le poignet tourne : \( V_0 = R \times \omega \). Avec \( R \approx 5\ \text{cm} \), \( \omega \approx 20\ \text{rad/s} \), \( V_0 \approx 1,0\ \text{m/s} \).<br>
+                    Cet valeur varie ; on utilise un intervalle de fluctuation [0,8 ; 1,2] m/s.
+                </div>
+                <div class="tip">✅ Pas besoin d’équation compliquée, seulement additions et multiplications !</div>
+            </div>
+        </div>
+
+        <!-- Diapo 3 : Simulateur interactif avec fluctuation -->
+        <div class="board" style="--i:3;">
+            <div>
+                <h2>⚙️ Simulateur pas à pas</h2>
+                <div class="input-group">
+                    <label>📦 <span class="tech-term" title="Quantité de matière (kg).">Masse</span> (kg) :</label>
+                    <input type="number" id="mass" value="0.005" step="0.001">
+                    <span>(0,005 kg = 5 g)</span>
+                </div>
+                <div class="input-group">
+                    <label>📐 <span class="tech-term" title="Surface des ailes (m²).">Surface</span> (m²) :</label>
+                    <input type="number" id="area" value="0.016" step="0.001">
+                    <span>(0,016 m² ≈ 160 cm²)</span>
+                </div>
+                <div class="input-group">
+                    <label>⏱️ <span class="tech-term" title="Pas de temps h.">Pas h</span> (s) :</label>
+                    <input type="number" id="stepsize" value="0.05" step="0.01">
+                    <span>plus petit = plus précis</span>
+                </div>
+                <div class="input-group">
+                    <label>🎯 V₀ (m/s) :</label>
+                    <input type="number" id="v0" value="1.0" step="0.1">
+                    <span>valeur typique</span>
+                </div>
+                <div class="input-group">
+                    <label>📊 Fluctuation V₀ ± :</label>
+                    <input type="number" id="v0_fluctuation" value="0.2" step="0.05" min="0">
+                    <span>intervalle [V₀ - fluct, V₀ + fluct]</span>
+                </div>
+                <button class="btn-test" onclick="runEuler()">🚀 Lancer le calcul (V₀ fixe)</button>
+                <button class="btn-test" onclick="runEulerWithFluctuation()" style="background-color:#ff8f00;">📊 Lancer avec fluctuation (100 simulations)</button>
+                <div id="eulerTable" style="max-height: 180px; overflow-y: auto; margin-top: 15px;"></div>
+                <div id="fluctuationResults" class="fluctuation-info" style="display:none;"></div>
+                <p class="science-note">🔎 Tableau pour V₀ fixe. Le second graphique s’affiche après avoir cliqué sur le bouton fluctuation.</p>
+            </div>
+        </div>
+
+        <!-- Diapo 4 : Graphiques (modifié : second graphique initialisé avec un message) -->
+        <div class="board" style="--i:4;">
+            <div>
+                <h2>📈 Évolution de la vitesse</h2>
+                <canvas id="velocityGraph" width="600" height="300" style="width:100%; height:auto; max-height:280px; background:#fff; border-radius:24px;"></canvas>
+                <canvas id="fluctuationGraph" width="600" height="300" style="width:100%; height:auto; max-height:280px; background:#fff; border-radius:24px; margin-top:20px;"></canvas>
+                <p>📌 Premier graphique : simulation avec V₀ fixe. Deuxième graphique : <strong>intervalle de confiance à 95 %</strong> (moyenne ± 2σ) obtenu après avoir cliqué sur « Lancer avec fluctuation ».</p>
+                <div class="tip">💡 La vitesse limite est indépendante de V₀. L’intervalle de confiance montre l’effet de l’incertitude du lancer.</div>
+            </div>
+        </div>
+
+        <!-- Diapo 5 : Vitesse limite (inchangée) -->
+        <div class="board" style="--i:5;">
+            <div>
+                <h2>⏱️ Formule de la <span class="tech-term" title="Vitesse maximale atteinte par un objet en chute.">vitesse limite</span></h2>
+                <div class="formula formula-fit">$$ V_{\text{limite}} = \sqrt{\frac{2\,m\,g}{\rho\,S\,C_D}} $$</div>
+                <ul>
+                    <li>Pour notre avion : \( V_{\text{lim}} \approx 3,16\ \text{m/s}\).</li>
+                    <li>Si on augmente la masse → vitesse limite plus grande.</li>
+                    <li>Si on augmente la surface → vitesse limite plus petite.</li>
+                </ul>
+                <div class="step">La vitesse limite ne dépend que des caractéristiques de l’avion et de l’air.</div>
+            </div>
+        </div>
+
+        <!-- Diapo 6 : QCM (inchangé) -->
+        <div class="board" style="--i:6;">
+            <div>
+                <h2>🧠 Vérifie ta compréhension</h2>
+                <div class="qcm-question" style="background:#fff0e0; border-radius:24px; padding:15px; margin-bottom:20px;">
+                    <p><strong>1. Que se passe-t-il si on double la masse de l’avion ?</strong></p>
+                    <label><input type="radio" name="q1" value="augmente"> La vitesse limite augmente</label><br>
+                    <label><input type="radio" name="q1" value="diminue"> La vitesse limite diminue</label><br>
+                    <label><input type="radio" name="q1" value="inchangée"> Elle ne change pas</label>
+                    <div><button class="btn-test" onclick="checkQCM('q1', 'augmente', 'fb1')">Vérifier</button></div>
+                    <div id="fb1" class="correction"></div>
+                </div>
+                <div class="qcm-question" style="background:#fff0e0; border-radius:24px; padding:15px;">
+                    <p><strong>2. La méthode d’Euler permet de...</strong></p>
+                    <label><input type="radio" name="q2" value="equation"> Résoudre une équation compliquée en une fois</label><br>
+                    <label><input type="radio" name="q2" value="pasapas"> Calculer la vitesse pas à pas avec des additions</label><br>
+                    <label><input type="radio" name="q2" value="graphique"> Tracer directement la courbe sans calcul</label>
+                    <div><button class="btn-test" onclick="checkQCM('q2', 'pasapas', 'fb2')">Vérifier</button></div>
+                    <div id="fb2" class="correction"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diapo 7 : Bilan (inchangée) -->
+        <div class="board" style="--i:7;">
+            <div>
+                <h2>🏁 Ce qu’il faut retenir</h2>
+                <ul>
+                    <li>✔ La méthode d’Euler est une simulation pas à pas.</li>
+                    <li>✔ L’accélération baisse à cause du freinage de l’air → vitesse limite.</li>
+                    <li>✔ On peut modifier la masse, la surface, et voir l’impact.</li>
+                    <li>✔ L’incertitude sur V₀ se traduit par un intervalle de confiance, mais la vitesse limite est robuste.</li>
+                </ul>
+                <div class="defi-box">✈️ Utilise le simulateur avec fluctuation pour visualiser l’intervalle de confiance.</div>
+                <footer><a href="AVION_PBL_PORTANCE.html" style="color:#0d47a1;">← Revenir au calcul de la portance</a></footer>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="nav-buttons">
+    <button class="round-nav" onclick="rotateRoom(-1)">◀</button>
+    <button class="round-nav" onclick="rotateRoom(1)">▶</button>
+</div>
+
+<!-- Modal droits d'auteur -->
+<div id="copyrightModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="toggleModal(false)">&times;</span>
+        <h2>📚 Licence pédagogique</h2>
+        <p><strong>Auteur :</strong> Yann Merdy – Juin 2026.</p>
+        <p>Utilisation libre pour tout usage éducatif et non commercial.</p>
+        <button class="btn-test" onclick="toggleModal(false)">Fermer</button>
+    </div>
+</div>
+
+<script>
+    const totalBoards = 8;
+    let currentIndex = 0;
+    const room = document.getElementById('room');
+    const boards = document.querySelectorAll('.board');
+
+    function applyRotation() {
+        const angle = currentIndex * (360 / totalBoards) * -1;
+        room.style.transform = `translateZ(calc(-1 * var(--radius))) rotateY(${angle}deg)`;
+        boards.forEach((board, idx) => {
+            if (idx === currentIndex) board.classList.add('active');
+            else board.classList.remove('active');
+        });
+    }
+
+    function rotateRoom(delta) {
+        let newIndex = currentIndex + delta;
+        if (newIndex < 0) newIndex = totalBoards - 1;
+        if (newIndex >= totalBoards) newIndex = 0;
+        currentIndex = newIndex;
+        applyRotation();
+    }
+
+    function toggleModal(show) {
+        const modal = document.getElementById('copyrightModal');
+        if (show) modal.classList.add('active');
+        else modal.classList.remove('active');
+    }
+
+    const rho = 1.225;
+    const Cd = 0.5;
+    const g = 9.81;
+
+    function simulateOne(m, S, h, V0) {
+        const k = (rho * S * Cd) / (2 * m);
+        const tMax = 3.0;
+        let times = [0];
+        let velocities = [V0];
+        let t = 0;
+        let V = V0;
+        while (t < tMax) {
+            let acc = g - k * V * V;
+            if (acc < 0) acc = 0;
+            V = V + h * acc;
+            t = t + h;
+            times.push(t);
+            velocities.push(V);
+            if (times.length > 300) break;
+        }
+        return { times, velocities };
+    }
+
+    function runEuler() {
+        let m = parseFloat(document.getElementById('mass').value);
+        let S = parseFloat(document.getElementById('area').value);
+        let h = parseFloat(document.getElementById('stepsize').value);
+        let V0 = parseFloat(document.getElementById('v0').value);
+        if (isNaN(m) || m <= 0) m = 0.005;
+        if (isNaN(S) || S <= 0) S = 0.016;
+        if (isNaN(h) || h <= 0) h = 0.05;
+        if (isNaN(V0)) V0 = 0;
+
+        const { times, velocities } = simulateOne(m, S, h, V0);
+        let html = `<table><th>⏱️ Temps (s)</th><th>📊 Vitesse (m/s)</th></tr>`;
+        for (let i = 0; i < Math.min(times.length, 12); i++) {
+            html += `<tr><td>${times[i].toFixed(2)}</td><td>${velocities[i].toFixed(3)}</td></tr>`;
+        }
+        if (times.length > 12) html += `<tr><td colspan="2">... suite jusqu'à ${times[times.length-1].toFixed(2)} s</td></tr>`;
+        html += `</table>`;
+        document.getElementById('eulerTable').innerHTML = html;
+        drawGraph(times, velocities, 'velocityGraph');
+        // On ne modifie pas le second graphique ici pour ne pas effacer l'analyse de fluctuation si elle existe
+    }
+
+    function runEulerWithFluctuation() {
+        let m = parseFloat(document.getElementById('mass').value);
+        let S = parseFloat(document.getElementById('area').value);
+        let h = parseFloat(document.getElementById('stepsize').value);
+        let V0_mean = parseFloat(document.getElementById('v0').value);
+        let fluct = parseFloat(document.getElementById('v0_fluctuation').value);
+        if (isNaN(m) || m <= 0) m = 0.005;
+        if (isNaN(S) || S <= 0) S = 0.016;
+        if (isNaN(h) || h <= 0) h = 0.05;
+        if (isNaN(V0_mean)) V0_mean = 1.0;
+        if (isNaN(fluct)) fluct = 0.2;
+
+        const nSim = 100;
+        const V0_min = V0_mean - fluct;
+        const V0_max = V0_mean + fluct;
+
+        let allVelocities = [];
+        let commonTimes = null;
+
+        for (let i = 0; i < nSim; i++) {
+            let V0 = V0_min + Math.random() * (V0_max - V0_min);
+            const { times, velocities } = simulateOne(m, S, h, V0);
+            if (!commonTimes) commonTimes = times;
+            allVelocities.push(velocities);
+        }
+
+        let meanVel = [];
+        let stdVel = [];
+        for (let i = 0; i < commonTimes.length; i++) {
+            let sum = 0;
+            let sumSq = 0;
+            for (let j = 0; j < nSim; j++) {
+                let v = allVelocities[j][i];
+                sum += v;
+                sumSq += v * v;
+            }
+            let mean = sum / nSim;
+            let variance = (sumSq / nSim) - mean * mean;
+            let std = Math.sqrt(variance);
+            meanVel.push(mean);
+            stdVel.push(std);
+        }
+
+        let html = `<strong>📊 Analyse de fluctuation (${nSim} simulations) :</strong><br>
+                    V₀ ∈ [${V0_min.toFixed(2)} , ${V0_max.toFixed(2)}] m/s<br>
+                    À t = 1 s, vitesse moyenne = ${meanVel[Math.floor(1/h)]?.toFixed(3)} m/s, intervalle à 95% ≈ [${(meanVel[Math.floor(1/h)] - 2*stdVel[Math.floor(1/h)]).toFixed(3)}, ${(meanVel[Math.floor(1/h)] + 2*stdVel[Math.floor(1/h)]).toFixed(3)}] m/s.<br>
+                    À t = 2 s, vitesse moyenne = ${meanVel[Math.floor(2/h)]?.toFixed(3)} m/s, intervalle à 95% ≈ [${(meanVel[Math.floor(2/h)] - 2*stdVel[Math.floor(2/h)]).toFixed(3)}, ${(meanVel[Math.floor(2/h)] + 2*stdVel[Math.floor(2/h)]).toFixed(3)}] m/s.<br>
+                    Vitesse limite théorique = ${Math.sqrt((2*m*g)/(rho*S*Cd)).toFixed(2)} m/s.`;
+        document.getElementById('fluctuationResults').innerHTML = html;
+        document.getElementById('fluctuationResults').style.display = 'block';
+        drawFluctuationGraph(commonTimes, meanVel, stdVel);
+    }
+
+    function drawGraph(times, velocities, canvasId) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const w = canvas.clientWidth;
+        const h = 260;
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, w, h);
+        if (!times.length) return;
+        const tMax = Math.max(...times);
+        const vMax = Math.max(5, Math.max(...velocities) + 0.5);
+        // axes
+        ctx.beginPath();
+        ctx.strokeStyle = "#555";
+        ctx.lineWidth = 1;
+        ctx.moveTo(40, h-30);
+        ctx.lineTo(w-15, h-30);
+        ctx.moveTo(40, 15);
+        ctx.lineTo(40, h-30);
+        ctx.stroke();
+        ctx.fillStyle = "#1e2a3a";
+        ctx.font = "12px 'Segoe UI'";
+        ctx.fillText("Temps (s)", w-50, h-12);
+        ctx.fillText("Vitesse (m/s)", 10, 25);
+        for (let i = 0; i <= 4; i++) {
+            let yVal = (i * vMax / 4);
+            let y = h-30 - (yVal / vMax) * (h-45);
+            ctx.beginPath();
+            ctx.moveTo(35, y);
+            ctx.lineTo(w-15, y);
+            ctx.stroke();
+            ctx.fillStyle = "#333";
+            ctx.fillText(yVal.toFixed(1), 5, y+3);
+        }
+        // courbe
+        ctx.beginPath();
+        ctx.strokeStyle = "#d32f2f";
+        ctx.lineWidth = 3;
+        let first = true;
+        for (let i = 0; i < times.length; i++) {
+            let x = 40 + (times[i] / tMax) * (w - 55);
+            let y = h-30 - (velocities[i] / vMax) * (h-45);
+            if (first) { ctx.moveTo(x, y); first = false; }
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    }
+
+    function drawFluctuationGraph(times, meanVel, stdVel) {
+        const canvas = document.getElementById('fluctuationGraph');
+        if (!canvas) return;
+        const w = canvas.clientWidth;
+        const h = 260;
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, w, h);
+        if (!times.length) return;
+        const tMax = Math.max(...times);
+        let maxVal = 0;
+        for (let i=0; i<meanVel.length; i++) {
+            let val = meanVel[i] + 2*stdVel[i];
+            if (val > maxVal) maxVal = val;
+        }
+        const vMax = Math.max(5, maxVal + 0.5);
+        // axes
+        ctx.beginPath();
+        ctx.strokeStyle = "#555";
+        ctx.lineWidth = 1;
+        ctx.moveTo(40, h-30);
+        ctx.lineTo(w-15, h-30);
+        ctx.moveTo(40, 15);
+        ctx.lineTo(40, h-30);
+        ctx.stroke();
+        ctx.fillStyle = "#1e2a3a";
+        ctx.font = "12px 'Segoe UI'";
+        ctx.fillText("Temps (s)", w-50, h-12);
+        ctx.fillText("Vitesse (m/s)", 10, 25);
+        for (let i = 0; i <= 4; i++) {
+            let yVal = (i * vMax / 4);
+            let y = h-30 - (yVal / vMax) * (h-45);
+            ctx.beginPath();
+            ctx.moveTo(35, y);
+            ctx.lineTo(w-15, y);
+            ctx.stroke();
+            ctx.fillStyle = "#333";
+            ctx.fillText(yVal.toFixed(1), 5, y+3);
+        }
+        // bande de confiance
+        ctx.fillStyle = "rgba(100, 100, 200, 0.3)";
+        ctx.beginPath();
+        let first = true;
+        for (let i = 0; i < times.length; i++) {
+            let x = 40 + (times[i] / tMax) * (w - 55);
+            let yLow = h-30 - ((meanVel[i] - 2*stdVel[i]) / vMax) * (h-45);
+            if (first) { ctx.moveTo(x, yLow); first = false; }
+            else ctx.lineTo(x, yLow);
+        }
+        for (let i = times.length-1; i >= 0; i--) {
+            let x = 40 + (times[i] / tMax) * (w - 55);
+            let yUp = h-30 - ((meanVel[i] + 2*stdVel[i]) / vMax) * (h-45);
+            ctx.lineTo(x, yUp);
+        }
+        ctx.fill();
+        // courbe moyenne
+        ctx.beginPath();
+        ctx.strokeStyle = "#1565c0";
+        ctx.lineWidth = 2;
+        first = true;
+        for (let i = 0; i < times.length; i++) {
+            let x = 40 + (times[i] / tMax) * (w - 55);
+            let y = h-30 - (meanVel[i] / vMax) * (h-45);
+            if (first) { ctx.moveTo(x, y); first = false; }
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.fillStyle = "#0d47a1";
+        ctx.font = "bold 12px 'Segoe UI'";
+        ctx.fillText("Moyenne ± intervalle de confiance (95%)", w-280, 20);
+    }
+
+    function checkQCM(name, expected, feedbackId) {
+        const selected = document.querySelector(`input[name="${name}"]:checked`);
+        const feedback = document.getElementById(feedbackId);
+        if (!selected) {
+            feedback.innerHTML = "❓ Choisis une réponse avant de valider.";
+            feedback.classList.add('visible');
+            return;
+        }
+        if (selected.value === expected) {
+            if (name === 'q1') feedback.innerHTML = "✅ Exact ! Plus l’avion est lourd, plus la vitesse limite est grande (formule √(2mg/...)).";
+            else if (name === 'q2') feedback.innerHTML = "✅ Bravo ! La méthode d’Euler consiste à avancer pas à pas avec des opérations simples.";
+        } else {
+            if (name === 'q1') feedback.innerHTML = "❌ Non. Regarde la formule : Vlim = √(2mg/(ρ S Cd)). Si m augmente, Vlim augmente.";
+            else if (name === 'q2') feedback.innerHTML = "❌ Ce n’est pas cela. Relis l’explication : on répète nouvelle vitesse = ancienne + h × accélération.";
+        }
+        feedback.classList.add('visible');
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') rotateRoom(-1);
+        if (e.key === 'ArrowRight') rotateRoom(1);
+        if (e.key === 'Escape') toggleModal(false);
+    });
+
+    window.onload = () => {
+        applyRotation();
+        runEuler(); // initialise le premier graphique
+        // Afficher un message dans le second graphique (explicite)
+        const canvas = document.getElementById('fluctuationGraph');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.clientWidth;
+            canvas.height = 260;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#888";
+            ctx.font = "14px 'Segoe UI'";
+            ctx.fillText("Cliquez sur « Lancer avec fluctuation » pour visualiser l'intervalle de confiance", 20, 130);
+        }
+    };
+    window.addEventListener('resize', () => {
+        runEuler();
+        // on ne redessine pas la fluctuation automatiquement, mais on peut laisser l'utilisateur relancer
+    });
+
+    // Script pour les popups techniques (identique)
+    (function() {
+        let popupDiv = null;
+        function getPopup() {
+            if (!popupDiv) {
+                popupDiv = document.createElement('div');
+                popupDiv.className = 'tech-popup';
+                popupDiv.style.opacity = '0';
+                document.body.appendChild(popupDiv);
+            }
+            return popupDiv;
+        }
+        function prepareTerms() {
+            document.querySelectorAll('.tech-term').forEach(term => {
+                const t = term.getAttribute('title');
+                if (t && !term.hasAttribute('data-title')) {
+                    term.setAttribute('data-title', t);
+                    term.removeAttribute('title');
+                }
+            });
+        }
+        function positionPopup(popup, target) {
+            const rect = target.getBoundingClientRect();
+            const popupWidth = popup.offsetWidth;
+            const popupHeight = popup.offsetHeight;
+            let left = rect.left + (rect.width / 2) - (popupWidth / 2);
+            let top = rect.top - popupHeight - 10;
+            if (left < 10) left = 10;
+            if (left + popupWidth > window.innerWidth - 10) left = window.innerWidth - popupWidth - 10;
+            if (top < 10) top = rect.bottom + 10;
+            popup.style.left = left + 'px';
+            popup.style.top = top + 'px';
+        }
+        document.body.addEventListener('mouseenter', (e) => {
+            const target = e.target.closest('.tech-term');
+            if (!target) return;
+            const content = target.getAttribute('data-title');
+            if (!content) return;
+            const popup = getPopup();
+            popup.textContent = content;
+            popup.style.opacity = '1';
+            positionPopup(popup, target);
+        }, true);
+        document.body.addEventListener('mousemove', (e) => {
+            const target = e.target.closest('.tech-term');
+            if (!target) return;
+            const popup = getPopup();
+            if (popup.style.opacity === '1') positionPopup(popup, target);
+        }, true);
+        document.body.addEventListener('mouseleave', (e) => {
+            const target = e.target.closest('.tech-term');
+            if (!target) return;
+            getPopup().style.opacity = '0';
+        }, true);
+        prepareTerms();
+        new MutationObserver(() => prepareTerms()).observe(document.getElementById('room'), { childList: true, subtree: true });
+    })();
+</script>
+</body>
+</html>

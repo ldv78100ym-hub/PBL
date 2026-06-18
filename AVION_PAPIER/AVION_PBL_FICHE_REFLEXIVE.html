@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Fiche réflexive 3D – PBL Avion en papier</title>
+    <style>
+        :root {
+            --bg-room: #cfd8dc;
+            --text-color: #1a1a1a;
+            --highlight-main: #1565c0;
+            --highlight-alert: #b71c1c;
+            --highlight-success: #2e7d32;
+            --board-bg: #fdfbf7;
+            --board-border: #3e2723;
+            --radius: min(1500px, 100vw);
+            --boards-count: 6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-room);
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            overflow: hidden;
+            color: var(--text-color);
+        }
+
+        .scene {
+            width: 100vw;
+            height: 100vh;
+            perspective: 1500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .room {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+
+        .board {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--board-bg);
+            border: 3px solid var(--board-border);
+            border-radius: 0;
+            backface-visibility: hidden;
+            transform: rotateY(calc(var(--i) * (360deg / var(--boards-count)))) translateZ(var(--radius));
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.6s ease;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .board.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .board-scroll {
+            width: 100%;
+            min-height: 100%;
+            padding: clamp(20px, 5vh, 45px);
+            scrollbar-width: thin;
+        }
+
+        h1 {
+            font-size: clamp(1.6rem, 4.5vh, 2.3rem);
+            color: var(--highlight-main);
+            text-align: center;
+            border-bottom: 3px double var(--highlight-main);
+            padding-bottom: 0.6rem;
+            margin: 0 0 1rem 0;
+        }
+
+        h2 {
+            font-size: clamp(1.3rem, 3.2vh, 1.8rem);
+            color: var(--highlight-alert);
+            border-left: 6px solid var(--highlight-alert);
+            padding-left: 15px;
+            margin: 0 0 1.2rem 0;
+        }
+
+        .info-identity {
+            background: #e3f2fd;
+            border-radius: 28px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.8rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: space-between;
+        }
+        .info-identity label {
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        .info-identity input {
+            padding: 6px 12px;
+            border-radius: 30px;
+            border: 1px solid #aaa;
+            font-size: 0.9rem;
+        }
+
+        .step-date {
+            background: #f0f4c3;
+            border-radius: 30px;
+            padding: 6px 15px;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-weight: 600;
+            display: block;
+            margin-top: 18px;
+            margin-bottom: 5px;
+            color: #2c3e2f;
+        }
+
+        textarea, input[type="text"], input[type="date"] {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 20px;
+            border: 1px solid #bcaaa4;
+            font-family: inherit;
+            font-size: 0.9rem;
+            resize: vertical;
+            background: white;
+        }
+
+        textarea:focus, input:focus {
+            border-color: #1565c0;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(21,101,192,0.2);
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 8px;
+            background: #f5f0e6;
+            padding: 10px 15px;
+            border-radius: 28px;
+        }
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: normal;
+            margin-top: 0;
+        }
+
+        .rating {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+        .rating label {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: normal;
+            margin-top: 0;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0 20px;
+            position: relative;
+            z-index: 100;
+        }
+
+        button {
+            background-color: #1565c0;
+            color: white;
+            border: none;
+            border-radius: 60px;
+            padding: 10px 24px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        button:hover {
+            background-color: #0d47a1;
+            transform: scale(1.02);
+        }
+
+        .nav-buttons {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            z-index: 1100;
+        }
+        .round-nav {
+            background: var(--highlight-main);
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 60px;
+            font-size: 2rem;
+            cursor: pointer;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.3);
+        }
+        .round-nav:hover {
+            background-color: #0d47a1;
+            transform: scale(1.05);
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            margin-top: 1.5rem;
+            color: #5d5d5d;
+        }
+        @media (max-width: 700px) {
+            .round-nav { width: 48px; height: 48px; font-size: 1.5rem; }
+            .board-scroll { padding: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="scene">
+    <div class="room" id="room">
+        <!-- Face 0 : Identité & informations générales -->
+        <div class="board" style="--i:0;">
+            <div class="board-scroll">
+                <h1>📓 Fiche réflexive PBL – Avion en papier</h1>
+                <div class="info-identity">
+                    <div><label>👤 Prénom :</label> <input type="text" id="prenom" placeholder="Prénom"></div>
+                    <div><label>👥 Nom :</label> <input type="text" id="nom" placeholder="Nom"></div>
+                    <div><label>📚 Classe :</label> <input type="text" id="classe" placeholder="Ex: 3A"></div>
+                </div>
+                <div class="info-identity" style="background:#fff0e0;">
+                    <div><label>📅 Début du projet :</label> <input type="date" id="date_debut"></div>
+                    <div><label>🏁 Fin du projet :</label> <input type="date" id="date_fin"></div>
+                </div>
+                <div class="insight-box" style="background:#e8eaf6; padding:15px; border-radius:24px;">
+                    <p>📌 Cette fiche t’accompagne tout au long des 4 étapes. Remplis‑la au fur et à mesure. Les dates de chaque étape sont conservées. Tu peux sauvegarder tes réponses (localStorage) et les exporter en fichier texte.</p>
+                    <p style="margin-top:8px;"><strong>⬅️ ➡️</strong> Utilise les boutons ronds pour naviguer entre les faces.</p>
+                </div>
+                <footer>Face 1/6 – Identité</footer>
+            </div>
+        </div>
+
+        <!-- Face 1 : Étape 1 – Conception aérodynamique -->
+        <div class="board" style="--i:1;">
+            <div class="board-scroll">
+                <h2>📐 Étape 1 – Conception & stabilité</h2>
+                <div class="step-date"><label>📅 Date de cette étape : </label><input type="date" id="step1_date" class="step-date-input"></div>
+                
+                <label>🔍 Ce que j’ai compris sur la portance, le centre de gravité et l’incidence :</label>
+                <textarea id="step1_compris" rows="3" placeholder="Ex: J’ai compris que le centre de gravité doit être légèrement en avant..."></textarea>
+                
+                <label>🛠️ Modifications testées (lestage, pliures, symétrie) :</label>
+                <textarea id="step1_modifs" rows="3" placeholder="Nombre de trombones, position, corrections d’ailes..."></textarea>
+                
+                <label>📊 Résultats observés (analyseur de vol) :</label>
+                <textarea id="step1_resultats" rows="2" placeholder="% tout droit, % tangage neutre..."></textarea>
+                
+                <label>😅 Difficultés rencontrées :</label>
+                <textarea id="step1_difficultes" rows="2"></textarea>
+                
+                <label>✅ Ce que je retiens pour la suite :</label>
+                <textarea id="step1_retiens" rows="2"></textarea>
+
+                <div class="checkbox-group">
+                    <span style="font-weight:bold;">🎯 Objectifs atteints ?</span>
+                    <label><input type="checkbox" id="step1_obj_dir"> Direction tout droit ≥ 60%</label>
+                    <label><input type="checkbox" id="step1_obj_tang"> Tangage neutre ≥ 60%</label>
+                    <label><input type="checkbox" id="step1_obj_compris"> J’ai compris le rôle du centrage</label>
+                </div>
+
+                <div class="rating">
+                    <span style="font-weight:bold;">⭐ Auto‑évaluation :</span>
+                    <label><input type="radio" name="step1_rating" value="1"> 1</label>
+                    <label><input type="radio" name="step1_rating" value="2"> 2</label>
+                    <label><input type="radio" name="step1_rating" value="3"> 3</label>
+                    <label><input type="radio" name="step1_rating" value="4"> 4</label>
+                    <label><input type="radio" name="step1_rating" value="5"> 5</label>
+                </div>
+                <footer>Face 2/6 – Étape 1</footer>
+            </div>
+        </div>
+
+        <!-- Face 2 : Étape 2 – Acquisition des données -->
+        <div class="board" style="--i:2;">
+            <div class="board-scroll">
+                <h2>📏 Étape 2 – Mesures terrain (X,Y)</h2>
+                <div class="step-date"><label>📅 Date de cette étape : </label><input type="date" id="step2_date" class="step-date-input"></div>
+                
+                <label>📐 Description du protocole (rôles, repère, nombre de lancers) :</label>
+                <textarea id="step2_protocole" rows="3"></textarea>
+                
+                <label>📊 Premières impressions sur les mesures :</label>
+                <textarea id="step2_impressions" rows="2"></textarea>
+                
+                <label>⚠️ Difficultés rencontrées lors des relevés :</label>
+                <textarea id="step2_difficultes" rows="2"></textarea>
+                
+                <label>💡 Ce que cette étape m’a appris sur l’importance des répétitions :</label>
+                <textarea id="step2_appris" rows="2"></textarea>
+                
+                <div class="checkbox-group">
+                    <label><input type="checkbox" id="step2_export"> J’ai exporté le CSV correctement</label>
+                    <label><input type="checkbox" id="step2_outliers"> J’ai repéré des valeurs aberrantes (outliers)</label>
+                </div>
+                <div class="rating">
+                    <span style="font-weight:bold;">⭐ Auto‑évaluation :</span>
+                    <label><input type="radio" name="step2_rating" value="1">1</label>
+                    <label><input type="radio" name="step2_rating" value="2">2</label>
+                    <label><input type="radio" name="step2_rating" value="3">3</label>
+                    <label><input type="radio" name="step2_rating" value="4">4</label>
+                    <label><input type="radio" name="step2_rating" value="5">5</label>
+                </div>
+                <footer>Face 3/6 – Étape 2</footer>
+            </div>
+        </div>
+
+        <!-- Face 3 : Étape 3 – Traitement statistique -->
+        <div class="board" style="--i:3;">
+            <div class="board-scroll">
+                <h2>📊 Étape 3 – Traitement statistique</h2>
+                <div class="step-date"><label>📅 Date de cette étape : </label><input type="date" id="step3_date" class="step-date-input"></div>
+                
+                <label>📈 Calculs effectués (moyenne, écart-type, IQR…) :</label>
+                <textarea id="step3_calculs" rows="3"></textarea>
+                
+                <label>📉 Graphiques / visualisations (Datawrapper, Flourish, tableur) :</label>
+                <textarea id="step3_graphiques" rows="2"></textarea>
+                
+                <label>🔍 Interprétation : que nous disent les données sur la stabilité ?</label>
+                <textarea id="step3_interpretation" rows="3"></textarea>
+                
+                <label>❓ Ce qui a été difficile à comprendre :</label>
+                <textarea id="step3_difficultes" rows="2"></textarea>
+                
+                <div class="checkbox-group">
+                    <label><input type="checkbox" id="step3_export_stats"> J’ai su exporter et analyser les données</label>
+                    <label><input type="checkbox" id="step3_outliers_compris"> Je comprends pourquoi on détecte les outliers</label>
+                </div>
+                <div class="rating">
+                    <span style="font-weight:bold;">⭐ Auto‑évaluation :</span>
+                    <label><input type="radio" name="step3_rating" value="1">1</label>
+                    <label><input type="radio" name="step3_rating" value="2">2</label>
+                    <label><input type="radio" name="step3_rating" value="3">3</label>
+                    <label><input type="radio" name="step3_rating" value="4">4</label>
+                    <label><input type="radio" name="step3_rating" value="5">5</label>
+                </div>
+                <footer>Face 4/6 – Étape 3</footer>
+            </div>
+        </div>
+
+        <!-- Face 4 : Étape 4 – Modélisation & synthèse -->
+        <div class="board" style="--i:4;">
+            <div class="board-scroll">
+                <h2>✈️ Étape 4 – Modélisation & soutenance</h2>
+                <div class="step-date"><label>📅 Date de cette étape : </label><input type="date" id="step4_date" class="step-date-input"></div>
+                
+                <label>🧠 Compréhension de la portance (vitesse minimale, rôle surface) :</label>
+                <textarea id="step4_portance" rows="3"></textarea>
+                
+                <label>⚙️ Simulation Euler : observations en variant masse / surface :</label>
+                <textarea id="step4_euler" rows="2"></textarea>
+                
+                <label>🎤 Préparation de la soutenance : message clé, graphiques :</label>
+                <textarea id="step4_soutenance" rows="3"></textarea>
+                
+                <label>🌟 Ce que ce projet m’a apporté personnellement :</label>
+                <textarea id="step4_bilan_perso" rows="2"></textarea>
+                
+                <div class="checkbox-group">
+                    <label><input type="checkbox" id="step4_confiance"> Je me sens capable d’expliquer la méthode scientifique</label>
+                    <label><input type="checkbox" id="step4_autonomie"> J’ai gagné en autonomie</label>
+                </div>
+                <div class="rating">
+                    <span style="font-weight:bold;">⭐ Satisfaction étape :</span>
+                    <label><input type="radio" name="step4_rating" value="1">1</label>
+                    <label><input type="radio" name="step4_rating" value="2">2</label>
+                    <label><input type="radio" name="step4_rating" value="3">3</label>
+                    <label><input type="radio" name="step4_rating" value="4">4</label>
+                    <label><input type="radio" name="step4_rating" value="5">5</label>
+                </div>
+                <footer>Face 5/6 – Étape 4</footer>
+            </div>
+        </div>
+
+        <!-- Face 5 : Bilan global -->
+        <div class="board" style="--i:5;">
+            <div class="board-scroll">
+                <h2>🏁 Bilan global du projet</h2>
+                <div class="step-date"><label>📅 Date du bilan : </label><input type="date" id="bilan_date" class="step-date-input"></div>
+                
+                <label>✈️ En trois mots, ce que je retiens de cette aventure PBL :</label>
+                <textarea id="bilan_mots" rows="1" placeholder="Ex: rigueur, étonnement, collaboration"></textarea>
+                
+                <label>💡 Un conseil pour les futurs élèves :</label>
+                <textarea id="bilan_conseil" rows="2"></textarea>
+                
+                <label>🔭 Une question que je me pose encore / sujet à approfondir :</label>
+                <textarea id="bilan_question" rows="2"></textarea>
+                
+                <div class="rating">
+                    <span style="font-weight:bold;">⭐ Satisfaction globale (sur 5) :</span>
+                    <label><input type="radio" name="global_rating" value="1">1</label>
+                    <label><input type="radio" name="global_rating" value="2">2</label>
+                    <label><input type="radio" name="global_rating" value="3">3</label>
+                    <label><input type="radio" name="global_rating" value="4">4</label>
+                    <label><input type="radio" name="global_rating" value="5">5</label>
+                </div>
+                <footer>Face 6/6 – Bilan</footer>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="nav-buttons">
+    <button class="round-nav" onclick="rotateRoom(-1)">◀</button>
+    <button class="round-nav" onclick="rotateRoom(1)">▶</button>
+</div>
+
+<div class="action-buttons">
+    <button id="saveBtn">💾 Sauvegarder mes réponses</button>
+    <button id="exportBtn" class="btn-export" style="background:#2e7d32;">📄 Exporter en fichier texte</button>
+    <button id="resetBtn" style="background:#e67e22;">🗑️ Tout effacer</button>
+</div>
+
+<script>
+    // Liste de tous les champs à sauvegarder (IDs)
+    const identityFields = ["prenom", "nom", "classe", "date_debut", "date_fin"];
+    const stepDates = ["step1_date", "step2_date", "step3_date", "step4_date", "bilan_date"];
+    const stepFields = [
+        "step1_compris", "step1_modifs", "step1_resultats", "step1_difficultes", "step1_retiens",
+        "step1_obj_dir", "step1_obj_tang", "step1_obj_compris", "step1_rating",
+        "step2_protocole", "step2_impressions", "step2_difficultes", "step2_appris",
+        "step2_export", "step2_outliers", "step2_rating",
+        "step3_calculs", "step3_graphiques", "step3_interpretation", "step3_difficultes",
+        "step3_export_stats", "step3_outliers_compris", "step3_rating",
+        "step4_portance", "step4_euler", "step4_soutenance", "step4_bilan_perso",
+        "step4_confiance", "step4_autonomie", "step4_rating",
+        "bilan_mots", "bilan_conseil", "bilan_question", "global_rating"
+    ];
+    const allFields = [...identityFields, ...stepDates, ...stepFields];
+
+    // Sauvegarde
+    function saveAll() {
+        for (let id of allFields) {
+            const el = document.getElementById(id);
+            if (!el) continue;
+            if (el.type === 'checkbox') {
+                localStorage.setItem(id, el.checked);
+            } else if (el.type === 'radio') {
+                const name = el.getAttribute('name');
+                if (name) {
+                    const selected = document.querySelector(`input[name="${name}"]:checked`);
+                    localStorage.setItem(name, selected ? selected.value : '');
+                }
+            } else {
+                localStorage.setItem(id, el.value);
+            }
+        }
+        alert('✅ Toutes vos réponses (y compris les dates) ont été sauvegardées dans le navigateur.');
+    }
+
+    function loadAll() {
+        for (let id of allFields) {
+            const el = document.getElementById(id);
+            if (!el) continue;
+            if (el.type === 'checkbox') {
+                const saved = localStorage.getItem(id);
+                if (saved !== null) el.checked = (saved === 'true');
+            } else if (el.type === 'radio') {
+                const name = el.getAttribute('name');
+                if (name) {
+                    const savedVal = localStorage.getItem(name);
+                    if (savedVal && el.value === savedVal) el.checked = true;
+                }
+            } else {
+                const saved = localStorage.getItem(id);
+                if (saved !== null) el.value = saved;
+            }
+        }
+        // Initialiser les dates par défaut si vides (aujourd'hui pour les étapes)
+        const today = new Date().toISOString().slice(0,10);
+        for (let d of stepDates) {
+            const inp = document.getElementById(d);
+            if (inp && !inp.value) inp.value = today;
+        }
+        if (document.getElementById('date_debut') && !document.getElementById('date_debut').value)
+            document.getElementById('date_debut').value = today;
+    }
+
+    function exportToTxt() {
+        let content = "FICHE RÉFLEXIVE PBL – AVION EN PAPIER\n";
+        content += `Exporté le ${new Date().toLocaleString()}\n`;
+        content += "═".repeat(70) + "\n\n";
+        
+        // Identité
+        content += `Prénom : ${document.getElementById('prenom')?.value || ""}\n`;
+        content += `Nom : ${document.getElementById('nom')?.value || ""}\n`;
+        content += `Classe : ${document.getElementById('classe')?.value || ""}\n`;
+        content += `Début projet : ${document.getElementById('date_debut')?.value || ""}\n`;
+        content += `Fin projet : ${document.getElementById('date_fin')?.value || ""}\n\n`;
+
+        function getVal(id) {
+            const el = document.getElementById(id);
+            if (!el) return "";
+            if (el.type === 'checkbox') return el.checked ? "Oui" : "Non";
+            if (el.type === 'radio') {
+                const name = el.getAttribute('name');
+                if (name) {
+                    const selected = document.querySelector(`input[name="${name}"]:checked`);
+                    return selected ? selected.value : "Non évalué";
+                }
+                return "";
+            }
+            return el.value;
+        }
+
+        // Étape 1
+        content += "📐 ÉTAPE 1 – CONCEPTION AÉRODYNAMIQUE\n";
+        content += `Date : ${getVal("step1_date")}\n`;
+        content += `Compris : ${getVal("step1_compris")}\n`;
+        content += `Modifications : ${getVal("step1_modifs")}\n`;
+        content += `Résultats : ${getVal("step1_resultats")}\n`;
+        content += `Difficultés : ${getVal("step1_difficultes")}\n`;
+        content += `Retiens : ${getVal("step1_retiens")}\n`;
+        content += `Objectifs : Dir≥60%? ${getVal("step1_obj_dir")} | Tang≥60%? ${getVal("step1_obj_tang")} | Centrage compris? ${getVal("step1_obj_compris")}\n`;
+        content += `Auto‑évaluation : ${getVal("step1_rating")}/5\n\n`;
+
+        // Étape 2
+        content += "📏 ÉTAPE 2 – MESURES TERRAIN\n";
+        content += `Date : ${getVal("step2_date")}\n`;
+        content += `Protocole : ${getVal("step2_protocole")}\n`;
+        content += `Impressions : ${getVal("step2_impressions")}\n`;
+        content += `Difficultés relevés : ${getVal("step2_difficultes")}\n`;
+        content += `Apprentissage : ${getVal("step2_appris")}\n`;
+        content += `Export CSV : ${getVal("step2_export")} | Outliers repérés : ${getVal("step2_outliers")}\n`;
+        content += `Auto‑évaluation : ${getVal("step2_rating")}/5\n\n`;
+
+        // Étape 3
+        content += "📊 ÉTAPE 3 – TRAITEMENT STATISTIQUE\n";
+        content += `Date : ${getVal("step3_date")}\n`;
+        content += `Calculs : ${getVal("step3_calculs")}\n`;
+        content += `Graphiques : ${getVal("step3_graphiques")}\n`;
+        content += `Interprétation : ${getVal("step3_interpretation")}\n`;
+        content += `Difficultés stats : ${getVal("step3_difficultes")}\n`;
+        content += `Export analyse : ${getVal("step3_export_stats")} | Outliers compris : ${getVal("step3_outliers_compris")}\n`;
+        content += `Auto‑évaluation : ${getVal("step3_rating")}/5\n\n`;
+
+        // Étape 4
+        content += "✈️ ÉTAPE 4 – MODÉLISATION & SYNTHÈSE\n";
+        content += `Date : ${getVal("step4_date")}\n`;
+        content += `Portance : ${getVal("step4_portance")}\n`;
+        content += `Simulation Euler : ${getVal("step4_euler")}\n`;
+        content += `Préparation soutenance : ${getVal("step4_soutenance")}\n`;
+        content += `Bilan personnel : ${getVal("step4_bilan_perso")}\n`;
+        content += `Confiance : ${getVal("step4_confiance")} | Autonomie : ${getVal("step4_autonomie")}\n`;
+        content += `Satisfaction étape : ${getVal("step4_rating")}/5\n\n`;
+
+        // Bilan global
+        content += "🏁 BILAN GLOBAL\n";
+        content += `Date : ${getVal("bilan_date")}\n`;
+        content += `Trois mots : ${getVal("bilan_mots")}\n`;
+        content += `Conseil : ${getVal("bilan_conseil")}\n`;
+        content += `Questions : ${getVal("bilan_question")}\n`;
+        content += `Satisfaction globale : ${getVal("global_rating")}/5\n`;
+
+        const blob = new Blob([content], {type: "text/plain;charset=utf-8"});
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.download = `fiche_reflexive_${document.getElementById('nom')?.value || "eleve"}_${document.getElementById('prenom')?.value || ""}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
+    function resetAll() {
+        if (confirm("⚠️ Effacer TOUTES les réponses (y compris les dates) ? Action irréversible.")) {
+            localStorage.clear();
+            for (let id of allFields) {
+                const el = document.getElementById(id);
+                if (!el) continue;
+                if (el.type === 'checkbox') el.checked = false;
+                else if (el.type === 'radio') {
+                    const name = el.getAttribute('name');
+                    if (name) {
+                        const radios = document.querySelectorAll(`input[name="${name}"]`);
+                        radios.forEach(r => r.checked = false);
+                    }
+                } else {
+                    el.value = '';
+                }
+            }
+            // Remettre les dates par défaut
+            const today = new Date().toISOString().slice(0,10);
+            for (let d of stepDates) {
+                const inp = document.getElementById(d);
+                if (inp) inp.value = today;
+            }
+            if (document.getElementById('date_debut')) document.getElementById('date_debut').value = today;
+            alert('Toutes les données ont été effacées.');
+        }
+    }
+
+    // Navigation 3D
+    const totalBoards = 6;
+    let currentIndex = 0;
+    const room = document.getElementById('room');
+    const boards = document.querySelectorAll('.board');
+
+    function applyRotation() {
+        const angle = currentIndex * (360 / totalBoards) * -1;
+        room.style.transform = `translateZ(calc(-1 * var(--radius))) rotateY(${angle}deg)`;
+        boards.forEach((board, idx) => {
+            if (idx === currentIndex) board.classList.add('active');
+            else board.classList.remove('active');
+        });
+    }
+    function rotateRoom(delta) {
+        let newIndex = currentIndex + delta;
+        if (newIndex < 0) newIndex = totalBoards - 1;
+        if (newIndex >= totalBoards) newIndex = 0;
+        currentIndex = newIndex;
+        applyRotation();
+    }
+
+    window.onload = () => {
+        loadAll();
+        applyRotation();
+        // Sauvegarde auto à chaque modification
+        const allInputs = document.querySelectorAll('textarea, input');
+        allInputs.forEach(input => {
+            input.addEventListener('change', () => saveAll());
+            if (input.tagName === 'TEXTAREA') input.addEventListener('input', () => saveAll());
+        });
+    };
+    window.addEventListener('resize', () => applyRotation());
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') rotateRoom(-1);
+        if (e.key === 'ArrowRight') rotateRoom(1);
+    });
+
+    document.getElementById('saveBtn').addEventListener('click', saveAll);
+    document.getElementById('exportBtn').addEventListener('click', exportToTxt);
+    document.getElementById('resetBtn').addEventListener('click', resetAll);
+</script>
+</body>
+</html>

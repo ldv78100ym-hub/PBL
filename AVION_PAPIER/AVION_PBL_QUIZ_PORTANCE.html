@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Quiz – Portance de l’avion en papier</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(145deg, #cfd8dc 0%, #b0bec5 100%);
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .quiz-container {
+            max-width: 800px;
+            width: 100%;
+            background: #fdfbf7;
+            border-radius: 40px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.3);
+            border: 2px solid #3e2723;
+            padding: 25px 30px;
+        }
+        h1 {
+            text-align: center;
+            color: #1565c0;
+            border-bottom: 3px double #1565c0;
+            padding-bottom: 12px;
+            margin-top: 0;
+            font-size: 1.9rem;
+        }
+        .sub {
+            text-align: center;
+            color: #5d4037;
+            margin-top: -5px;
+            margin-bottom: 25px;
+            font-style: italic;
+        }
+        .question {
+            background: #fff3e0;
+            border-radius: 28px;
+            padding: 18px 20px;
+            margin-bottom: 25px;
+            border-left: 8px solid #e67e22;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        .question-text {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+            color: #1e2a2e;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-left: 15px;
+            margin-bottom: 12px;
+        }
+        .options label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 5px 0;
+        }
+        .options input {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+            cursor: pointer;
+        }
+        .feedback {
+            background: #e8f5e9;
+            border-radius: 20px;
+            padding: 10px 15px;
+            margin-top: 12px;
+            display: none;
+            font-size: 0.9rem;
+            border-left: 4px solid #2e7d32;
+        }
+        .feedback.visible {
+            display: block;
+        }
+        .score-area {
+            background: #e3f2fd;
+            border-radius: 40px;
+            padding: 15px;
+            text-align: center;
+            margin: 20px 0;
+            font-weight: bold;
+            font-size: 1.3rem;
+            color: #0d3c5e;
+            border: 1px solid #1565c0;
+        }
+        .buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        button {
+            background-color: #1565c0;
+            color: white;
+            border: none;
+            border-radius: 60px;
+            padding: 12px 28px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        button:hover {
+            background-color: #0d47a1;
+            transform: scale(1.02);
+        }
+        .reset-btn {
+            background-color: #e67e22;
+        }
+        .reset-btn:hover {
+            background-color: #b45f1b;
+        }
+        footer {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 0.75rem;
+            color: #6c6c6c;
+            border-top: 1px solid #ddd;
+            padding-top: 15px;
+        }
+        @media (max-width: 600px) {
+            .quiz-container { padding: 20px; }
+            .question-text { font-size: 1rem; }
+            .options label { font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="quiz-container">
+    <h1>✈️ Quiz – Portance de l’avion en papier</h1>
+    <div class="sub">« The Bird » – Vérifie ta compréhension</div>
+
+    <!-- Question 1 -->
+    <div class="question" id="q1">
+        <div class="question-text">1. Que se passe-t-il si on double la vitesse de l’avion ?</div>
+        <div class="options">
+            <label><input type="radio" name="q1" value="0"> La portance double</label>
+            <label><input type="radio" name="q1" value="1"> La portance est multipliée par 4</label>
+            <label><input type="radio" name="q1" value="2"> La portance ne change pas</label>
+            <label><input type="radio" name="q1" value="3"> La portance est divisée par 2</label>
+        </div>
+        <div id="fb1" class="feedback"></div>
+    </div>
+
+    <!-- Question 2 -->
+    <div class="question" id="q2">
+        <div class="question-text">2. Quelle est la vitesse minimale théorique de l’avion « The Bird » (masse 5 g, surface 0,016 m², CL=0,4) pour que la portance équilibre son poids ?</div>
+        <div class="options">
+            <label><input type="radio" name="q2" value="0"> 1,5 m/s</label>
+            <label><input type="radio" name="q2" value="1"> 3,5 m/s</label>
+            <label><input type="radio" name="q2" value="2"> 5,0 m/s</label>
+            <label><input type="radio" name="q2" value="3"> 7,2 m/s</label>
+        </div>
+        <div id="fb2" class="feedback"></div>
+    </div>
+
+    <!-- Question 3 -->
+    <div class="question" id="q3">
+        <div class="question-text">3. Pourquoi a-t-on besoin d’une hauteur de lâcher plus grande que 64 cm en réalité ?</div>
+        <div class="options">
+            <label><input type="radio" name="q3" value="0"> Parce que le poids est plus grand</label>
+            <label><input type="radio" name="q3" value="1"> À cause de la traînée de l’air qui freine l’avion</label>
+            <label><input type="radio" name="q3" value="2"> Parce que la portance est nulle au début</label>
+            <label><input type="radio" name="q3" value="3"> Parce que l’avion est trop léger</label>
+        </div>
+        <div id="fb3" class="feedback"></div>
+    </div>
+
+    <!-- Question 4 -->
+    <div class="question" id="q4">
+        <div class="question-text">4. Quel paramètre n’apparaît PAS dans la formule de la portance \( F = \frac{1}{2} \rho V^2 S C_L \) ?</div>
+        <div class="options">
+            <label><input type="radio" name="q4" value="0"> La densité de l’air ρ</label>
+            <label><input type="radio" name="q4" value="1"> La masse m de l’avion</label>
+            <label><input type="radio" name="q4" value="2"> La surface alaire S</label>
+            <label><input type="radio" name="q4" value="3"> Le coefficient de portance CL</label>
+        </div>
+        <div id="fb4" class="feedback"></div>
+    </div>
+
+    <!-- Question 5 -->
+    <div class="question" id="q5">
+        <div class="question-text">5. Comment peut-on améliorer la portance à vitesse égale ?</div>
+        <div class="options">
+            <label><input type="radio" name="q5" value="0"> En augmentant la masse</label>
+            <label><input type="radio" name="q5" value="1"> En réduisant la surface des ailes</label>
+            <label><input type="radio" name="q5" value="2"> En augmentant la surface des ailes</label>
+            <label><input type="radio" name="q5" value="3"> En diminuant la densité de l’air</label>
+        </div>
+        <div id="fb5" class="feedback"></div>
+    </div>
+
+    <div id="scoreArea" class="score-area" style="display: none;"></div>
+
+    <div class="buttons">
+        <button id="submitBtn">✅ Valider le quiz</button>
+        <button id="resetBtn" class="reset-btn">🔄 Recommencer</button>
+    </div>
+
+    <footer>
+        📚 D’après la présentation « Calcul de la portance – Avion The Bird »<br>
+        Chaque réponse est accompagnée d’une explication détaillée.
+    </footer>
+</div>
+
+<script>
+    // Réponses correctes (index 0..3)
+    const correctAnswers = [1, 1, 1, 1, 2];  // q1: indice 1 (multipliée par 4), q2: 1 (3,5 m/s), q3: 1 (traînée), q4: 1 (masse), q5: 2 (augmenter surface)
+    const explanations = [
+        "La portance est proportionnelle au carré de la vitesse : F ∝ V². Donc si V double, F est multipliée par 4.",
+        "Calcul : V = √(2P/(ρ S CL)) avec P = mg = 0,049 N → V ≈ 3,54 m/s.",
+        "La traînée de l’air (force de frottement) ralentit l’accélération, donc il faut plus de distance pour atteindre la vitesse critique.",
+        "La masse n’apparaît pas dans la formule de la portance. Elle intervient dans le poids (P = mg) à équilibrer.",
+        "Une plus grande surface alaire (S) augmente la portance à vitesse constante (formule F = ½ ρ V² S CL)."
+    ];
+
+    // Références
+    const submitBtn = document.getElementById('submitBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const scoreDiv = document.getElementById('scoreArea');
+
+    function evaluateQuiz() {
+        let score = 0;
+        // Parcours des 5 questions
+        for (let i = 1; i <= 5; i++) {
+            const radios = document.querySelectorAll(`input[name="q${i}"]`);
+            let selectedValue = null;
+            for (let radio of radios) {
+                if (radio.checked) {
+                    selectedValue = parseInt(radio.value);
+                    break;
+                }
+            }
+            const fbDiv = document.getElementById(`fb${i}`);
+            if (selectedValue === null) {
+                fbDiv.innerHTML = "❓ Aucune réponse sélectionnée. Choisis une option.";
+                fbDiv.style.background = "#fff3cd";
+                fbDiv.style.borderLeftColor = "#e67e22";
+                fbDiv.classList.add('visible');
+            } else if (selectedValue === correctAnswers[i-1]) {
+                score++;
+                fbDiv.innerHTML = `✅ Correct ! ${explanations[i-1]}`;
+                fbDiv.style.background = "#e8f5e9";
+                fbDiv.style.borderLeftColor = "#2e7d32";
+                fbDiv.classList.add('visible');
+            } else {
+                // Trouver le texte de la bonne réponse
+                let correctText = "";
+                const correctIdx = correctAnswers[i-1];
+                const allLabels = document.querySelectorAll(`input[name="q${i}"]`);
+                for (let idx = 0; idx < allLabels.length; idx++) {
+                    if (idx === correctIdx) {
+                        correctText = allLabels[idx].parentElement.textContent.trim();
+                        break;
+                    }
+                }
+                fbDiv.innerHTML = `❌ Incorrect. La bonne réponse était : "${correctText}". ${explanations[i-1]}`;
+                fbDiv.style.background = "#ffcdd2";
+                fbDiv.style.borderLeftColor = "#b71c1c";
+                fbDiv.classList.add('visible');
+            }
+        }
+        const total = 5;
+        const percent = (score / total) * 100;
+        scoreDiv.style.display = 'block';
+        let message = `🎯 Score : ${score} / ${total} (${percent}%) – `;
+        if (percent >= 80) message += "Félicitations ! Tu maîtrises la portance.";
+        else if (percent >= 50) message += "Bon travail, relis les explications pour progresser.";
+        else message += "Revois la présentation et réessaie le quiz.";
+        scoreDiv.innerHTML = message;
+        // Remonter en haut de page pour voir le score (optionnel)
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetQuiz() {
+        // Décocher tous les boutons radio
+        for (let i = 1; i <= 5; i++) {
+            const radios = document.querySelectorAll(`input[name="q${i}"]`);
+            radios.forEach(radio => radio.checked = false);
+            const fbDiv = document.getElementById(`fb${i}`);
+            fbDiv.classList.remove('visible');
+            fbDiv.innerHTML = '';
+        }
+        scoreDiv.style.display = 'none';
+    }
+
+    submitBtn.addEventListener('click', evaluateQuiz);
+    resetBtn.addEventListener('click', resetQuiz);
+</script>
+</body>
+</html>

@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>PBL Avion – Plus-values pédagogiques (version projecteur)</title>
+    <style>
+        :root {
+            --bg-room: #cfd8dc;
+            --text-color: #1a1a1a;
+            --highlight-main: #1565c0;
+            --highlight-alert: #b71c1c;
+            --highlight-success: #2e7d32;
+            --board-bg: #fdfbf7;
+            --board-border: #3e2723;
+            --radius: min(1500px, 100vw);
+            --boards-count: 10;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body, html {
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-room);
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            overflow: hidden;
+            color: var(--text-color);
+        }
+        .scene {
+            width: 100vw;
+            height: 100vh;
+            perspective: 1500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .room {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: transform 0.9s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+        .board {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--board-bg);
+            border: 4px solid var(--board-border);
+            backface-visibility: hidden;
+            transform: rotateY(calc(var(--i) * (360deg / var(--boards-count)))) translateZ(var(--radius));
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.6s ease;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: clamp(30px, 6vh, 70px);
+            /* Tailles agrandies pour vidéoprojection */
+            font-size: clamp(1.2rem, 3vh, 1.8rem);
+            line-height: 1.5;
+        }
+        .board.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        h1 {
+            font-size: clamp(2.5rem, 8vh, 4.5rem);
+            color: var(--highlight-main);
+            text-align: center;
+            border-bottom: 5px double var(--highlight-main);
+            padding-bottom: 1.2vh;
+            margin: 0 0 2.5vh 0;
+            font-weight: 800;
+        }
+        h2 {
+            font-size: clamp(2.2rem, 6vh, 3.5rem);
+            color: var(--highlight-alert);
+            border-left: 12px solid var(--highlight-alert);
+            padding-left: 25px;
+            margin: 0 0 2.5vh 0;
+            font-weight: 700;
+        }
+        h3 {
+            font-size: clamp(1.8rem, 5vh, 2.5rem);
+            color: #0d3c5e;
+            margin: 0.8rem 0 1.2rem;
+            font-weight: 600;
+        }
+        .category {
+            background: #f9fcff;
+            border-radius: 2rem;
+            padding: 1.5rem 2rem;
+            margin: 2rem 0;
+            border-left: 10px solid #1565c0;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        .badge {
+            background: #e0f2fe;
+            border-radius: 60px;
+            padding: 0.4rem 1.2rem;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #0369a1;
+            display: inline-block;
+            margin-right: 1rem;
+            vertical-align: middle;
+        }
+        ul, ol {
+            margin-left: 2rem;
+            margin-top: 1rem;
+        }
+        li {
+            margin: 1.2rem 0;
+            line-height: 1.5;
+            font-size: 1.2rem;
+        }
+        strong {
+            font-weight: 800;
+            color: #0a2f44;
+        }
+        .nav-buttons {
+            position: fixed;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            z-index: 1100;
+        }
+        .round-nav {
+            background: var(--highlight-main);
+            color: white;
+            border: none;
+            width: 85px;
+            height: 85px;
+            border-radius: 85px;
+            font-size: 3rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .round-nav:hover {
+            background-color: #0d47a1;
+            transform: scale(1.08);
+        }
+        .copyright-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #37474f;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            z-index: 2000;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .modal {
+            visibility: hidden;
+            opacity: 0;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .modal.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-content {
+            background: #fff9ef;
+            max-width: 800px;
+            width: 90%;
+            padding: 35px;
+            border-radius: 40px;
+            border-top: 12px solid var(--highlight-alert);
+            font-size: 1.2rem;
+            line-height: 1.5;
+        }
+        .close-modal {
+            float: right;
+            font-size: 2.2rem;
+            cursor: pointer;
+            color: var(--highlight-alert);
+            font-weight: bold;
+        }
+        footer {
+            font-size: 1rem;
+            text-align: center;
+            margin-top: 2.5rem;
+            color: #5d5d5d;
+        }
+        @media (max-width: 700px) {
+            .round-nav { width: 65px; height: 65px; font-size: 2rem; }
+            .board { padding: 20px; }
+            .category { padding: 1rem; }
+            li { font-size: 1rem; }
+        }
+        /* Amélioration du scroll pour les grandes faces */
+        .board::-webkit-scrollbar {
+            width: 12px;
+        }
+        .board::-webkit-scrollbar-track {
+            background: #e0e0e0;
+            border-radius: 10px;
+        }
+        .board::-webkit-scrollbar-thumb {
+            background: #1565c0;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<button class="copyright-btn" onclick="toggleModal(true)">📜 Droits & Licence</button>
+
+<div class="scene">
+    <div class="room" id="room">
+        <!-- Face 0 : Introduction -->
+        <div class="board" style="--i:0;">
+            <div>
+                <h1>✈️ PBL Avion en papier</h1>
+                <h2 style="border-left: none; text-align: center; color: var(--highlight-main);">Plus‑values pédagogiques détaillées</h2>
+                <div style="background:#e0f2fe; border-radius: 2rem; padding: 2rem; margin: 2rem 0;">
+                    <p><strong>📌 Ce document propose des enrichissements potentiels</strong> pour le projet « Avion en papier optimal ».</p>
+		    <p>Comme annoncé en début de présentation : le projet est loin d'être finalisé...</p>
+		    <h2>Avis aux volontaires !</h2>
+                    <p style="margin-top: 1rem;">🔍 Naviguez avec les flèches rondes ou les touches ◀ ▶ (10 faces).</p>
+                </div>
+                <footer>⬅️ ➡️ 10 faces – Toutes les propositions détaillées</footer>
+            </div>
+        </div>
+
+        <!-- Face 1 : Exploitation avancée des données -->
+        <div class="board" style="--i:1;">
+            <h2>🔬 1. Exploitation avancée des données</h2>
+            <div class="category">
+                <h3>📊 IA & traitement automatique</h3>
+                <ul>
+                    <li><span class="badge">Module « outlier intelligent »</span> : dans la feuille de relevés, proposer une option pour justifier l’exclusion ou la conservation d’une donnée aberrante (ex. « lancer raté à cause d’une rafale de vent »). Responsabilise les élèves et enrichit la réflexion épistémologique.</li>
+                    <li><span class="badge">Régression linéaire</span> <strong>Prédiction statistique</strong> : ajouter un outil qui calcule la droite de régression de Y en fonction de X et affiche un intervalle de prédiction. Les élèves peuvent répondre : « Si l’avion vole loin (grand X), a‑t‑il tendance à dévier plus ? »</li>
+                    <li><span class="badge">Python / Jupyter</span> <strong>Notebook prêt à l’emploi</strong> : fournir un notebook qui lit le CSV exporté, trace des histogrammes, calcule des intervalles de confiance et génère un rapport PDF. Passerelle vers la programmation scientifique.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Face 2 : Réalité augmentée / visualisation 3D -->
+        <div class="board" style="--i:2;">
+            <h2>🕶️ 2. Réalité augmentée & visualisation 3D</h2>
+            <div class="category">
+                <h3>🎮 Immersion spatiale</h3>
+                <ul>
+                    <li><span class="badge">Three.js</span> <strong>Nuage d’impacts 3D</strong> : à partir du CSV, générer une scène interactive où chaque point d’impact est représenté par un petit avion. L’élève peut survoler la dispersion latérale.</li>
+                    <li><span class="badge">Animation</span> <strong>Vol type + couloir de confiance</strong> : animation d’un avion fictif suivant la trajectoire moyenne (X̄, Ȳ) avec un ruban ± 2σ pour visualiser la zone de confiance.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Face 3 : Gamification et défis collaboratifs -->
+        <div class="board" style="--i:3;">
+            <h2>🏆 3. Gamification & défis collaboratifs</h2>
+            <div class="category">
+                <h3>🎖️ Motivation et compétition</h3>
+                <ul>
+                    <li><span class="badge">Badges numériques</span> : « Stabilité d’or » (direction ≥ 80% et tangage ≥ 80%), « Data master » (export CSV sans erreur + détection outliers), « Euler explorer ».</li>
+                    <li><span class="badge">Classement temps réel</span> : tableau de bord partagé (Firebase / JSONbin) affichant les meilleures distances et précisions latérales entre groupes.</li>
+                    <li><span class="badge">Mode ingénieur</span> : objectifs contradictoires (voler le plus droit possible tout en atteignant une distance minimale de 8 m) → optimisation multicritères.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Face 4 : Approfondissements disciplinaires -->
+        <div class="board" style="--i:4;">
+            <h2>📐 4. Approfondissements disciplinaires</h2>
+            <div class="category">
+                <h3>📚 Physique, maths, technologie</h3>
+                <ul>
+                    <li><span class="badge">Mesure vidéo</span> : estimation de la vitesse réelle avec slow‑motion (logiciel Tracker) et comparaison avec la simulation d’Euler.</li>
+                    <li><span class="badge">Masse vs distance</span> : faire varier le nombre de trombones, tracer X = f(masse). Discussion sur vitesse limite et énergie cinétique.</li>
+                    <li><span class="badge">CAO</span> : modélisation 3D de l’avion (Tinkercad, Onshape) pour localiser le centre de gravité – lien avec la technologie.</li>
+                    <li><span class="badge">Humidité</span> : expérience avec hygromètre sur la rigidité du papier (air sec vs humide).</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Face 5 : Accessibilité et différenciation -->
+        <div class="board" style="--i:5;">
+            <h2>🎧 5. Accessibilité & différenciation</h2>
+            <div class="category">
+                <h3>♿ Pour tous les élèves</h3>
+                <ul>
+                    <li><span class="badge">Fiche réflexive audio</span> : enregistrement vocal des réponses pour les élèves en difficulté d’écriture. Sauvegarde en fichier audio ou transcription.</li>
+                    <li><span class="badge">Tutoriels vidéo intégrés</span> : courtes vidéos/GIFs « Lancer au poignet », « Mesurer Y avec une équerre », « Interpréter l’IQR ».</li>
+                    <li><span class="badge">Seuil paramétrable</span> : dans l’analyseur de vol, curseur pour modifier le seuil d’acceptabilité (50% → 70%) selon le niveau de la classe.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Face 6 : Auto‑évaluation et portfolio numérique -->
+        <div class="board" style="--i:6;">
+            <h2>📁 6. Auto‑évaluation & portfolio numérique</h2>
+            <div class="category">
+                <h3>📄 Suivi personnalisé</h3>
+                <ul>
+                    <li><span class="badge">Génération PDF</span> : rapport automatique (jsPDF) à partir de la fiche réflexive et des exports CSV : graphiques, réponses, scores.</li>
+                    <li><span class="badge">Grille interactive</span> : auto‑évaluation du groupe (collaboration, rigueur) + commentaires enseignant – stockage local ou export JSON.</li>
+                    <li><span class="badge">Intégration LMS</span> : fichier de paramétrage pour Moodle/Éléa : suivi des scores QCM/quiz et validation des étapes.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Face 7 : Extensions inter‑projets -->
+        <div class="board" style="--i:7;">
+            <h2>🎨 7. Extensions inter‑projets</h2>
+            <div class="category">
+                <h3>🌍 Transversalité</h3>
+                <ul>
+                    <li><span class="badge">Arts plastiques / Arts appliqués</span> : avions d’art – motifs inspirés d’un courant artistique (street art, Art déco) + exposition « avions d’art » avec fiches techniques. Réalisation de compte-rendu ou poster ou tout autre format.</li>
+                    <li><span class="badge">Rencontre métier</span> : visioconférence avec un pilote ou ingénieur aéronautique – les élèves préparent des questions sur la stabilité.</li>
+                    <li><span class="badge">Développement durable</span> : défi zéro déchet – utiliser du papier recyclé ou des prospectus, comparer les performances.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Face 8 : Améliorations techniques -->
+        <div class="board" style="--i:8;">
+            <h2>⚙️ 8. Améliorations techniques</h2>
+            <div class="category">
+                <h3>🛠️ Robustesse & partage</h3>
+                <ul>
+                    <li><span class="badge">Partage d’état</span> : génération d’un lien unique (URLSearchParams) pour sauvegarder et partager l’état d’un groupe (analyseur de vol / relevés).</li>
+                    <li><span class="badge">Mode hors‑ligne complet</span> : embarquer polices, librairies MathJax locales, images THE_BIRD.webp pour une utilisation sans connexion.</li>
+                    <li><span class="badge">Version mobile simplifiée</span> : fiche réflexive sans rotation 3D sur petits écrans, boutons agrandis.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Face 9 : Dispositif de formation enseignant -->
+        <div class="board" style="--i:9;">
+            <h2>👩‍🏫 9. Dispositif de formation enseignant</h2>
+            <div class="category">
+                <h3>📚 Accompagnement des équipes</h3>
+                <ul>
+                    <li><span class="badge">Guide détaillé</span> : diaporama pas à pas avec captures d’écran, conseils d’organisation (îlots, gestion du bruit, timing).</li>
+                    <li><span class="badge">Webinaire de présentation</span> : vidéo de 20 minutes diffusée sous licence pédagogique.</li>
+                    <li><span class="badge">Communauté d’échange</span> : dépôt GitHub / Padlet collectif pour partager adaptations, fiches d’exercices et retours d’expérience.</li>
+                </ul>
+            </div>
+            <footer>✨ Ces plus‑values peuvent être implémentées progressivement, selon les besoins de l’équipe enseignante.</footer>
+        </div>
+    </div>
+</div>
+
+<div class="nav-buttons">
+    <button class="round-nav" onclick="rotateRoom(-1)">◀</button>
+    <button class="round-nav" onclick="rotateRoom(1)">▶</button>
+</div>
+
+<!-- Modale de licence -->
+<div id="copyrightModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="toggleModal(false)">&times;</span>
+        <h2>📚 Licence pédagogique</h2>
+        <p><strong>Auteur :</strong> Yann Merdy – Juin 2026 – yann.merdy@gmail.com</p>
+        <p><strong>Licence d’utilisation non commerciale</strong> : Ce document HTML et les contenus associés sont la propriété intellectuelle de Yann Merdy. Utilisation privée et éducative autorisée (copie, modification, distribution). Exploitation commerciale interdite sans accord écrit explicite.</p>
+        <p><strong>Attribution obligatoire :</strong> mention « Inspiré du projet PBL Avion en Papier – Yann Merdy ».</p>
+        <button class="round-nav" style="background:#2e7d32; margin-top:20px; width:auto; padding:10px 30px; font-size:1.2rem;" onclick="toggleModal(false)">Fermer</button>
+    </div>
+</div>
+
+<script>
+    const totalBoards = 10;
+    let currentIndex = 0;
+    const room = document.getElementById('room');
+    const boards = document.querySelectorAll('.board');
+
+    function applyRotation() {
+        const angle = currentIndex * (360 / totalBoards) * -1;
+        room.style.transform = `translateZ(calc(-1 * var(--radius))) rotateY(${angle}deg)`;
+        boards.forEach((board, idx) => {
+            if (idx === currentIndex) board.classList.add('active');
+            else board.classList.remove('active');
+        });
+    }
+
+    function rotateRoom(delta) {
+        let newIndex = currentIndex + delta;
+        if (newIndex < 0) newIndex = totalBoards - 1;
+        if (newIndex >= totalBoards) newIndex = 0;
+        currentIndex = newIndex;
+        applyRotation();
+    }
+
+    function toggleModal(show) {
+        const modal = document.getElementById('copyrightModal');
+        if (show) modal.classList.add('active');
+        else modal.classList.remove('active');
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') rotateRoom(-1);
+        if (e.key === 'ArrowRight') rotateRoom(1);
+        if (e.key === 'Escape') toggleModal(false);
+    });
+
+    window.onload = () => applyRotation();
+    window.addEventListener('resize', () => applyRotation());
+</script>
+</body>
+</html>

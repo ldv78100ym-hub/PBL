@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>PBL Avion en Papier – Présentation générale</title>
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']],
+                macros: { ddfrac: ['\\displaystyle\\frac{#1}{#2}', 2] }
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --bg-room: #cfd8dc;
+            --text-color: #1a1a1a;
+            --highlight-main: #1565c0;
+            --highlight-alert: #b71c1c;
+            --highlight-success: #2e7d32;
+            --board-bg: #fdfbf7;
+            --board-border: #3e2723;
+            --radius: min(1500px, 100vw); /* rayon suffisant pour des faces pleine largeur */
+            --boards-count: 6;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-room);
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            overflow: hidden;
+            color: var(--text-color);
+        }
+
+        .scene {
+            width: 100vw;
+            height: 100vh;
+            perspective: 1500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .room {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: transform 0.9s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+
+        .board {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--board-bg);
+            border: 3px solid var(--board-border);
+            border-radius: 0;          /* On peut garder ou enlever les bords arrondis pour un plein écran */
+            box-shadow: none;           /* Pour éviter les ombres qui débordent */
+            backface-visibility: hidden;
+            transform: rotateY(calc(var(--i) * (360deg / var(--boards-count)))) translateZ(var(--radius));
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.6s ease;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .board.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Scroll interne avec un padding confortable */
+        .board-scroll {
+            width: 100%;
+            min-height: 100%;
+            padding: clamp(18px, 4vh, 35px);
+            scrollbar-width: thin;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        h1 {
+            font-size: clamp(1.8rem, 5vh, 2.6rem);
+            color: var(--highlight-main);
+            text-align: center;
+            border-bottom: 3px double var(--highlight-main);
+            padding-bottom: 0.8vh;
+            margin: 0 0 1.5vh 0;
+        }
+
+        h2 {
+            font-size: clamp(1.4rem, 3.6vh, 2rem);
+            color: var(--highlight-alert);
+            border-left: 6px solid var(--highlight-alert);
+            padding-left: 15px;
+            margin: 0 0 1.8vh 0;
+        }
+
+        .intro-text {
+            background: #f0f4f8;
+            border-left: 5px solid var(--highlight-main);
+            padding: 12px 18px;
+            border-radius: 18px;
+            font-size: clamp(1rem, 2.3vh, 1.2rem);
+            margin: 1.5vh 0;
+            text-align: center;
+        }
+
+        .defi-box {
+            background: #ffe0b5;
+            border-radius: 28px;
+            padding: 12px 20px;
+            margin: 1.5vh 0;
+            border-left: 8px solid #e67e22;
+            font-weight: bold;
+        }
+
+        .roles-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 15px 0;
+        }
+        .role-card {
+            background: #e3f2fd;
+            border-radius: 20px;
+            padding: 8px 15px;
+            flex: 1 1 160px;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .role-card span {
+            font-size: 1.8rem;
+            display: block;
+        }
+
+        .science-note {
+            background: #e8eaf6;
+            padding: 12px 18px;
+            border-radius: 18px;
+            margin: 1.5vh 0;
+            border-right: 4px solid #3949ab;
+        }
+
+        .challenge-mission {
+            background: #c8e6d9;
+            padding: 12px 18px;
+            border-radius: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .btn-test {
+            background-color: var(--highlight-success);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            padding: 8px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: 0.2s;
+        }
+        .btn-test:hover {
+            background-color: #1b5e20;
+            transform: scale(1.02);
+        }
+
+        .btn-lien {
+            background-color: var(--highlight-main);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            padding: 8px 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+            transition: 0.2s;
+        }
+        .btn-lien:hover {
+            background-color: #0d47a1;
+            transform: scale(1.02);
+        }
+
+        ul, .content-list {
+            font-size: clamp(1rem, 2.3vh, 1.3rem);
+            line-height: 1.45;
+            margin: 0.8vh 0 1.2vh 0;
+            padding-left: 1.8rem;
+        }
+        li {
+            margin-bottom: 0.6vh;
+        }
+
+        .apport-box {
+            background-color: #f1f8e9;
+            border: 2px solid var(--highlight-success);
+            border-radius: 12px;
+            padding: 12px 18px;
+            margin-top: 1.5vh;
+        }
+        .apport-title {
+            color: var(--highlight-success);
+            font-weight: bold;
+            font-size: clamp(1.1rem, 2.6vh, 1.3rem);
+            margin-bottom: 0.8vh;
+        }
+        .apport-list {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+        .apport-list li {
+            font-size: clamp(1rem, 2.3vh, 1.25rem);
+            color: #1b5e20;
+            margin-bottom: 0.6vh;
+            list-style-type: square;
+        }
+
+        .nav-buttons {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            z-index: 1100;
+        }
+        .round-nav {
+            background: var(--highlight-main);
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 60px;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .round-nav:hover {
+            background-color: #0d47a1;
+            transform: scale(1.05);
+        }
+
+        .copyright-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #37474f;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 30px;
+            cursor: pointer;
+            z-index: 2000;
+            font-size: 0.8rem;
+            transition: background 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            pointer-events: auto;
+        }
+        .copyright-btn:hover {
+            background: #1c262c;
+        }
+
+        .modal {
+            visibility: hidden;
+            opacity: 0;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: visibility 0.2s, opacity 0.2s;
+        }
+        .modal.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-content {
+            background: #fff9ef;
+            max-width: 650px;
+            width: 90%;
+            padding: 25px;
+            border-radius: 28px;
+            border-top: 8px solid var(--highlight-alert);
+            box-shadow: 0 20px 35px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--highlight-alert);
+            transition: transform 0.1s;
+        }
+        .close-modal:hover {
+            transform: scale(1.1);
+        }
+        @media (max-width: 700px) {
+            .roles-grid { flex-direction: column; }
+            .round-nav { width: 48px; height: 48px; font-size: 1.5rem; }
+        }
+        footer {
+            font-size: 0.75rem;
+            text-align: center;
+            margin-top: 20px;
+            color: #5d5d5d;
+        }
+    </style>
+</head>
+<body>
+
+<button class="copyright-btn" onclick="toggleModal(true)">📜 Droits & Licence</button>
+
+<div class="scene">
+    <div class="room" id="room">
+        
+        <!-- Face 0 : Introduction générale -->
+        <div class="board" style="--i:0;">
+            <div class="board-scroll">
+                <h1>✈️ Cartographie Pédagogique PBL</h1>
+                <h2 style="border-left: none; text-align: center; color: var(--highlight-main);">L'Avion en Papier Optimal</h2>
+                <div class="intro-text">
+                    Outil de présentation pour l'équipe enseignante<br>
+                    <strong>Public cible :</strong> Cycle 4 (3e) et Lycée (2nde)
+                </div>
+                <p>
+                    Ce document interactif détaille la progression synchrone du projet d'apprentissage par problèmes (PBL). Il fusionne l'étude aérodynamique exploratoire et la modélisation géométrique spatiale.
+                </p>
+                <div class="defi-box">
+                    🧠 <strong>Parti pris didactique :</strong> Le choix strict du lancer <em>au poignet</em> (sans rampe mécanique) est placé au cœur de la démarche. Il sert à confronter directement les élèves à la gestion de la variabilité expérimentale, au traitement du bruit statistique et à l'esprit critique vis-à-vis de la précision des mesures réelles.
+                </div>
+                <p><strong>Auteur :</strong> Yann Merdy – Juin 2026</p>
+                <footer>⬅️ ➡️ Naviguez pour découvrir les 4 étapes du projet + la ressource portance</footer>
+            </div>
+        </div>
+
+        <!-- Face 1 : Étape 1 -->
+        <div class="board" style="--i:1;">
+            <div class="board-scroll">
+                <h2>📐 Étape 1 : Conception Aérodynamique & Stabilité</h2>
+                <ul class="content-list">
+                    <li><strong>Sélection du prototype :</strong> Choix concerté d'un modèle de pliage (surface alaire, flèche).</li>
+                    <li><strong>Exploration :</strong> Introduction à la portance, à la traînée et à l'angle d'incidence \( \alpha \) (décrochage).</li>
+                    <li><strong>Optimisation :</strong> Modification du Centre de Gravité (CG) par lestage (trombones) pour obtenir un vol rectiligne.</li>
+                    <li><strong>Validation :</strong> QCM interactif (5 choix dont « Autre »).</li>
+                </ul>
+                <div class="apport-box">
+                    <div class="apport-title">🎯 Apports Pédagogiques</div>
+                    <ul class="apport-list">
+                        <li><strong>Ingénierie :</strong> Rôle fondamental du CG dans la stabilité d'un aéronef.</li>
+                        <li><strong>Démarche :</strong> Méthode d'investigation par essai-erreur contrôlée.</li>
+                        <li><strong>Posture :</strong> Négociation et coopération en petits groupes (bureau d'études).</li>
+                    </ul>
+                </div>
+                <div class="science-note">💡 <strong>Astuce terrain :</strong> Commencez avec 2 trombones, ajustez par paliers de 0,5 g.</div>
+                <div style="background:#e0f7fa; border-radius:18px; padding:12px; margin-top:1rem; text-align:center;">
+                    <p style="margin: 0 0 8px 0; font-weight: bold;">🔍 Outil complémentaire – Analyse fine du comportement de vol</p>
+                    <p style="font-size: 0.9rem; margin: 0 0 8px 0;">Testez votre prototype sur une série d’essais, obtenez un diagnostic précis de la direction et du tangage, et recevez des conseils ciblés pour améliorer la stabilité.</p>
+                    <a href="AVION_PBL_COMPORTEMENT_EN_VOL.html" target="_blank" class="btn-lien">📊 Analyseur de vol</a>
+                    <a href="AVION_PBL_QCM.html" target="_blank" class="btn-lien" style="margin-left:10px;">📝 QCM</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Face 2 : Étape 2 – Mesures cartésiennes directes -->
+        <div class="board" style="--i:2;">
+            <div class="board-scroll">
+                <h2>📍 Étape 2 : Protocole & Acquisition – Coordonnées cartésiennes</h2>
+                <ul class="content-list">
+                    <li><strong>Repère au sol :</strong> On fixe un repère orthonormé \((O, \vec{x}, \vec{y})\) avec \(O\) projeté du point de lancer, \(\vec{x}\) dans la direction visée (vers l'avant), \(\vec{y}\) perpendiculaire (positif à droite).</li>
+                    <li><strong>Répartition des rôles :</strong> Lanceur, Géomètre (mesure \(X\) et \(Y\) au mètre ruban et à l'équerre), Scribe, Inspecteur de vol.</li>
+                    <li><strong>Campagne d'essais :</strong> 50 lancers <em>au poignet</em> depuis une hauteur fixe.</li>
+                    <li><strong>Mesures :</strong> Pour chaque impact, on relève \(X\) (distance longitudinale en m) et \(Y\) (écart latéral en m, positif à droite, négatif à gauche).</li>
+                </ul>
+                <div class="roles-grid">
+                    <div class="role-card"><span>🚀</span> Lanceur</div>
+                    <div class="role-card"><span>📐</span> Géomètre</div>
+                    <div class="role-card"><span>✍️</span> Scribe</div>
+                    <div class="role-card"><span>👁️</span> Inspecteur</div>
+                </div>
+                <div class="apport-box">
+                    <div class="apport-title">🎯 Apports Pédagogiques & Compétences</div>
+                    <ul class="apport-list">
+                        <li><strong>Méthodologie :</strong> Maintien strict des conditions initiales (position, geste).</li>
+                        <li><strong>Sensibilisation :</strong> Observation directe de la dispersion des impacts et du bruit expérimental.</li>
+                        <li><strong>Responsabilisation :</strong> Interdépendance des rôles pour la fiabilité des relevés.</li>
+                    </ul>
+                </div>
+                <div style="background:#e8f5e9; border-radius:18px; padding:12px; margin-top:1rem; text-align:center;">
+                    <p style="margin: 0 0 8px 0; font-weight: bold;">📋 Feuille de relevés – Saisie des coordonnées (X, Y)</p>
+                    <p style="font-size: 0.9rem; margin: 0 0 8px 0;">Saisissez vos 50 couples \((X,Y)\) en mètres. Validation automatique des plages et détection statistique des anomalies (IQR). Export CSV pour l’étape suivante.</p>
+                    <a href="AVION_PBL_RELEVE_DES_VALEURS.html" target="_blank" class="btn-lien">📋 Accéder à la Feuille de relevés</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Face 3 : Étape 3 – Traitement des données -->
+        <div class="board" style="--i:3;">
+            <div class="board-scroll">
+                <h2>📊 Étape 3 : Exploitation des données brutes</h2>
+                <ul class="content-list">
+                    <li><strong>Vérification :</strong> Contrôle des plages de validité (\(X \in [0;15]\) m, \(Y \in [-10;10]\) m) et détection des valeurs aberrantes (méthode IQR).</li>
+                    <li><strong>Export :</strong> Génération d’un fichier CSV contenant les 50 mesures \((X, Y)\).</li>
+                    <li><strong>Statistiques descriptives :</strong> Calcul de la moyenne, de l’écart-type et de l’étendue pour \(X\) et \(Y\).</li>
+                    <li><strong>Représentation :</strong> Nuage de points \((X, Y)\) permettant de visualiser la dispersion latérale et la distance d’atterrissage.</li>
+                </ul>
+                <div class="apport-box">
+                    <div class="apport-title">🎯 Apports Pédagogiques & Compétences</div>
+                    <ul class="apport-list">
+                        <li><strong>Mathématiques :</strong> Lecture et interprétation de données bidimensionnelles.</li>
+                        <li><strong>Esprit critique :</strong> Identification des mesures suspectes (erreur de saisie, anomalie de lancer).</li>
+                        <li><strong>Numérique :</strong> Utilisation d’outils simples pour l’export et le traitement de données.</li>
+                    </ul>
+                </div>
+                <div class="challenge-mission">
+                    🧪 <strong>Défi :</strong> Comparez la dispersion de \(Y\) selon que l’avion est lesté ou non. Que peut‑on en conclure sur la stabilité latérale ?
+                </div>
+            </div>
+        </div>
+
+        <!-- Face 4 : Étape 4 – Analyse et modélisation -->
+        <div class="board" style="--i:4;">
+            <div class="board-scroll">
+                <h2>📈 Étape 4 : Analyse trajectométrique & Modélisation</h2>
+                <ul class="content-list">
+                    <li><strong>Nuage de points :</strong> Visualisation des 50 impacts \((X, Y)\) dans un repère orthonormé.</li>
+                    <li><strong>Position moyenne :</strong> Calcul du barycentre \((\overline{X}, \overline{Y})\) pour caractériser la tendance centrale.</li>
+                    <li><strong>Ellipse de dispersion :</strong> Introduction à l’idée de zone de confiance (sans formalisme poussé).</li>
+                    <li><strong>Interprétation physique :</strong> Un \(\overline{Y}\) proche de 0 indique un lancer bien centré ; un \(\overline{X}\) grand témoigne d’un bon profil aérodynamique.</li>
+                    <li><strong>Soutenance :</strong> Présentation orale des résultats et justification des choix d’optimisation.</li>
+                </ul>
+                <div class="apport-box">
+                    <div class="apport-title">🎯 Apports Pédagogiques & Compétences</div>
+                    <ul class="apport-list">
+                        <li><strong>Statistiques :</strong> Initiation à l’analyse de données bivariées (nuage de points, centre de gravité).</li>
+                        <li><strong>Épistémologie :</strong> Extraction d’une information fiable malgré la variabilité naturelle des lancers.</li>
+                        <li><strong>Transversal :</strong> Argumentation scientifique et travail d’équipe lors de la soutenance.</li>
+                    </ul>
+                </div>
+                <div class="science-note">
+                    🎤 <strong>Préparation à la soutenance :</strong> Pourquoi \(\overline{Y}\) n’est‑il jamais rigoureusement nul ? Quels facteurs expliquent la dispersion des \(X\) ?
+                </div>
+            </div>
+        </div>
+
+        <!-- NOUVELLE FACE 5 : Comprendre la portance -->
+        <div class="board" style="--i:5;">
+            <div class="board-scroll">
+                <h2>✈️ Comprendre la portance</h2>
+                <div class="defi-box">
+                    🎯 Pourquoi l'avion reste‑t‑il en l'air ? Découvre la force qui permet de voler !
+                </div>
+                <p>
+                    La <strong>portance</strong> est la force aérodynamique qui s'oppose au poids et maintient l'avion en vol.  
+                    Elle dépend de la vitesse, de la surface des ailes, de la densité de l'air et du coefficient de portance \(C_L\).
+                </p>
+                <div class="formula" style="background:#e3f2fd; border-radius: 32px; padding: 12px 20px; text-align: center; margin: 20px auto; display: table;">
+                    \[ F = \frac{1}{2} \, \rho \, V^2 \, S \, C_L \]
+                </div>
+                <p>
+                    Grâce à cette relation, on peut calculer la <strong>vitesse minimale</strong> nécessaire pour que l'avion décolle,  
+                    puis estimer la hauteur de lâcher indispensable pour atteindre cette vitesse.
+                </p>
+                <div class="science-note">
+                    📘 <strong>Ressources interactives :</strong>
+                    <ul style="margin-top: 8px;">
+                        <li>📖 <strong>Présentation détaillée</strong> – Découvre les calculs pas à pas, la méthode d'Euler et des conseils d'optimisation.</li>
+                        <li>❓ <strong>Quiz</strong> – Teste tes connaissances après avoir étudié la présentation.</li>
+                    </ul>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin: 25px 0;">
+                    <a href="AVION_PBL_PORTANCE.html" target="_blank" class="btn-lien" style="background: #1565c0; font-size: 1.1rem; padding: 12px 28px;">📚 Voir la présentation complète</a>
+                    <a href="AVION_PBL_QUIZ_PORTANCE.html" target="_blank" class="btn-lien" style="background: #e67e22; font-size: 1.1rem; padding: 12px 28px;">📝 Faire le quiz</a>
+                </div>
+                <div class="tip" style="background: #e8f5e9; border-left: 6px solid #2e7d32; padding: 12px 18px; border-radius: 20px;">
+                    💡 <strong>Conseil pédagogique :</strong> Utilise ces ressources en amont de l'étape 1 pour familiariser les élèves avec les forces aérodynamiques, ou en parallèle pour approfondir la notion de portance.
+                </div>
+                <footer>⬅️ ➡️ Naviguez librement entre les étapes du projet et cette ressource bonus</footer>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="nav-buttons">
+    <button class="round-nav" onclick="rotateRoom(-1)">◀</button>
+    <button class="round-nav" onclick="rotateRoom(1)">▶</button>
+</div>
+
+<!-- Modale de licence -->
+<div id="copyrightModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="toggleModal(false)">&times;</span>
+        <h2 style="margin-top:0;">⚖️ Droits d'Auteur et Licence d'Utilisation</h2>
+        <p><strong>Auteur :</strong> Yann Merdy (yann.merdy@gmail.com) – Juin 2026</p>
+        <p><strong>Licence d'Utilisation Non Commerciale</strong></p>
+        <p>Ce code HTML/CSS/JS et le contenu de <strong>« Cartographie Pédagogique PBL – Avion en Papier Optimal »</strong> sont la propriété intellectuelle exclusive de Yann Merdy.</p>
+        <p><strong>Conditions :</strong></p>
+        <ul>
+            <li><strong>Utilisation Privée et Éducative (autorisée) :</strong> utilisation, copie, modification et distribution à des fins personnelles, éducatives et non lucratives.</li>
+            <li><strong>Utilisation Commerciale (interdite) :</strong> toute exploitation commerciale sans accord écrit explicite de l'auteur est interdite.</li>
+        </ul>
+        <p><strong>Attribution :</strong> toute reproduction doit conserver la mention de l'auteur (Yann Merdy) et cette notice.</p>
+        <p style="font-size:0.9rem;">Contact : yann.merdy@gmail.com</p>
+        <button class="btn-test" onclick="toggleModal(false)">Fermer</button>
+    </div>
+</div>
+
+<script>
+    const totalBoards = 6;
+    let currentIndex = 0;
+    const room = document.getElementById('room');
+    const boards = document.querySelectorAll('.board');
+
+    function applyRotation() {
+        const angle = currentIndex * (360 / totalBoards) * -1;
+        room.style.transform = `translateZ(calc(-1 * var(--radius))) rotateY(${angle}deg)`;
+        boards.forEach((board, idx) => {
+            if (idx === currentIndex) {
+                board.classList.add('active');
+            } else {
+                board.classList.remove('active');
+            }
+        });
+    }
+
+    function rotateRoom(delta) {
+        let newIndex = currentIndex + delta;
+        if (newIndex < 0) newIndex = totalBoards - 1;
+        if (newIndex >= totalBoards) newIndex = 0;
+        currentIndex = newIndex;
+        applyRotation();
+    }
+
+    function goToBoard(targetIndex) {
+        currentIndex = targetIndex % totalBoards;
+        applyRotation();
+    }
+
+    function toggleModal(show) {
+        const modal = document.getElementById('copyrightModal');
+        if (show) modal.classList.add('active');
+        else modal.classList.remove('active');
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') rotateRoom(-1);
+        if (e.key === 'ArrowRight') rotateRoom(1);
+        if (e.key === 'Home') goToBoard(0);
+        if (e.key === 'End') goToBoard(totalBoards - 1);
+        if (e.key === 'Escape') toggleModal(false);
+    });
+
+    window.addEventListener('resize', () => applyRotation());
+    window.onload = () => applyRotation();
+</script>
+</body>
+</html>

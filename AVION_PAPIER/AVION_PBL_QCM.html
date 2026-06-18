@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>PBL Avion – QCM (style identique au quiz portance)</title>
+    <style>
+        /* ===== STYLE IDENTIQUE À AVION_PBL_QUIZ_PORTANCE.html ===== */
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(145deg, #cfd8dc 0%, #b0bec5 100%);
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .quiz-container {
+            max-width: 800px;
+            width: 100%;
+            background: #fdfbf7;
+            border-radius: 40px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.3);
+            border: 2px solid #3e2723;
+            padding: 25px 30px;
+        }
+        h1 {
+            text-align: center;
+            color: #1565c0;
+            border-bottom: 3px double #1565c0;
+            padding-bottom: 12px;
+            margin-top: 0;
+            font-size: 1.9rem;
+        }
+        .sub {
+            text-align: center;
+            color: #5d4037;
+            margin-top: -5px;
+            margin-bottom: 25px;
+            font-style: italic;
+        }
+        .question {
+            background: #fff3e0;
+            border-radius: 28px;
+            padding: 18px 20px;
+            margin-bottom: 25px;
+            border-left: 8px solid #e67e22;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        .question-text {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+            color: #1e2a2e;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-left: 15px;
+            margin-bottom: 12px;
+        }
+        .options label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 5px 0;
+        }
+        .options input {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+            cursor: pointer;
+        }
+        .other-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .other-input input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+        }
+        .other-input input[type="text"] {
+            flex: 1;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+        }
+        .feedback {
+            background: #e8f5e9;
+            border-radius: 20px;
+            padding: 10px 15px;
+            margin-top: 12px;
+            display: none;
+            font-size: 0.9rem;
+            border-left: 4px solid #2e7d32;
+        }
+        .feedback.visible {
+            display: block;
+        }
+        .score-area {
+            background: #e3f2fd;
+            border-radius: 40px;
+            padding: 15px;
+            text-align: center;
+            margin: 20px 0;
+            font-weight: bold;
+            font-size: 1.3rem;
+            color: #0d3c5e;
+            border: 1px solid #1565c0;
+        }
+        .buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        button {
+            background-color: #1565c0;
+            color: white;
+            border: none;
+            border-radius: 60px;
+            padding: 12px 28px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        button:hover {
+            background-color: #0d47a1;
+            transform: scale(1.02);
+        }
+        .reset-btn {
+            background-color: #e67e22;
+        }
+        .reset-btn:hover {
+            background-color: #b45f1b;
+        }
+        footer {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 0.75rem;
+            color: #6c6c6c;
+            border-top: 1px solid #ddd;
+            padding-top: 15px;
+        }
+        @media (max-width: 600px) {
+            .quiz-container { padding: 20px; }
+            .question-text { font-size: 1rem; }
+            .options label { font-size: 0.9rem; }
+        }
+
+        /* Styles spécifiques pour les termes cliquables du dictionnaire */
+        .dico-term {
+            border-bottom: 2px dashed #1565c0;
+            cursor: pointer;
+            background-color: #e8eaf6;
+            padding: 0 4px;
+            border-radius: 8px;
+            transition: all 0.1s ease;
+            display: inline-block;
+        }
+        .dico-term:hover {
+            background-color: #c5cae9;
+            transform: scale(1.02);
+        }
+
+        /* Modal dictionnaire */
+        .modal {
+            visibility: hidden;
+            opacity: 0;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .modal.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-content {
+            background: #fdfbf7;
+            max-width: 500px;
+            width: 90%;
+            padding: 20px;
+            border-radius: 28px;
+            border-top: 8px solid #b71c1c;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        .modal-content h3 {
+            margin-top: 0;
+            color: #1565c0;
+        }
+        .close-modal {
+            position: absolute;
+            top: 12px;
+            right: 18px;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #b71c1c;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="quiz-container">
+    <h1>✈️ QCM – Avion en papier « The Bird »</h1>
+    <div class="sub">Stabilité, centrage, réglages – cliquez sur les termes surlignés pour la définition</div>
+
+    <!-- Question 1 -->
+    <div class="question" id="q1">
+        <div class="question-text">1. Pour qu’un avion en papier vole en ligne droite, la condition principale est :</div>
+        <div class="options" id="q1-options">
+            <label><input type="radio" name="q1" value="0"> A) Avoir des ailes très longues</label>
+            <label><input type="radio" name="q1" value="1"> B) <span class="dico-term" data-term="centre gravité">Centre de gravité</span> légèrement en avant du <span class="dico-term" data-term="centre portance">centre de portance</span></label>
+            <label><input type="radio" name="q1" value="2"> C) Lancer très fort</label>
+            <label><input type="radio" name="q1" value="3"> D) Utiliser du papier glacé</label>
+            <div class="other-input">
+                <input type="radio" name="q1" value="other" id="q1_other_radio">
+                <input type="text" placeholder="Autre : précisez" id="q1_other_text" disabled>
+            </div>
+        </div>
+        <div id="fb1" class="feedback"></div>
+    </div>
+
+    <!-- Question 2 -->
+    <div class="question" id="q2">
+        <div class="question-text">2. Si on ajoute trop de <span class="dico-term" data-term="trombones">trombones</span> à l’avant de l’avion :</div>
+        <div class="options" id="q2-options">
+            <label><input type="radio" name="q2" value="0"> A) L’avion <span class="dico-term" data-term="pique">pique du nez</span> et perd de la distance</label>
+            <label><input type="radio" name="q2" value="1"> B) L’avion <span class="dico-term" data-term="cabre">cabre</span> et monte indéfiniment</label>
+            <label><input type="radio" name="q2" value="2"> C) Rien ne change</label>
+            <label><input type="radio" name="q2" value="3"> D) L’avion tourne à droite</label>
+            <div class="other-input">
+                <input type="radio" name="q2" value="other" id="q2_other_radio">
+                <input type="text" placeholder="Autre : précisez" id="q2_other_text" disabled>
+            </div>
+        </div>
+        <div id="fb2" class="feedback"></div>
+    </div>
+
+    <!-- Question 3 -->
+    <div class="question" id="q3">
+        <div class="question-text">3. Quel paramètre n’est PAS modifié par l’ajout d’un trombone ?</div>
+        <div class="options" id="q3-options">
+            <label><input type="radio" name="q3" value="0"> A) La masse totale</label>
+            <label><input type="radio" name="q3" value="1"> B) La <span class="dico-term" data-term="portance">portance</span> maximale</label>
+            <label><input type="radio" name="q3" value="2"> C) La position du centre de gravité</label>
+            <label><input type="radio" name="q3" value="3"> D) Le <span class="dico-term" data-term="moment inertie">moment d’inertie</span></label>
+            <div class="other-input">
+                <input type="radio" name="q3" value="other" id="q3_other_radio">
+                <input type="text" placeholder="Autre : précisez" id="q3_other_text" disabled>
+            </div>
+        </div>
+        <div id="fb3" class="feedback"></div>
+    </div>
+
+    <!-- Question 4 -->
+    <div class="question" id="q4">
+        <div class="question-text">4. La meilleure façon de corriger un avion qui part systématiquement à droite est :</div>
+        <div class="options" id="q4-options">
+            <label><input type="radio" name="q4" value="0"> A) Alourdir l’aile droite</label>
+            <label><input type="radio" name="q4" value="1"> B) Alourdir l’aile gauche</label>
+            <label><input type="radio" name="q4" value="2"> C) Replier la pointe de l’aile droite vers le bas</label>
+            <label><input type="radio" name="q4" value="3"> D) Lancé plus fort</label>
+            <div class="other-input">
+                <input type="radio" name="q4" value="other" id="q4_other_radio">
+                <input type="text" placeholder="Autre : précisez" id="q4_other_text" disabled>
+            </div>
+        </div>
+        <div id="fb4" class="feedback"></div>
+    </div>
+
+    <!-- Question 5 -->
+    <div class="question" id="q5">
+        <div class="question-text">5. Pourquoi le lancer « <span class="dico-term" data-term="lancer poignet">au poignet</span> » est-il un choix pédagogique fort ?</div>
+        <div class="options" id="q5-options">
+            <label><input type="radio" name="q5" value="0"> A) Il permet d’aller plus loin</label>
+            <label><input type="radio" name="q5" value="1"> B) Il expose à la <span class="dico-term" data-term="variabilité">variabilité expérimentale</span> et au <span class="dico-term" data-term="bruit">bruit statistique</span></label>
+            <label><input type="radio" name="q5" value="2"> C) Il est plus facile à mesurer</label>
+            <label><input type="radio" name="q5" value="3"> D) Il évite d’abîmer l’avion</label>
+            <div class="other-input">
+                <input type="radio" name="q5" value="other" id="q5_other_radio">
+                <input type="text" placeholder="Autre : précisez" id="q5_other_text" disabled>
+            </div>
+        </div>
+        <div id="fb5" class="feedback"></div>
+    </div>
+
+    <div id="scoreArea" class="score-area" style="display: none;"></div>
+
+    <div class="buttons">
+        <button id="submitBtn">✅ Valider le QCM</button>
+        <button id="resetBtn" class="reset-btn">🔄 Recommencer</button>
+    </div>
+
+    <footer>
+        📚 D’après la présentation « Calcul de la portance – Avion The Bird »<br>
+        Chaque réponse est accompagnée d’une explication détaillée.<br>
+        Les termes <span class="dico-term" data-term="surlignés">surlignés</span> sont cliquables pour afficher leur définition.
+    </footer>
+</div>
+
+<!-- Modale dictionnaire -->
+<div id="definitionModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeDefModal">&times;</span>
+        <h3 id="defTermTitle">Terme</h3>
+        <p id="defTermText">Définition ici.</p>
+    </div>
+</div>
+
+<script>
+    // ==================== DICTIONNAIRE ====================
+    const dictionary = {
+        "centre gravité": "Centre de gravité (CG) : point d’application du poids. Un CG trop à l’avant fait piquer, trop à l’arrière fait cabrer.",
+        "centre portance": "Centre de portance : point où s’applique la force de portance. Pour la stabilité, le CG doit être légèrement en avant.",
+        "portance": "Portance : force verticale vers le haut créée par les ailes, due à la différence de pression.",
+        "trombones": "Lestage (trombones) : ajout de petites masses pour déplacer le centre de gravité vers l’avant ou l’arrière.",
+        "pique": "Piqué : mouvement vers le bas, signe que le CG est trop en avant.",
+        "cabre": "Cabré : mouvement vers le haut (décrochage possible), signe que le CG est trop en arrière.",
+        "moment inertie": "Moment d’inertie : résistance à la rotation. Le lestage le modifie légèrement.",
+        "lancer poignet": "Lancer au poignet : lancer sans rampe mécanique, introduit une variabilité naturelle (vitesse, angle).",
+        "variabilité": "Variabilité expérimentale : dispersion des mesures due aux imperfections humaines.",
+        "bruit": "Bruit statistique : fluctuations aléatoires dans les données masquant la tendance réelle.",
+        "surlignés": "Termes cliquables : cliquez pour afficher la définition correspondante."
+    };
+
+    function getDefinition(termRaw) {
+        const key = termRaw.toLowerCase().trim();
+        if (key === "centre gravité" || key === "centre de gravité") return dictionary["centre gravité"];
+        if (key === "centre portance") return dictionary["centre portance"];
+        if (key === "portance") return dictionary["portance"];
+        if (key === "trombones") return dictionary["trombones"];
+        if (key === "pique") return dictionary["pique"];
+        if (key === "cabre") return dictionary["cabre"];
+        if (key === "moment inertie" || key === "moment d'inertie") return dictionary["moment inertie"];
+        if (key === "lancer poignet" || key === "lancer au poignet") return dictionary["lancer poignet"];
+        if (key === "variabilité" || key === "variabilité expérimentale") return dictionary["variabilité"];
+        if (key === "bruit" || key === "bruit statistique") return dictionary["bruit"];
+        if (key === "surlignés") return dictionary["surlignés"];
+        return "Définition non disponible. Consultez l’enseignant.";
+    }
+
+    // Gestion des modales
+    const defModal = document.getElementById('definitionModal');
+    const defTitle = document.getElementById('defTermTitle');
+    const defText = document.getElementById('defTermText');
+    const closeDef = document.getElementById('closeDefModal');
+
+    document.querySelectorAll('.dico-term').forEach(term => {
+        term.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const termText = term.getAttribute('data-term');
+            const definition = getDefinition(termText);
+            defTitle.textContent = termText.charAt(0).toUpperCase() + termText.slice(1);
+            defText.textContent = definition;
+            defModal.classList.add('active');
+        });
+    });
+    closeDef.addEventListener('click', () => defModal.classList.remove('active'));
+    defModal.addEventListener('click', (e) => { if (e.target === defModal) defModal.classList.remove('active'); });
+
+    // ==================== GESTION DES RÉPONSES ====================
+    let userAnswers = {
+        1: { selected: null, otherText: "" },
+        2: { selected: null, otherText: "" },
+        3: { selected: null, otherText: "" },
+        4: { selected: null, otherText: "" },
+        5: { selected: null, otherText: "" }
+    };
+
+    // Configuration des champs "Autre"
+    for (let q = 1; q <= 5; q++) {
+        const radio = document.getElementById(`q${q}_other_radio`);
+        const textInput = document.getElementById(`q${q}_other_text`);
+        if (!radio) continue;
+        radio.addEventListener('change', function() {
+            textInput.disabled = !this.checked;
+            if (this.checked) textInput.focus();
+            const radios = document.getElementsByName(`q${q}`);
+            radios.forEach(r => { if (r !== radio) r.checked = false; });
+            if (this.checked) {
+                userAnswers[q].selected = 'other';
+                userAnswers[q].otherText = textInput.value;
+            } else {
+                userAnswers[q].selected = null;
+            }
+            saveAnswersToStorage();
+        });
+        textInput.addEventListener('input', function() {
+            if (radio.checked) {
+                userAnswers[q].otherText = this.value;
+                saveAnswersToStorage();
+            }
+        });
+        const otherRadios = document.querySelectorAll(`input[name="q${q}"]:not([value="other"])`);
+        otherRadios.forEach(r => {
+            r.addEventListener('change', function() {
+                if (this.checked) {
+                    radio.checked = false;
+                    textInput.disabled = true;
+                    textInput.value = '';
+                    userAnswers[q].selected = this.value;
+                    userAnswers[q].otherText = "";
+                    saveAnswersToStorage();
+                }
+            });
+        });
+    }
+
+    function saveAnswersToStorage() {
+        sessionStorage.setItem('qcmAvionAnswers', JSON.stringify(userAnswers));
+    }
+
+    function loadAnswersFromStorage() {
+        const saved = sessionStorage.getItem('qcmAvionAnswers');
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                for (let q = 1; q <= 5; q++) {
+                    if (parsed[q]) {
+                        userAnswers[q] = parsed[q];
+                        const radios = document.getElementsByName(`q${q}`);
+                        const radioOther = document.getElementById(`q${q}_other_radio`);
+                        const textOther = document.getElementById(`q${q}_other_text`);
+                        if (userAnswers[q].selected === 'other') {
+                            radioOther.checked = true;
+                            textOther.disabled = false;
+                            textOther.value = userAnswers[q].otherText;
+                            radios.forEach(r => { if (r !== radioOther) r.checked = false; });
+                        } else if (userAnswers[q].selected !== null) {
+                            const targetRadio = Array.from(radios).find(r => r.value === userAnswers[q].selected);
+                            if (targetRadio) targetRadio.checked = true;
+                            radioOther.checked = false;
+                            textOther.disabled = true;
+                            textOther.value = '';
+                        }
+                    }
+                }
+            } catch(e) {}
+        }
+    }
+
+    function resetAllAnswers() {
+        for (let q = 1; q <= 5; q++) {
+            userAnswers[q] = { selected: null, otherText: "" };
+            const radios = document.getElementsByName(`q${q}`);
+            radios.forEach(r => r.checked = false);
+            const radioOther = document.getElementById(`q${q}_other_radio`);
+            const textOther = document.getElementById(`q${q}_other_text`);
+            if (radioOther) radioOther.checked = false;
+            if (textOther) {
+                textOther.disabled = true;
+                textOther.value = '';
+            }
+            const fb = document.getElementById(`fb${q}`);
+            fb.classList.remove('visible');
+            fb.innerHTML = '';
+        }
+        document.getElementById('scoreArea').style.display = 'none';
+        saveAnswersToStorage();
+    }
+
+    // Correction (selon les attentes du QCM original)
+    const answersKey = { 1: "1", 2: "0", 3: "1", 4: "1", 5: "1" };
+    const otherKeywords = {
+        1: ["centre de gravité", "centrage", "c.g."],
+        2: ["pique", "trop lourd devant"],
+        3: ["portance", "sustentation"],
+        4: ["gauche", "alourdir gauche", "leste gauche"],
+        5: ["variabilité", "bruit", "imperfection"]
+    };
+
+    function checkAnswer(q, selectedVal, otherText) {
+        const expected = answersKey[q];
+        if (selectedVal === 'other') {
+            if (!otherText) return false;
+            const keywords = otherKeywords[q] || [];
+            return keywords.some(kw => otherText.toLowerCase().includes(kw));
+        }
+        return selectedVal === expected;
+    }
+
+    function evaluateQuiz() {
+        let score = 0;
+        const explanations = {
+            1: "La condition de stabilité longitudinale est que le centre de gravité soit légèrement en avant du centre de portance.",
+            2: "Un excès de poids à l'avant fait piquer l'avion, réduisant la portance et la distance.",
+            3: "Un trombone ajoute de la masse et déplace le CG, mais ne change pas la portance maximale (car celle-ci dépend de la forme et de l'incidence, pas de la masse).",
+            4: "Pour corriger un virage à droite, on alourdit l'aile gauche ou on incline le bord de fuite gauche vers le bas.",
+            5: "Le lancer au poignet introduit une variabilité naturelle (vitesse, angle) qui permet d’étudier le bruit statistique et la robustesse."
+        };
+        for (let q = 1; q <= 5; q++) {
+            const answer = userAnswers[q];
+            const isCorrect = checkAnswer(q, answer.selected, answer.otherText);
+            const fbDiv = document.getElementById(`fb${q}`);
+            if (answer.selected === null) {
+                fbDiv.innerHTML = "❓ Aucune réponse sélectionnée. Choisis une option.";
+                fbDiv.style.background = "#fff3cd";
+                fbDiv.style.borderLeftColor = "#e67e22";
+                fbDiv.classList.add('visible');
+            } else if (isCorrect) {
+                score++;
+                fbDiv.innerHTML = `✅ Correct ! ${explanations[q]}`;
+                fbDiv.style.background = "#e8f5e9";
+                fbDiv.style.borderLeftColor = "#2e7d32";
+                fbDiv.classList.add('visible');
+            } else {
+                let correctText = "";
+                const correctIdx = answersKey[q];
+                if (correctIdx === 'other') {
+                    correctText = "autre (voir suggestion)";
+                } else {
+                    const allLabels = document.querySelectorAll(`input[name="q${q}"]`);
+                    for (let idx = 0; idx < allLabels.length; idx++) {
+                        if (idx == correctIdx) {
+                            correctText = allLabels[idx].parentElement.textContent.trim();
+                            break;
+                        }
+                    }
+                }
+                fbDiv.innerHTML = `❌ Incorrect. La bonne réponse était : "${correctText}". ${explanations[q]}`;
+                fbDiv.style.background = "#ffcdd2";
+                fbDiv.style.borderLeftColor = "#b71c1c";
+                fbDiv.classList.add('visible');
+            }
+        }
+        const total = 5;
+        const percent = (score / total) * 100;
+        const scoreDiv = document.getElementById('scoreArea');
+        scoreDiv.style.display = 'block';
+        let message = `🎯 Score : ${score} / ${total} (${percent}%) – `;
+        if (percent >= 80) message += "Félicitations ! Tu maîtrises le centrage et la stabilité.";
+        else if (percent >= 50) message += "Bon travail, relis les explications pour progresser.";
+        else message += "Revois la présentation et réessaie le QCM.";
+        scoreDiv.innerHTML = message;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    loadAnswersFromStorage();
+
+    document.getElementById('submitBtn').addEventListener('click', evaluateQuiz);
+    document.getElementById('resetBtn').addEventListener('click', resetAllAnswers);
+</script>
+</body>
+</html>

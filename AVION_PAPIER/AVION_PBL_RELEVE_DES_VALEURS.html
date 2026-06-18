@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>PBL Avion – Feuille de relevés (20 lancers) – Coordonnées cartésiennes</title>
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']]
+            },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root {
+            --bg-room: #cfd8dc;
+            --text-color: #1a1a1a;
+            --highlight-main: #1565c0;
+            --highlight-alert: #b71c1c;
+            --highlight-success: #2e7d32;
+            --highlight-warning: #e67e22;
+            --board-bg: #fdfbf7;
+            --board-border: #3e2723;
+            --board-w: clamp(300px, 85vw, 1400px);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+            background-color: var(--bg-room);
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            color: var(--text-color);
+            overflow-x: auto;
+        }
+
+        .container {
+            max-width: var(--board-w);
+            margin: 2rem auto;
+            background: var(--board-bg);
+            border: 3px solid var(--board-border);
+            border-radius: 20px;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.4);
+            padding: clamp(18px, 4vh, 35px);
+            position: relative;
+        }
+
+        h1 {
+            font-size: clamp(1.8rem, 5vh, 2.6rem);
+            color: var(--highlight-main);
+            text-align: center;
+            border-bottom: 3px double var(--highlight-main);
+            padding-bottom: 0.8vh;
+            margin: 0 0 1.5vh 0;
+        }
+
+        h2 {
+            font-size: clamp(1.4rem, 3.6vh, 2rem);
+            color: var(--highlight-alert);
+            border-left: 6px solid var(--highlight-alert);
+            padding-left: 15px;
+            margin: 0 0 1.8vh 0;
+        }
+
+        .info-equipe {
+            background: #e3f2fd;
+            padding: 12px 18px;
+            border-radius: 18px;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: space-between;
+        }
+        .info-equipe label {
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        .info-equipe input {
+            padding: 6px 12px;
+            border-radius: 30px;
+            border: 1px solid #aaa;
+            font-size: 1rem;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 1.5rem 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: clamp(0.85rem, 2vh, 1rem);
+            background-color: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px 6px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: var(--highlight-main);
+            color: white;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+
+        td input {
+            width: 100px;
+            padding: 6px 4px;
+            text-align: center;
+            border: 1px solid #bbb;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+        }
+        td input.invalid-input {
+            background-color: #ffe0e0;
+            border-color: var(--highlight-alert);
+        }
+        td input.outlier-input {
+            background-color: #ffd8a9;
+            border-color: var(--highlight-warning);
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin: 2rem 0 1rem;
+        }
+
+        .btn {
+            background-color: var(--highlight-main);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            padding: 10px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .btn:hover {
+            background-color: #0d47a1;
+            transform: scale(1.02);
+        }
+        .btn-success {
+            background-color: var(--highlight-success);
+        }
+        .btn-success:hover {
+            background-color: #1b5e20;
+        }
+        .btn-alert {
+            background-color: var(--highlight-alert);
+        }
+        .btn-alert:hover {
+            background-color: #8b0000;
+        }
+        .btn-warning {
+            background-color: var(--highlight-warning);
+        }
+        .btn-warning:hover {
+            background-color: #b45f1b;
+        }
+
+        .message-area {
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 12px;
+            background-color: #f9f2e0;
+            border-left: 6px solid #e67e22;
+            font-weight: normal;
+            text-align: center;
+        }
+        .error-summary {
+            color: #b71c1c;
+            font-weight: bold;
+        }
+        .warning-summary {
+            color: #e67e22;
+            font-weight: bold;
+        }
+
+        .footer-note {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #5d5d5d;
+            margin-top: 2rem;
+            border-top: 1px solid #ccc;
+            padding-top: 1rem;
+        }
+
+        .copyright-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #37474f;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 30px;
+            cursor: pointer;
+            z-index: 2000;
+            font-size: 0.8rem;
+            transition: background 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            pointer-events: auto;
+        }
+        .copyright-btn:hover {
+            background: #1c262c;
+        }
+
+        .modal {
+            visibility: hidden;
+            opacity: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: visibility 0.2s, opacity 0.2s;
+        }
+        .modal.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-content {
+            background: #fff9ef;
+            max-width: 650px;
+            width: 90%;
+            padding: 25px;
+            border-radius: 28px;
+            border-top: 8px solid var(--highlight-alert);
+            box-shadow: 0 20px 35px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--highlight-alert);
+            transition: transform 0.1s;
+        }
+        .close-modal:hover {
+            transform: scale(1.1);
+        }
+        .btn-test {
+            background-color: var(--highlight-success);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            padding: 8px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: 0.2s;
+        }
+        .btn-test:hover {
+            background-color: #1b5e20;
+            transform: scale(1.02);
+        }
+
+        @media (max-width: 700px) {
+            .container {
+                margin: 1rem;
+                padding: 15px;
+            }
+            td input {
+                width: 70px;
+            }
+            .info-equipe {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<button class="copyright-btn" onclick="toggleModal(true)">📜 Droits & Licence</button>
+
+<div class="container">
+    <h1>📋 Étape 2 – Feuille de relevés terrain</h1>
+    <h2>20 lancers – Coordonnées cartésiennes (X, Y) – Validation + détection statistique</h2>
+
+    <div class="info-equipe">
+        <div><label>🏷️ Équipe :</label> <input type="text" id="teamName" placeholder="Nom de l'équipe" style="width: 180px;"></div>
+        <div><label>📅 Date :</label> <input type="date" id="dateField"></div>
+        <div><label>🔧 Avion retenu :</label> <input type="text" id="planeDesc" placeholder="ex: Dart + 2 trombones" style="width: 220px;"></div>
+    </div>
+
+    <div class="table-wrapper">
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>N° essai</th>
+                    <th>X (m) <br> (distance longitudinale)</th>
+                    <th>Y (m) <br> (écart latéral, + à droite)</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <div class="message-area" id="messageArea">
+        ✅ Prêt – Saisissez vos mesures.
+    </div>
+
+    <div class="btn-group">
+        <button class="btn btn-warning" id="checkBtn">🔍 Vérifier cohérence & anomalies</button>
+        <button class="btn" id="exportCsvBtn">📥 Exporter en CSV</button>
+        <button class="btn btn-success" id="fillExampleBtn">🔍 Remplir exemples réalistes</button>
+        <button class="btn btn-alert" id="clearAllBtn">🗑️ Tout effacer</button>
+    </div>
+
+    <div class="footer-note">
+        📐 <strong>Validations :</strong><br>
+        • <span style="color:#b71c1c;">Rouge</span> = valeur hors plage (\(X \notin [0,15]\) m ou \(Y \notin [-10,10]\) m).<br>
+        • <span style="color:#e67e22;">Orange</span> = valeur aberrante statistique (méthode IQR) – détectée quand au moins 10 mesures valides sont saisies.<br>
+        Cliquez sur « Vérifier » pour mettre à jour l’analyse.
+    </div>
+</div>
+
+<!-- Modale de licence -->
+<div id="copyrightModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="toggleModal(false)">&times;</span>
+        <h2 style="margin-top:0;">⚖️ Droits d'Auteur et Licence d'Utilisation</h2>
+        <p><strong>Auteur :</strong> Yann Merdy (yann.merdy@gmail.com) – Juin 2026</p>
+        <p><strong>Licence d'Utilisation Non Commerciale</strong></p>
+        <p>Ce code HTML/CSS/JS et le contenu de <strong>« Cartographie Pédagogique PBL – Avion en Papier Optimal »</strong> sont la propriété intellectuelle exclusive de Yann Merdy.</p>
+        <p><strong>Conditions :</strong></p>
+        <ul>
+            <li><strong>Utilisation Privée et Éducative (autorisée) :</strong> utilisation, copie, modification et distribution à des fins personnelles, éducatives et non lucratives.</li>
+            <li><strong>Utilisation Commerciale (interdite) :</strong> toute exploitation commerciale sans accord écrit explicite de l'auteur est interdite.</li>
+        </ul>
+        <p><strong>Attribution :</strong> toute reproduction doit conserver la mention de l'auteur (Yann Merdy) et cette notice.</p>
+        <p style="font-size:0.9rem;">Contact : yann.merdy@gmail.com</p>
+        <button class="btn-test" onclick="toggleModal(false)">Fermer</button>
+    </div>
+</div>
+
+<script>
+    const totalRows = 20;
+    let data = Array(totalRows).fill().map(() => ({ x: '', y: '' }));
+    let outlierStatus = Array(totalRows).fill().map(() => ({ xOutlier: false, yOutlier: false }));
+
+    const tableBody = document.getElementById('tableBody');
+    const messageDiv = document.getElementById('messageArea');
+
+    // ---------- Validation individuelle ----------
+    function isValidX(val) {
+        if (val === '' || val === null) return false;
+        let num = parseFloat(val);
+        return !isNaN(num) && num >= 0 && num <= 15;
+    }
+
+    function isValidY(val) {
+        if (val === '' || val === null) return false;
+        let num = parseFloat(val);
+        return !isNaN(num) && num >= -10 && num <= 10;
+    }
+
+    // ---------- Détection d'outliers par IQR ----------
+    function detectOutliers(values) {
+        const validNumbers = values.filter(v => v !== null && !isNaN(v));
+        if (validNumbers.length < 10) return Array(values.length).fill(false);
+        
+        validNumbers.sort((a,b) => a - b);
+        const q1Index = Math.floor(validNumbers.length * 0.25);
+        const q3Index = Math.floor(validNumbers.length * 0.75);
+        const q1 = validNumbers[q1Index];
+        const q3 = validNumbers[q3Index];
+        const iqr = q3 - q1;
+        const lowerBound = q1 - 1.5 * iqr;
+        const upperBound = q3 + 1.5 * iqr;
+        
+        return values.map(v => v !== null && (v < lowerBound || v > upperBound));
+    }
+
+    function updateOutlierFlags() {
+        let xValues = data.map(row => {
+            let v = parseFloat(row.x);
+            return isValidX(row.x) ? v : null;
+        });
+        let yValues = data.map(row => {
+            let v = parseFloat(row.y);
+            return isValidY(row.y) ? v : null;
+        });
+        
+        const xOutliers = detectOutliers(xValues);
+        const yOutliers = detectOutliers(yValues);
+        
+        for (let i = 0; i < totalRows; i++) {
+            outlierStatus[i] = {
+                xOutlier: xOutliers[i],
+                yOutlier: yOutliers[i]
+            };
+        }
+    }
+
+    function updateRowStyles(rowIndex) {
+        const row = tableBody.children[rowIndex];
+        if (!row) return;
+        const xInput = row.cells[1].querySelector('input');
+        const yInput = row.cells[2].querySelector('input');
+        
+        const xValid = isValidX(data[rowIndex].x);
+        const yValid = isValidY(data[rowIndex].y);
+        
+        if (!xValid) {
+            setFieldStyle(xInput, 'invalid');
+        } else if (outlierStatus[rowIndex].xOutlier) {
+            setFieldStyle(xInput, 'outlier');
+        } else {
+            setFieldStyle(xInput, 'valid');
+        }
+        
+        if (!yValid) {
+            setFieldStyle(yInput, 'invalid');
+        } else if (outlierStatus[rowIndex].yOutlier) {
+            setFieldStyle(yInput, 'outlier');
+        } else {
+            setFieldStyle(yInput, 'valid');
+        }
+    }
+    
+    function setFieldStyle(input, status) {
+        input.classList.remove('invalid-input', 'outlier-input');
+        if (status === 'invalid') {
+            input.classList.add('invalid-input');
+        } else if (status === 'outlier') {
+            input.classList.add('outlier-input');
+        } else {
+            input.style.backgroundColor = '';
+        }
+    }
+
+    function checkAllCoherency() {
+        updateOutlierFlags();
+        
+        let individualErrors = [];
+        let outlierWarnings = [];
+        let validCount = 0;
+        
+        for (let i = 0; i < totalRows; i++) {
+            const xVal = data[i].x;
+            const yVal = data[i].y;
+            const xValid = isValidX(xVal);
+            const yValid = isValidY(yVal);
+            if (xValid && yValid) validCount++;
+            
+            if (!xValid || !yValid) {
+                let msg = `Essai ${i+1} : `;
+                if (!xValid) msg += `X invalide (${xVal === '' ? 'vide' : xVal}) `;
+                if (!yValid) msg += `Y invalide (${yVal === '' ? 'vide' : yVal})`;
+                individualErrors.push(msg);
+            }
+            if (xValid && outlierStatus[i].xOutlier) {
+                outlierWarnings.push(`Essai ${i+1} : X = ${xVal} m (anomalie statistique)`);
+            }
+            if (yValid && outlierStatus[i].yOutlier) {
+                outlierWarnings.push(`Essai ${i+1} : Y = ${yVal} m (anomalie statistique)`);
+            }
+            updateRowStyles(i);
+        }
+        
+        let html = '';
+        if (individualErrors.length === 0 && outlierWarnings.length === 0) {
+            html = '✅ <strong>Aucune incohérence ni anomalie détectée.</strong> Toutes les valeurs sont valides et cohérentes entre elles.';
+            messageDiv.style.backgroundColor = '#e6f7e6';
+            messageDiv.style.borderLeftColor = 'var(--highlight-success)';
+        } else {
+            if (individualErrors.length > 0) {
+                html += `<span class="error-summary">⚠️ ${individualErrors.length} erreur(s) de plage :</span><br>${individualErrors.join('<br>')}<br><br>`;
+            }
+            if (outlierWarnings.length > 0) {
+                html += `<span class="warning-summary">📊 ${outlierWarnings.length} anomalie(s) statistique(s) (IQR) :</span><br>${outlierWarnings.join('<br>')}`;
+            }
+            messageDiv.style.backgroundColor = '#fff0e0';
+            messageDiv.style.borderLeftColor = 'var(--highlight-warning)';
+        }
+        if (validCount < 10 && individualErrors.length === 0) {
+            html += `<br><br>ℹ️ <strong>Pas assez de données valides (${validCount}/10)</strong> pour la détection d’anomalies statistiques. Continuez la saisie.`;
+        }
+        messageDiv.innerHTML = html;
+    }
+    
+    function renderTable() {
+        tableBody.innerHTML = '';
+        for (let i = 0; i < totalRows; i++) {
+            const row = tableBody.insertRow();
+            const cellNum = row.insertCell(0);
+            cellNum.textContent = i + 1;
+            cellNum.style.fontWeight = 'bold';
+            
+            const cellX = row.insertCell(1);
+            const inputX = document.createElement('input');
+            inputX.type = 'text';
+            inputX.value = data[i].x;
+            inputX.placeholder = 'ex: 5.20';
+            inputX.addEventListener('input', (function(idx) {
+                return function(e) {
+                    data[idx].x = e.target.value;
+                    const xValid = isValidX(data[idx].x);
+                    if (!xValid) {
+                        setFieldStyle(inputX, 'invalid');
+                    } else {
+                        setFieldStyle(inputX, 'valid');
+                    }
+                };
+            })(i));
+            cellX.appendChild(inputX);
+            
+            const cellY = row.insertCell(2);
+            const inputY = document.createElement('input');
+            inputY.type = 'text';
+            inputY.value = data[i].y;
+            inputY.placeholder = 'ex: +0.35 ou -0.42';
+            inputY.addEventListener('input', (function(idx) {
+                return function(e) {
+                    data[idx].y = e.target.value;
+                    const yValid = isValidY(data[idx].y);
+                    if (!yValid) {
+                        setFieldStyle(inputY, 'invalid');
+                    } else {
+                        setFieldStyle(inputY, 'valid');
+                    }
+                };
+            })(i));
+            cellY.appendChild(inputY);
+        }
+        for (let i = 0; i < totalRows; i++) updateRowStyles(i);
+    }
+    
+    function exportToCSV() {
+        const team = document.getElementById('teamName').value.trim() || 'Equipe';
+        const date = document.getElementById('dateField').value || new Date().toISOString().slice(0,10);
+        const plane = document.getElementById('planeDesc').value.trim() || 'Non précisé';
+        
+        let csvRows = [];
+        csvRows.push(`# Relevés - Équipe: ${team}, Date: ${date}, Avion: ${plane}`);
+        csvRows.push('Essai;X_(m);Y_(m)');
+        
+        for (let i = 0; i < totalRows; i++) {
+            let xVal = data[i].x !== '' ? parseFloat(data[i].x).toFixed(2) : '';
+            let yVal = data[i].y !== '' ? parseFloat(data[i].y).toFixed(2) : '';
+            if (isNaN(parseFloat(data[i].x))) xVal = data[i].x;
+            if (isNaN(parseFloat(data[i].y))) yVal = data[i].y;
+            csvRows.push(`${i+1};${xVal};${yVal}`);
+        }
+        
+        const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.setAttribute('download', `releves_${team.replace(/\s/g,'_')}_${date}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+    
+    function fillWithExamples() {
+        for (let i = 0; i < totalRows; i++) {
+            let x = (3.5 + Math.random() * 7.0).toFixed(2);
+            let y = (Math.random() * 6 - 3).toFixed(2);
+            data[i].x = x;
+            data[i].y = y;
+        }
+        renderTable();
+        checkAllCoherency();
+    }
+    
+    function clearAll() {
+        for (let i = 0; i < totalRows; i++) {
+            data[i].x = '';
+            data[i].y = '';
+        }
+        renderTable();
+        messageDiv.innerHTML = '✅ Données effacées.';
+        messageDiv.style.backgroundColor = '#f9f2e0';
+        messageDiv.style.borderLeftColor = '#e67e22';
+    }
+    
+    function toggleModal(show) {
+        const modal = document.getElementById('copyrightModal');
+        if (show) modal.classList.add('active');
+        else modal.classList.remove('active');
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        renderTable();
+        const today = new Date().toISOString().slice(0,10);
+        if (!document.getElementById('dateField').value) document.getElementById('dateField').value = today;
+        
+        document.getElementById('checkBtn').addEventListener('click', checkAllCoherency);
+        document.getElementById('exportCsvBtn').addEventListener('click', exportToCSV);
+        document.getElementById('fillExampleBtn').addEventListener('click', fillWithExamples);
+        document.getElementById('clearAllBtn').addEventListener('click', clearAll);
+    });
+</script>
+</body>
+</html>

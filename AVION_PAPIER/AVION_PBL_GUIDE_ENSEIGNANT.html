@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>PBL Avion en Papier – Guide enseignant (version projecteur)</title>
+    <style>
+        :root {
+            --bg-room: #cfd8dc;
+            --text-color: #1a1a1a;
+            --highlight-main: #1565c0;
+            --highlight-alert: #b71c1c;
+            --highlight-success: #2e7d32;
+            --highlight-warning: #e67e22;
+            --board-bg: #fdfbf7;
+            --board-border: #3e2723;
+            --radius: min(1500px, 100vw);
+            --boards-count: 10;
+            /* Tailles agrandies pour la vidéoprojection */
+            --base-font-size: clamp(1.2rem, 3vh, 2rem);
+            --heading1-size: clamp(2.2rem, 7vh, 4rem);
+            --heading2-size: clamp(1.8rem, 5.5vh, 3.2rem);
+            --heading3-size: clamp(1.5rem, 4.5vh, 2.5rem);
+            --card-padding: 1.2rem;
+            --button-size: 1.2rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none; /* évite la sélection de texte lors des clics rapides, mais pas indispensable */
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-room);
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            overflow: hidden;
+            color: var(--text-color);
+            font-size: var(--base-font-size);
+        }
+
+        /* Indicateur visuel pour les clics (s'estompe après 5 secondes) */
+        .click-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.6);
+            color: #ffecb3;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            z-index: 1100;
+            backdrop-filter: blur(4px);
+            font-family: monospace;
+            pointer-events: none;
+            transition: opacity 0.8s ease;
+            opacity: 1;
+        }
+        .click-hint.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .scene {
+            width: 100vw;
+            height: 100vh;
+            perspective: 1500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .room {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: transform 0.9s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+
+        .board {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--board-bg);
+            border: 4px solid var(--board-border);
+            border-radius: 0;
+            box-shadow: none;
+            backface-visibility: hidden;
+            transform: rotateY(calc(var(--i) * (360deg / var(--boards-count)))) translateZ(var(--radius));
+            opacity: 0;
+            pointer-events: auto;
+            transition: opacity 0.6s ease;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .board.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .board-scroll {
+            width: 100%;
+            min-height: 100%;
+            padding: clamp(25px, 6vh, 70px);
+            scrollbar-width: thin;
+        }
+
+        h1 {
+            font-size: var(--heading1-size);
+            color: var(--highlight-main);
+            text-align: center;
+            border-bottom: 5px double var(--highlight-main);
+            padding-bottom: 1.2vh;
+            margin: 0 0 2.5vh 0;
+            font-weight: 800;
+        }
+
+        h2 {
+            font-size: var(--heading2-size);
+            color: var(--highlight-alert);
+            border-left: 10px solid var(--highlight-alert);
+            padding-left: 20px;
+            margin: 0 0 2.2vh 0;
+            font-weight: 700;
+        }
+
+        h3 {
+            font-size: var(--heading3-size);
+            margin: 1.5rem 0 1rem;
+            color: #0d3c5e;
+            font-weight: 600;
+        }
+
+        .card-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .card {
+            background: #f9fcff;
+            border-radius: 1.5rem;
+            padding: var(--card-padding);
+            flex: 1 1 260px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            border: 2px solid #e2edf7;
+        }
+        .card-icon { font-size: 2.2rem; }
+        .card-title { font-weight: 800; font-size: 1.4rem; margin: 0.6rem 0; }
+
+        .comparaison-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fef9e6;
+            border-radius: 1.2rem;
+            overflow: hidden;
+            margin: 1.5rem 0;
+            font-size: 1rem;
+        }
+        .comparaison-table th, .comparaison-table td {
+            border: 2px solid #e0d6b5;
+            padding: 1rem;
+            vertical-align: top;
+            font-size: 1rem;
+        }
+        .comparaison-table th { background: #ffecb3; font-size: 1.2rem; }
+
+        .ressource-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .ressource-item {
+            background: #e8f0fe;
+            padding: 1rem 1.2rem;
+            border-radius: 1.2rem;
+            border-left: 6px solid #1565c0;
+            font-size: 1rem;
+        }
+        .ressource-item a {
+            text-decoration: none;
+            font-weight: bold;
+            color: #0a2f44;
+            font-size: 1rem;
+        }
+        .insight-box {
+            background: #e0f2fe;
+            border-radius: 1.2rem;
+            padding: 1.2rem 1.8rem;
+            margin: 1.8rem 0;
+            border-left: 8px solid #0288d1;
+            font-size: 1.1rem;
+        }
+        .glossary {
+            background: #f8f3e8;
+            border-radius: 1.2rem;
+            padding: 1.2rem 1.8rem;
+            margin: 1.8rem 0;
+            border: 2px solid #ffdd99;
+        }
+        .glossary-term { font-weight: 800; margin-top: 1.2rem; color: #b45f1b; font-size: 1.2rem; }
+        .btn-lien {
+            background-color: var(--highlight-success);
+            color: white;
+            border: none;
+            border-radius: 60px;
+            padding: 8px 20px;
+            font-size: 1rem;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 0.6rem;
+            font-weight: bold;
+        }
+        .seance-plan {
+            background: #e8f5e9;
+            border-radius: 1.2rem;
+            padding: 1.2rem;
+            margin: 1.2rem 0;
+            font-size: 1rem;
+        }
+
+        /* Bouton copyright : s'estompe après 5s mais reste cliquable (opacité faible) et redevient visible au survol */
+        .copyright-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #37474f;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            z-index: 2000;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: opacity 0.6s ease, transform 0.2s;
+            opacity: 1;
+        }
+        .copyright-btn.fade-out {
+            opacity: 0.15;
+        }
+        .copyright-btn:hover {
+            opacity: 1 !important;
+            transform: scale(1.02);
+            background: #1c262c;
+        }
+
+        .modal {
+            visibility: hidden;
+            opacity: 0;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .modal.active { visibility: visible; opacity: 1; }
+        .modal-content {
+            background: #fff9ef;
+            max-width: 800px;
+            width: 90%;
+            padding: 35px;
+            border-radius: 40px;
+            border-top: 12px solid var(--highlight-alert);
+            font-size: 1.2rem;
+        }
+        .close-modal { float: right; font-size: 2.2rem; cursor: pointer; color: var(--highlight-alert); font-weight: bold; }
+        footer { font-size: 0.9rem; text-align: center; margin-top: 2.5rem; color: #5d5d5d; }
+        ul, ol { margin-left: 1.8rem; margin-top: 0.8rem; }
+        li { margin: 0.8rem 0; line-height: 1.4; font-size: 1rem; }
+        p { font-size: 1rem; line-height: 1.4; margin-bottom: 0.8rem; }
+        @media (max-width: 700px) {
+            .board-scroll { padding: 20px; }
+            .card-title { font-size: 1.2rem; }
+            .click-hint { font-size: 0.7rem; bottom: 10px; left: 10px; }
+            .copyright-btn { padding: 8px 16px; font-size: 0.9rem; bottom: 20px; right: 20px; }
+        }
+        .board::-webkit-scrollbar {
+            width: 14px;
+        }
+        .board::-webkit-scrollbar-track {
+            background: #e0e0e0;
+            border-radius: 10px;
+        }
+        .board::-webkit-scrollbar-thumb {
+            background: #1565c0;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<button class="copyright-btn" onclick="toggleModal(true)">📜 Droits & Licence</button>
+<div class="click-hint" id="clickHint">🖱️ Clic gauche → rotation ◀ | Clic droit → rotation ▶</div>
+
+<div class="scene">
+    <div class="room" id="room">
+        <!-- Face 0 : Introduction -->
+        <div class="board" style="--i:0;">
+            <div class="board-scroll">
+                <h1>✈️ PBL « Avion en Papier Optimal »</h1>
+                <h2 style="border-left:none; text-align:center; color:var(--highlight-main);">Guide enseignant enrichi – Cycle 4 & Lycée</h2>
+                <div class="insight-box">
+                    🧭 <strong>Projet clé en main</strong> pour faire vivre la démarche scientifique, les statistiques, l’aérodynamique et la modélisation numérique.
+                </div>
+                <p><strong>Auteur :</strong> Yann Merdy – Juin 2026 – yann.merdy@gmail.com</p>
+                <p>Ce guide présente la philosophie PBL, les contenus disciplinaires, la plus-value éducative, des pistes d’ouverture, des exemples de séances et des outils numériques. Naviguez à l’aide du clavier (◀ ▶) ou par clic gauche/droit sur les zones vides.</p>
+                <footer>⬅️ ➡️ 10 faces pour une immersion complète</footer>
+            </div>
+        </div>
+
+        <!-- Face 1 : Qu'est-ce qu'un PBL ? (détaillé) -->
+        <div class="board" style="--i:1;">
+            <div class="board-scroll">
+                <h2>🔍 Qu'est‑ce qu'un PBL ?</h2>
+                <p>Le <strong>Problem‑Based Learning</strong> (apprentissage par problèmes) confronte les élèves à une situation complexe sans solution unique. Ils doivent enquêter, expérimenter, échouer, itérer et présenter leurs conclusions. L’enseignant joue le rôle de facilitateur.</p>
+                <div class="card-grid">
+                    <div class="card"><div class="card-icon">🎯</div><div class="card-title">Objectifs pédagogiques</div>Développer autonomie, esprit critique, capacité à transférer des connaissances interdisciplinaires.</div>
+                    <div class="card"><div class="card-icon">🧠</div><div class="card-title">Apports cognitifs</div>Mémorisation active par la pratique, résilience face à l’échec (les tests sont des apprentissages).</div>
+                    <div class="card"><div class="card-icon">🤝</div><div class="card-title">Compétences transversales</div>Gestion de projet (rôles : lanceur, géomètre, scribe), communication orale (soutenance), analyse de données réelles.</div>
+                </div>
+                <div class="insight-box">💡 <strong>Parti pris didactique majeur</strong> : le lancer <strong>au poignet</strong> (pas de rampe). Il expose à la variabilité humaine → légitime l’usage des statistiques (moyenne, écart-type, IQR) et enseigne la rigueur expérimentale.</div>
+            </div>
+        </div>
+
+        <!-- Face 2 : Thèmes scientifiques & ressources (intégral) -->
+        <div class="board" style="--i:2;">
+            <div class="board-scroll">
+                <h2>📐 Thèmes & ressources interactives</h2>
+                <div style="display:flex; flex-wrap:wrap; gap:0.8rem; margin:1rem 0;">
+                    <span style="background:#e3f2fd; padding:0.4rem 1rem; border-radius:40px; font-size:1rem;">🔬 Aérodynamique (portance, traînée)</span>
+                    <span style="background:#e3f2fd; padding:0.4rem 1rem; border-radius:40px; font-size:1rem;">⚖️ Centre de gravité & lestage</span>
+                    <span style="background:#e3f2fd; padding:0.4rem 1rem; border-radius:40px; font-size:1rem;">📊 Statistiques (moyenne, écart-type, IQR, outliers)</span>
+                    <span style="background:#e3f2fd; padding:0.4rem 1rem; border-radius:40px; font-size:1rem;">🧮 Méthode d’Euler (simulation numérique)</span>
+                    <span style="background:#e3f2fd; padding:0.4rem 1rem; border-radius:40px; font-size:1rem;">📏 Géométrie & repérage cartésien</span>
+                    <span style="background:#e3f2fd; padding:0.4rem 1rem; border-radius:40px; font-size:1rem;">🔄 Optimisation itérative & protocole</span>
+                </div>
+                <p>Interdisciplinarité : maths (statistiques, Euler), physique (forces), technologie (protocole, pliage).</p>
+                <div class="ressource-list">
+                    <div class="ressource-item"><strong>🎬 Introduction 3D</strong><br><a href="AVION_PBL_INTRODUCTION.html" target="_blank">AVION_PBL_INTRODUCTION.html</a> – 6 faces, étapes + portance</div>
+                    <div class="ressource-item"><strong>📊 Analyseur de vol</strong><br><a href="AVION_PBL_COMPORTEMENT_EN_VOL.html" target="_blank">Diagnostic direction/tangage</a> avec conseils précis de réglage</div>
+                    <div class="ressource-item"><strong>📋 Relevés terrain + IQR</strong><br><a href="AVION_PBL_RELEVE_DES_VALEURS.html" target="_blank">20 lancers, validation plages, détection outliers, export CSV</a></div>
+                    <div class="ressource-item"><strong>✈️ Portance & Euler</strong><br><a href="AVION_PBL_PORTANCE.html" target="_blank">Présentation détaillée</a> – <a href="AVION_PBL_METHODE_EULER.html" target="_blank">Simulateur interactif</a> (vitesse limite, intervalle fluctuation)</div>
+                    <div class="ressource-item"><strong>❓ QCM + Quiz</strong><br><a href="AVION_PBL_QCM.html" target="_blank">Stabilité / centrage</a> – <a href="AVION_PBL_QUIZ_PORTANCE.html" target="_blank">Quiz portance</a> (correction auto)</div>
+                </div>
+                <p><em>📌 Tous ces fichiers HTML sont autonomes, fonctionnent hors ligne et sont prêts à être utilisés en salle informatique ou sur tablette.</em></p>
+            </div>
+        </div>
+
+        <!-- Face 3 : Plus-value détaillée vs cours classique -->
+        <div class="board" style="--i:3;">
+            <div class="board-scroll">
+                <h2>🚀 Plus‑value pédagogique</h2>
+                <table class="comparaison-table">
+                    <thead><tr><th>Dimension</th><th>Enseignement traditionnel</th><th>PBL Avion en papier</th></tr></thead>
+                    <tbody>
+                        <tr><td>Contexte</td><td>Exercices décontextualisés</td><td>Problème ouvert (« optimiser distance et rectitude »), itératif</td></tr>
+                        <tr><td>Données</td><td>Souvent simulées ou « propres »</td><td>Réelles, bruitées → nécessité des statistiques (moyenne, IQR)</td></tr>
+                        <tr><td>Maths</td><td>Formules abstraites</td><td>Statistiques appliquées, méthode d’Euler sur données réelles</td></tr>
+                        <tr><td>Esprit critique</td><td>Correction par l’enseignant</td><td>Auto‑diagnostic via analyseur de vol, décisions d’optimisation</div></td></tr>
+                        <tr><td>Collaboration</div></td><td>Rarement évaluée</div></td><td>Rôles définis (lanceur, géomètre, scribe, inspecteur), soutenance collective</div></tr>
+                    </tbody>
+                </table>
+                <div class="insight-box">📈 <strong>Les élèves deviennent de vrais ingénieurs :</strong> ils formulent des hypothèses, testent, analysent des données réelles (outliers compris) et communiquent leurs résultats.</div>
+            </div>
+        </div>
+
+        <!-- Face 4 : Déroulé type sur 6 séances (enrichissement) -->
+        <div class="board" style="--i:4;">
+            <div class="board-scroll">
+                <h2>📅 Exemple de planification (6 séances de 55 min)</h2>
+                <div class="seance-plan"><strong>Séance 1 – Lancement & découverte</strong><br>Présentation du défi, constitution des groupes, construction du premier prototype (The Bird). Lancements exploratoires. Utilisation de l’analyseur de vol (comportement).</div>
+                <div class="seance-plan"><strong>Séance 2 – Réglages & centrage</strong><br>Mesures systématiques (direction/tangage). Ajustement du lestage (trombones). Lien avec le centre de gravité. QCM stabilité.</div>
+                <div class="seance-plan"><strong>Séance 3 – Acquisition des données (X,Y)</strong><br>Mise en place du repère au sol. 20 lancers au poignet. Saisie dans la feuille de relevés informatisée. Détection des valeurs aberrantes (IQR).</div>
+                <div class="seance-plan"><strong>Séance 4 – Traitement statistique & export CSV</strong><br>Calcul de la moyenne, écart-type, représentation graphique (nuage de points). Introduction à Datawrapper/Flourish.</div>
+                <div class="seance-plan"><strong>Séance 5 – Modélisation : portance et méthode d’Euler</strong><br>Présentation de la portance, calcul de la vitesse minimale. Simulation interactive (Euler) : influence de la masse, surface, vitesse limite.</div>
+                <div class="seance-plan"><strong>Séance 6 – Préparation et soutenance finale</strong><br>Synthèse des résultats, création d’un diaporame intégrant graphiques, analyse des améliorations. Présentation orale devant la classe.</div>
+                <p>➜ Possibilité d’intégrer une demi‑séance supplémentaire pour la compétition inter‑groupes.</p>
+            </div>
+        </div>
+
+        <!-- Face 5 : Prolongements & ouverture -->
+        <div class="board" style="--i:5;">
+            <div class="board-scroll">
+                <h2>🌱 Prolongements possibles</h2>
+                <div class="card-grid">
+                    <div class="card"><div class="card-icon">📈</div><div class="card-title">Modélisation avancée</div>Régression linéaire X vs Y, analyse des résidus.</div>
+                    <div class="card"><div class="card-icon">🎥</div><div class="card-title">Traitement vidéo</div>Tracker (Kinovea) pour extraire vitesse réelle et comparer à Euler.</div>
+                    <div class="card"><div class="card-icon">🧪</div><div class="card-title">Science des matériaux</div>Comparer grammages (80g vs 120g), plastification, humidité.</div>
+                    <div class="card"><div class="card-icon">💻</div><div class="card-title">Programmation Python</div>Lire CSV, calculer intervalle de confiance, tracer ellipses de dispersion.</div>
+                </div>
+                <p>→ EPI possible avec SVT (biomimétisme du vol des oiseaux), technologie (CAO) ou arts plastiques (design de l’avion).</p>
+                <div class="insight-box">🏆 <strong>Compétition inter‑classes</strong> : trophées pour la distance maximale, la meilleure précision latérale, la soutenance la plus convaincante.</div>
+            </div>
+        </div>
+
+        <!-- Face 6 : Idées complémentaires + Lexique IQR / Datawrapper / Flourish -->
+        <div class="board" style="--i:6;">
+            <div class="board-scroll">
+                <h2>💡 Astuces & outils numériques</h2>
+                <ul>
+                    <li>📓 <strong>Journal de bord numérique</strong> (Google Docs ou Padlet) : chaque groupe note les réglages, photos, réflexions.</li>
+                    <li>📊 <strong>Datawrapper / Flourish</strong> : à partir des CSV exportés, créez des nuages de points, histogrammes, boîtes à moustaches. (Voir lexique ci‑dessous)</li>
+                    <li>🎤 <strong>Soutenance avec graphiques dynamiques</strong> : les élèves intègrent leurs visualisations dans un diaporama.</li>
+                    <li>📐 <strong>Défi seuil</strong> : avant de passer aux mesures longue distance, les groupes doivent atteindre 60% de vols « tout droit » et 60% de tangage « neutre » (analyseur de vol).</li>
+                    <li>🔄 <strong>Itérations contrôlées</strong> : ne modifier qu’un paramètre à la fois (lestage, symétrie, angle d’incidence) pour mesurer l’effet.</li>
+                </ul>
+                <div class="glossary">
+                    <h3>📖 Lexique technique</h3>
+                    <div class="glossary-term">IQR (Écart interquartile)</div>
+                    <p>Dans la feuille de relevés, l’IQR détecte les valeurs aberrantes (outliers) : données hors de [Q1 – 1,5×IQR ; Q3 + 1,5×IQR]. Cela permet d’initier les élèves au concept de « bruit statistique » et à la décision d’inclure ou exclure une mesure.</p>
+                    <div class="glossary-term">Datawrapper</div>
+                    <p>Outil en ligne (gratuit pour l’éducation) pour créer des graphiques interactifs (nuages de points, histogrammes, boîtes à moustaches) à partir d’un CSV. Idéal pour visualiser la dispersion des impacts (X,Y).</p>
+                    <div class="glossary-term">Flourish</div>
+                    <p>Plateforme de visualisation plus avancée (version gratuite pour enseignants). Permet des animations, des cartes, des matrices de corrélation. Rend les données vivantes pour la soutenance.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Face 7 : Grille d'évaluation détaillée et auto‑évaluation -->
+        <div class="board" style="--i:7;">
+            <div class="board-scroll">
+                <h2>📋 Exemple de grille d’évaluation</h2>
+                <ul style="columns:2; column-gap:2rem; margin-bottom:1.5rem; font-size:1rem;">
+                    <li>🔹 Respect du protocole (répétitions, hauteur fixe) → /4</li>
+                    <li>🔹 Pertinence des réglages (utilisation analyseur de vol) → /4</li>
+                    <li>🔹 Qualité des relevés (cohérence, traitement IQR) → /4</li>
+                    <li>🔹 Utilisation des outils statistiques (moyenne, écart‑type) → /4</li>
+                    <li>🔹 Simulation Euler (compréhension de la vitesse limite) → /4</li>
+                    <li>🔹 Communication orale (soutenance, justification des choix) → /4</li>
+                    <li>🔹 Production graphique (Datawrapper/Flourish, interprétation) → /4 (bonus)</li>
+                </ul>
+                <div class="insight-box" style="background:#e8f5e9; border-left-color:#2e7d32;">📝 <strong>Auto‑évaluation possible</strong> : les groupes remplissent une fiche réflexive « Ce que j’ai appris, ce qui a été difficile, comment nous avons surmonté les problèmes ».</div>
+            </div>
+        </div>
+
+        <!-- Face 8 : Conseils différenciation & gestion de classe -->
+        <div class="board" style="--i:8;">
+            <div class="board-scroll">
+                <h2>🧑‍🏫 Conseils pour la mise en œuvre</h2>
+                <ul>
+                    <li><strong>Groupes hétérogènes</strong> : mélanger élèves à l’aise en maths, en manuel et en communication.</li>
+                    <li><strong>Rotation des rôles</strong> : à chaque séance, changer les affectations (lanceur, géomètre, scribe, inspecteur).</li>
+                    <li><strong>Accompagnement des élèves en difficulté</strong> : fournir une fiche protocole illustrée, utiliser l’analyseur de vol comme guide pas à pas.</li>
+                    <li><strong>Pour les plus rapides / curieux</strong> : approfondir la méthode d’Euler (modifier le pas de temps, comparer avec la solution analytique de la vitesse limite).</li>
+                    <li><strong>Matériel nécessaire</strong> : feuilles A4 (80g), trombones, mètre ruban (10m), équerre, craie pour marquer le repère au sol, balances de cuisine (optionnel).</li>
+                    <li><strong>Gestion du temps</strong> : prévoir des « stations » pour que plusieurs groupes lancent en parallèle dans un gymnase ou un couloir.</li>
+                </ul>
+                <div class="insight-box">📸 <strong>Documentation</strong> : filmez quelques lancers au ralenti (smartphone) pour analyser le tangage et le roulis.</div>
+            </div>
+        </div>
+
+        <!-- Face 9 : Licence & remerciements -->
+        <div class="board" style="--i:9;">
+            <div class="board-scroll">
+                <h2>⚖️ Droits d’auteur & licence</h2>
+                <p><strong>Auteur :</strong> Yann Merdy – yann.merdy@gmail.com – Juin 2026</p>
+                <p><strong>Licence d’utilisation non commerciale</strong> : Ce code HTML/CSS/JS et les contenus associés sont la propriété intellectuelle de Yann Merdy. <br> ✅ Utilisation privée et éducative (dans les établissements scolaires) autorisée – copie, modification, distribution. <br> ❌ Utilisation commerciale interdite sans accord écrit explicite.</p>
+                <p><strong>Attribution obligatoire :</strong> toute reproduction doit conserver la mention « Inspiré du projet PBL Avion en Papier – Yann Merdy ».</p>
+                <div style="margin:2rem 0; background:#f0f4c3; padding:1rem; border-radius:20px;">📁 <strong>Note technique</strong> : tous les fichiers HTML doivent être placés dans le même dossier pour que les liens fonctionnent. Ouvrez <code>AVION_PBL_INTRODUCTION.html</code> pour démarrer l’expérience immersive.</div>
+                <footer>✈️ Bonne aventure pédagogique avec vos élèves !</footer>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="copyrightModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="toggleModal(false)">&times;</span>
+        <h2>📚 Licence pédagogique</h2>
+        <p><strong>Auteur :</strong> Yann Merdy – Juin 2026.</p>
+        <p>Utilisation libre pour tout usage éducatif et non commercial dans les établissements scolaires. Modification et partage autorisés. Exploitation commerciale interdite sans autorisation explicite.</p>
+        <p>✨ Mention obligatoire : "Inspiré du projet PBL Avion en Papier – Yann Merdy"</p>
+        <button class="btn-lien" onclick="toggleModal(false)" style="margin-top:15px;">Fermer</button>
+    </div>
+</div>
+
+<script>
+    const totalBoards = 10;
+    let currentIndex = 0;
+    const room = document.getElementById('room');
+    const boards = document.querySelectorAll('.board');
+
+    function applyRotation() {
+        const angle = currentIndex * (360 / totalBoards) * -1;
+        room.style.transform = `translateZ(calc(-1 * var(--radius))) rotateY(${angle}deg)`;
+        boards.forEach((board, idx) => {
+            if (idx === currentIndex) board.classList.add('active');
+            else board.classList.remove('active');
+        });
+    }
+
+    function rotateRoom(delta) {
+        let newIndex = currentIndex + delta;
+        if (newIndex < 0) newIndex = totalBoards - 1;
+        if (newIndex >= totalBoards) newIndex = 0;
+        currentIndex = newIndex;
+        applyRotation();
+    }
+
+    // Gestion des clics gauche/droit pour la rotation, hors éléments interactifs
+    function handleClick(event) {
+        let delta = (event.type === 'click' && event.button === 0) ? -1 : (event.type === 'contextmenu' ? 1 : null);
+        if (delta === null) return;
+
+        const target = event.target;
+        const isInteractive = target.closest('a, button, .btn-lien, .copyright-btn, input, select, textarea, .modal, .close-modal') !== null;
+        if (!isInteractive) {
+            let el = target.closest('.board, .board-scroll');
+            if (el) {
+                const rect = el.getBoundingClientRect();
+                const clickX = event.clientX - rect.left;
+                if (clickX > rect.width - 20) return;
+            }
+            rotateRoom(delta);
+        }
+        if (event.type === 'contextmenu') {
+            event.preventDefault();
+            return false;
+        }
+    }
+
+    document.addEventListener('contextmenu', function(e) {
+        const target = e.target;
+        const isInteractive = target.closest('a, button, .btn-lien, .copyright-btn, input, select, textarea') !== null;
+        if (!isInteractive) {
+            e.preventDefault();
+            return false;
+        }
+    });
+    
+    const sceneEl = document.querySelector('.scene');
+    sceneEl.addEventListener('click', handleClick);
+    sceneEl.addEventListener('contextmenu', handleClick);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') rotateRoom(-1);
+        if (e.key === 'ArrowRight') rotateRoom(1);
+        if (e.key === 'Escape') toggleModal(false);
+    });
+
+    function toggleModal(show) {
+        const modal = document.getElementById('copyrightModal');
+        if (show) modal.classList.add('active');
+        else modal.classList.remove('active');
+    }
+
+    // Faire s'estomper la bulle d'aide et le bouton copyright après 5 secondes
+    setTimeout(() => {
+        const hint = document.getElementById('clickHint');
+        if (hint) hint.classList.add('fade-out');
+        const copyrightBtn = document.querySelector('.copyright-btn');
+        if (copyrightBtn) copyrightBtn.classList.add('fade-out');
+    }, 5000);
+
+    window.onload = () => applyRotation();
+    window.addEventListener('resize', () => applyRotation());
+</script>
+</body>
+</html>

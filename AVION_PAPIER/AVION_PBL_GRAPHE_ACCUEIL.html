@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Graphe des liens – PBL Avion en papier (cliquable)</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+        }
+        /* conteneur 3D d'attente */
+        #canvas3d {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            background: #0a1a2a;
+            transition: opacity 1s ease;
+        }
+        /* conteneur du graphe – occupe TOUT l'écran */
+        #graph-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 20;
+            background: #fdfbf7;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.9s ease;
+        }
+        .transition-message {
+            position: fixed;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            z-index: 25;
+            color: white;
+            background: rgba(0,0,0,0.65);
+            padding: 12px 20px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            backdrop-filter: blur(8px);
+            border-radius: 60px;
+            width: fit-content;
+            margin: 0 auto;
+            pointer-events: none;
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+        .controls-info {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            color: #f0f0f0;
+            padding: 10px 18px;
+            border-radius: 40px;
+            font-size: 1rem;
+            z-index: 30;
+            font-family: monospace;
+            backdrop-filter: blur(4px);
+            pointer-events: none;
+            font-weight: bold;
+        }
+        button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 35;
+            background: #1565c0;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 24px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: 0.2s;
+            font-family: inherit;
+        }
+        button:hover {
+            background: #0d47a1;
+            transform: scale(1.02);
+        }
+        @media (max-width: 800px) {
+            .controls-info { font-size: 0.75rem; bottom: 15px; right: 15px; padding: 6px 12px; }
+            button { top: 12px; right: 12px; padding: 8px 16px; font-size: 0.9rem; }
+            .transition-message { font-size: 1rem; bottom: 20px; }
+        }
+    </style>
+    <!-- three.js + vis-network -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/vis-network@9.1.6/dist/vis-network.min.js"></script>
+</head>
+<body>
+
+<div id="canvas3d"></div>
+<div id="graph-container"></div>
+<div class="transition-message" id="transitionMsg">✈️ Préparation du projet… Animation 3D – Accès au graphe des liens</div>
+<div class="controls-info">🖱️ Cliquez sur un nœud → ouvre le fichier correspondant</div>
+<button id="resetGraphBtn">⟳ Recentrer le graphe</button>
+
+<script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+    // ----- Animation 3D d'attente (avion stylisé) -----
+    const scene3d = new THREE.Scene();
+    scene3d.background = new THREE.Color(0x0a1a2a);
+    scene3d.fog = new THREE.FogExp2(0x0a1a2a, 0.008);
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(3, 2, 5);
+    camera.lookAt(0, 0, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    document.getElementById('canvas3d').appendChild(renderer.domElement);
+
+    const labelRenderer = new CSS2DRenderer();
+    labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    labelRenderer.domElement.style.position = 'absolute';
+    labelRenderer.domElement.style.top = '0px';
+    labelRenderer.domElement.style.left = '0px';
+    labelRenderer.domElement.style.pointerEvents = 'none';
+    document.getElementById('canvas3d').appendChild(labelRenderer.domElement);
+
+    // lumières
+    const ambientLight = new THREE.AmbientLight(0x404060);
+    scene3d.add(ambientLight);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+    dirLight.position.set(2, 5, 3);
+    dirLight.castShadow = true;
+    scene3d.add(dirLight);
+    const backLight = new THREE.PointLight(0x4466cc, 0.6);
+    backLight.position.set(-1, 1, -2);
+    scene3d.add(backLight);
+    const fillLight = new THREE.PointLight(0xffaa66, 0.5);
+    fillLight.position.set(1, 1, 2);
+    scene3d.add(fillLight);
+
+    // groupe avion
+    const planeGroup = new THREE.Group();
+    
+    const fuselageGeo = new THREE.ConeGeometry(0.25, 1.2, 16);
+    const fuselageMat = new THREE.MeshStandardMaterial({ color: 0xe8eef4, metalness: 0.3, roughness: 0.4 });
+    const fuselage = new THREE.Mesh(fuselageGeo, fuselageMat);
+    fuselage.rotation.x = Math.PI / 2;
+    fuselage.position.z = -0.2;
+    planeGroup.add(fuselage);
+    
+    const wingGeo = new THREE.BoxGeometry(1.6, 0.05, 0.6);
+    const wingMat = new THREE.MeshStandardMaterial({ color: 0xc0d0e0, metalness: 0.2 });
+    const wings = new THREE.Mesh(wingGeo, wingMat);
+    wings.position.y = 0.1;
+    wings.position.z = -0.1;
+    planeGroup.add(wings);
+    
+    const tailGeo = new THREE.BoxGeometry(0.6, 0.05, 0.4);
+    const tail = new THREE.Mesh(tailGeo, wingMat);
+    tail.position.y = 0.15;
+    tail.position.z = -0.7;
+    planeGroup.add(tail);
+    
+    const finGeo = new THREE.ConeGeometry(0.15, 0.4, 4);
+    const finMat = new THREE.MeshStandardMaterial({ color: 0x9fb6d0 });
+    const fin = new THREE.Mesh(finGeo, finMat);
+    fin.position.y = 0.35;
+    fin.position.z = -0.65;
+    planeGroup.add(fin);
+    
+    const glowMat = new THREE.MeshStandardMaterial({ color: 0x88aaff, emissive: 0x2266aa });
+    const glow = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), glowMat);
+    glow.position.z = -1.1;
+    planeGroup.add(glow);
+    
+    scene3d.add(planeGroup);
+    
+    // étiquette CSS2D
+    const titleDiv = document.createElement('div');
+    titleDiv.textContent = '✈️ PROJET PBL AVION EN PAPIER';
+    titleDiv.style.color = '#ffdd99';
+    titleDiv.style.fontSize = '24px';
+    titleDiv.style.fontWeight = 'bold';
+    titleDiv.style.textShadow = '2px 2px 4px #000';
+    titleDiv.style.backgroundColor = 'rgba(0,0,0,0.5)';
+    titleDiv.style.padding = '8px 18px';
+    titleDiv.style.borderRadius = '40px';
+    titleDiv.style.border = '1px solid #ffaa44';
+    titleDiv.style.backdropFilter = 'blur(6px)';
+    const titleLabel = new CSS2DObject(titleDiv);
+    titleLabel.position.set(0, 1.2, 0.5);
+    planeGroup.add(titleLabel);
+    
+    // étoiles
+    const starGeometry = new THREE.BufferGeometry();
+    const starCount = 900;
+    const starPositions = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount; i++) {
+        starPositions[i*3] = (Math.random() - 0.5) * 220;
+        starPositions[i*3+1] = (Math.random() - 0.5) * 120;
+        starPositions[i*3+2] = (Math.random() - 0.5) * 90 - 45;
+    }
+    starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+    const starMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.15, transparent: true, opacity: 0.7 });
+    const stars = new THREE.Points(starGeometry, starMaterial);
+    scene3d.add(stars);
+    
+    const ringGeo = new THREE.TorusGeometry(1.2, 0.03, 64, 200);
+    const ringMat = new THREE.MeshStandardMaterial({ color: 0x88aaff, emissive: 0x2255aa });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = Math.PI / 2;
+    scene3d.add(ring);
+    
+    let time = 0;
+    function animate3d() {
+        requestAnimationFrame(animate3d);
+        time += 0.012;
+        planeGroup.position.y = Math.sin(time * 1.2) * 0.08;
+        planeGroup.rotation.y = Math.sin(time * 0.5) * 0.3;
+        planeGroup.rotation.z = Math.sin(time * 0.8) * 0.1;
+        ring.rotation.z = time * 0.3;
+        ring.rotation.x = Math.PI / 2 + Math.sin(time * 0.2) * 0.1;
+        stars.rotation.y += 0.0005;
+        stars.rotation.x += 0.0003;
+        camera.position.x = 4 * Math.sin(time * 0.1);
+        camera.position.z = 5 + Math.sin(time * 0.2) * 0.3;
+        camera.lookAt(0, 0.2, 0);
+        
+        renderer.render(scene3d, camera);
+        labelRenderer.render(scene3d, camera);
+    }
+    animate3d();
+    
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    });
+    
+    // ----- DONNÉES DU GRAPHE (plein écran, étalé) -----
+    // Chaque nœud a un champ "file" correspondant au nom exact du fichier HTML
+    const nodes = [
+        { id: "INTRODUCTION", label: "📘 AVION_PBL_INTRODUCTION.html", file: "AVION_PBL_INTRODUCTION.html", group: "presentation", title: "Présentation générale – 6 faces 3D, sommaire du projet" },
+        { id: "COMPORTEMENT", label: "📊 AVION_PBL_COMPORTEMENT_EN_VOL.html", file: "AVION_PBL_COMPORTEMENT_EN_VOL.html", group: "outil", title: "Analyseur de vol : direction, tangage, conseils précis" },
+        { id: "FICHE_REFLEXIVE", label: "📓 AVION_PBL_FICHE_REFLEXIVE.html", file: "AVION_PBL_FICHE_REFLEXIVE.html", group: "eleve", title: "Fiche réflexive 3D – 6 faces, suivi des 4 étapes" },
+        { id: "GUIDE_ENSEIGNANT", label: "👩‍🏫 AVION_PBL_GUIDE_ENSEIGNANT.html", file: "AVION_PBL_GUIDE_ENSEIGNANT.html", group: "guide", title: "Guide enseignant enrichi – 10 faces, tout le dispositif" },
+        { id: "METHODE_EULER", label: "🧮 AVION_PBL_METHODE_EULER.html", file: "AVION_PBL_METHODE_EULER.html", group: "simulation", title: "Simulation chute libre / méthode d'Euler interactive" },
+        { id: "PLUS_VALUES", label: "✨ AVION_PBL_PLUS_VALUES_A_ENVISAGER.html", file: "AVION_PBL_PLUS_VALUES_A_ENVISAGER.html", group: "ressource", title: "Plus-values pédagogiques – 10 faces, version projecteur" },
+        { id: "PORTANCE", label: "✈️ AVION_PBL_PORTANCE.html", file: "AVION_PBL_PORTANCE.html", group: "theorie", title: "Calcul de la portance – Avion The Bird, 10 diapos" },
+        { id: "QCM", label: "❓ AVION_PBL_QCM.html", file: "AVION_PBL_QCM.html", group: "quiz", title: "QCM stabilité / centrage – avec dictionnaire interactif" },
+        { id: "QUIZ_PORTANCE", label: "📝 AVION_PBL_QUIZ_PORTANCE.html", file: "AVION_PBL_QUIZ_PORTANCE.html", group: "quiz", title: "Quiz portance (5 questions, correction automatique)" },
+        { id: "RELEVE", label: "📋 AVION_PBL_RELEVE_DES_VALEURS.html", file: "AVION_PBL_RELEVE_DES_VALEURS.html", group: "outil", title: "Feuille relevés – 20 lancers, IQR, export CSV" }
+    ];
+    
+    const edges = [
+        { from: "INTRODUCTION", to: "COMPORTEMENT", title: "Lien direct vers l'analyseur de vol" },
+        { from: "INTRODUCTION", to: "QCM", title: "Lien direct vers QCM stabilité" },
+        { from: "INTRODUCTION", to: "RELEVE", title: "Lien direct vers feuille de relevés" },
+        { from: "INTRODUCTION", to: "PORTANCE", title: "Lien vers présentation portance" },
+        { from: "INTRODUCTION", to: "QUIZ_PORTANCE", title: "Lien vers quiz portance" },
+        { from: "INTRODUCTION", to: "METHODE_EULER", title: "Lien vers simulateur Euler" },
+        { from: "GUIDE_ENSEIGNANT", to: "INTRODUCTION", title: "Découvre la présentation générale" },
+        { from: "GUIDE_ENSEIGNANT", to: "COMPORTEMENT", title: "Outil diagnostic vol" },
+        { from: "GUIDE_ENSEIGNANT", to: "RELEVE", title: "Accès relevés terrain" },
+        { from: "GUIDE_ENSEIGNANT", to: "PORTANCE", title: "Calcul portance" },
+        { from: "GUIDE_ENSEIGNANT", to: "METHODE_EULER", title: "Méthode Euler" },
+        { from: "GUIDE_ENSEIGNANT", to: "QCM", title: "QCM stabilité" },
+        { from: "GUIDE_ENSEIGNANT", to: "QUIZ_PORTANCE", title: "Quiz portance" },
+        { from: "GUIDE_ENSEIGNANT", to: "PLUS_VALUES", title: "Plus-values à envisager" },
+        { from: "PORTANCE", to: "METHODE_EULER", title: "Découvrir la simulation Euler" },
+        { from: "METHODE_EULER", to: "PORTANCE", title: "Retour à la portance" },
+        { from: "FICHE_REFLEXIVE", to: "COMPORTEMENT", title: "Peut importer les résultats analyseur" },
+        { from: "FICHE_REFLEXIVE", to: "RELEVE", title: "Export CSV -> réflexion" }
+    ];
+    
+    // Options optimisées pour un étalement maximal sur large écran
+    const options = {
+        nodes: {
+            shape: 'box',
+            margin: 14,
+            widthConstraint: { minimum: 160, maximum: 280 },
+            font: { size: 20, face: 'Segoe UI', color: '#1a2a3a', strokeWidth: 0, bold: true },
+            borderWidth: 3,
+            shadow: { enabled: true, size: 10, x: 4, y: 4 },
+            color: {
+                background: '#fef9e6',
+                border: '#1565c0',
+                highlight: { background: '#ffe0b5', border: '#b71c1c' }
+            }
+        },
+        edges: {
+            arrows: { to: { enabled: true, scaleFactor: 1.3 } },
+            color: { color: '#3e5a7a', highlight: '#e67e22', hover: '#e67e22' },
+            font: { size: 15, align: 'middle', background: '#fff8e0', strokeWidth: 1, strokeColor: '#ffffff' },
+            smooth: { type: 'curvedCW', roundness: 0.25 },
+            width: 3,
+            hoverWidth: 4,
+            label: false,
+            title: true
+        },
+        physics: {
+            enabled: true,
+            stabilization: { iterations: 180, fit: true },
+            solver: 'forceAtlas2Based',
+            forceAtlas2Based: {
+                gravitationalConstant: -45,
+                centralGravity: 0.002,
+                springLength: 280,
+                springConstant: 0.06,
+                damping: 0.9,
+                avoidOverlap: 0.6
+            },
+            maxVelocity: 35,
+            timestep: 0.35
+        },
+        interaction: {
+            hover: true,
+            tooltipDelay: 200,
+            zoomView: true,
+            dragView: true,
+            navigationButtons: false,
+            multiselect: false
+        },
+        layout: { improvedLayout: true },
+        groups: {
+            presentation: { color: { background: '#c8e6e0', border: '#00796b' }, shape: 'ellipse' },
+            outil: { color: { background: '#e3f2fd', border: '#1565c0' }, shape: 'box' },
+            eleve: { color: { background: '#f3e5f5', border: '#8e24aa' }, shape: 'diamond' },
+            guide: { color: { background: '#ffecb3', border: '#ff8f00' }, shape: 'star' },
+            simulation: { color: { background: '#e8f5e9', border: '#2e7d32' }, shape: 'hexagon' },
+            ressource: { color: { background: '#fbe9e7', border: '#d84315' }, shape: 'box' },
+            theorie: { color: { background: '#d1c4e9', border: '#5e35b1' }, shape: 'triangle' },
+            quiz: { color: { background: '#ffccbc', border: '#e65100' }, shape: 'dot' }
+        }
+    };
+    
+    let network = null;
+    const container = document.getElementById('graph-container');
+    
+    function initGraph() {
+        if (network) network.destroy();
+        const data = { nodes: new vis.DataSet(nodes), edges: new vis.DataSet(edges) };
+        network = new vis.Network(container, data, options);
+        
+        // Une fois stabilisé, ajuster le zoom pour que tout le graphe tienne dans l'écran
+        network.once('stabilizationIterationsDone', () => {
+            network.fit({ animation: true, duration: 800 });
+            // Légère mise à l'échelle supplémentaire si nécessaire
+            const scale = network.getScale();
+            if (scale < 0.7) network.moveTo({ scale: 0.85 });
+        });
+        
+        // Gestion du clic sur un nœud : ouverture du fichier HTML associé
+        network.on("click", function(params) {
+            if (params.nodes && params.nodes.length > 0) {
+                const nodeId = params.nodes[0];
+                const node = nodes.find(n => n.id === nodeId);
+                if (node && node.file) {
+                    // Ouverture dans un nouvel onglet
+                    window.open(node.file, '_blank');
+                }
+            }
+        });
+        
+        // Assurer que le conteneur utilise tout l'espace et que le graphe se recalcule au redimensionnement
+        window.addEventListener('resize', () => {
+            if (network) {
+                network.fit({ animation: true, duration: 300 });
+            }
+        });
+        
+        // Personnalisation des tooltips (très lisibles)
+        network.on("hoverNode", function(params) {
+            const node = nodes.find(n => n.id === params.node);
+            if (node) {
+                const tooltipDiv = document.querySelector('.vis-tooltip');
+                if (tooltipDiv) tooltipDiv.style.fontSize = '18px';
+            }
+        });
+    }
+    
+    // Gestion de la transition depuis la 3D
+    const canvas3dDiv = document.getElementById('canvas3d');
+    const graphDiv = document.getElementById('graph-container');
+    const transitionMsgDiv = document.getElementById('transitionMsg');
+    
+    // Attendre 3.8 secondes puis basculer sur le graphe
+    setTimeout(() => {
+        canvas3dDiv.style.opacity = '0';
+        setTimeout(() => {
+            canvas3dDiv.style.display = 'none';
+            graphDiv.style.display = 'block';
+            graphDiv.style.opacity = '1';
+            initGraph();
+            transitionMsgDiv.textContent = '📡 Cliquez sur un nœud pour ouvrir le fichier correspondant';
+            setTimeout(() => {
+                transitionMsgDiv.style.opacity = '0';
+                setTimeout(() => transitionMsgDiv.style.display = 'none', 1000);
+            }, 4000);
+        }, 800);
+    }, 3800);
+    
+    // Bouton recentrage
+    document.getElementById('resetGraphBtn').addEventListener('click', () => {
+        if (network) {
+            network.fit({ animation: true, duration: 500 });
+            setTimeout(() => {
+                const scale = network.getScale();
+                if (scale < 0.7) network.moveTo({ scale: 0.85 });
+            }, 520);
+        }
+    });
+    
+    // Si l'utilisateur clique sur la scène 3D, on accélère la transition (optionnel)
+    canvas3dDiv.addEventListener('click', () => {
+        if (canvas3dDiv.style.display !== 'none') {
+            canvas3dDiv.style.opacity = '0';
+            setTimeout(() => {
+                canvas3dDiv.style.display = 'none';
+                graphDiv.style.display = 'block';
+                graphDiv.style.opacity = '1';
+                if (!network) initGraph();
+                transitionMsgDiv.style.opacity = '0';
+                setTimeout(() => transitionMsgDiv.style.display = 'none', 500);
+            }, 200);
+        }
+    });
+    
+    // Injection CSS globale pour que le tooltip soit énorme et lisible de loin
+    const style = document.createElement('style');
+    style.textContent = `
+        .vis-network div.vis-tooltip {
+            background-color: #1e2a2e !important;
+            color: #ffecb3 !important;
+            font-size: 20px !important;
+            padding: 12px 20px !important;
+            border-radius: 40px !important;
+            border-left: 8px solid #ffaa44 !important;
+            font-weight: bold !important;
+            max-width: 500px !important;
+            pointer-events: none !important;
+            font-family: 'Segoe UI', monospace !important;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5) !important;
+            line-height: 1.4 !important;
+        }
+        .vis-network .vis-label {
+            font-weight: 700;
+            text-shadow: 1px 1px 0 rgba(255,255,200,0.5);
+            font-size: 1.1rem !important;
+        }
+        #graph-container {
+            background: radial-gradient(circle at 20% 30%, #fef9e6, #fff3e0);
+            width: 100%;
+            height: 100%;
+        }
+        .vis-network {
+            width: 100%;
+            height: 100%;
+        }
+        button {
+            font-family: inherit;
+            letter-spacing: 0.5px;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Forcer le redimensionnement après l'affichage pour s'assurer que le conteneur prend bien toute la place
+    window.addEventListener('load', () => {
+        if (graphDiv.style.display === 'block') {
+            setTimeout(() => {
+                if (network) network.fit({ animation: false });
+            }, 100);
+        }
+    });
+</script>
+</body>
+</html>
