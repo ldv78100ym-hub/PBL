@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PBL · Red Bull Sky & Dirt Challenge · Ressources</title>
+    <style>
+        /* ––––––––––––––––––––––––––––––– */
+        /*  Variables & reset               */
+        /* ––––––––––––––––––––––––––––––– */
+        :root {
+            --bg: #f5f2eb;
+            --card-bg: #ffffff;
+            --text: #2c2416;
+            --text-light: #5c5344;
+            --primary: #7b4fbf;
+            --primary-light: #ede4f7;
+            --primary-glow: rgba(123, 79, 191, 0.25);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+            --radius: 18px;
+            --radius-sm: 12px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --color-enonce: #e7b42c;
+            --color-annexes: #3a7ca5;
+            --color-cartes: #6f9bdf;
+            --color-copyright: #b86f9c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            background-image:
+                radial-gradient(ellipse at 15% 20%, rgba(123, 79, 191, 0.07) 0%, transparent 55%),
+                radial-gradient(ellipse at 85% 80%, rgba(123, 79, 191, 0.05) 0%, transparent 55%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* ––––––––––––––––––––––––––––––– */
+        /*  En‑tête                         */
+        /* ––––––––––––––––––––––––––––––– */
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .header h1 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #1f1a10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .header h1 span {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 0.1rem 0.8rem;
+            border-radius: 40px;
+            font-size: 1.6rem;
+        }
+
+        .header .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            margin-top: 0.3rem;
+            opacity: 0.8;
+            font-weight: 400;
+        }
+
+        .header .home-link {
+            margin-top: 0.8rem;
+            display: inline-block;
+            background: rgba(0,0,0,0.08);
+            padding: 0.4rem 1.2rem;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: background var(--transition);
+        }
+        .header .home-link a {
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .header .home-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* ––––––––––––––––––––––––––––––– */
+        /*  Grille de cartes               */
+        /* ––––––––––––––––––––––––––––––– */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.75rem;
+        }
+
+        /* ––––––––––––––––––––––––––––––– */
+        /*  Carte                           */
+        /* ––––––––––––––––––––––––––––––– */
+        .card {
+            position: relative;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 1.75rem 1.75rem 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid #e8e0d6;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+            will-change: transform;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: var(--radius);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            pointer-events: none;
+            background: radial-gradient(circle at 30% 25%, var(--primary-glow) 0%, transparent 60%);
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-lg);
+            border-color: #d4c4ed;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card:focus-visible {
+            outline: 3px solid #a78bfa;
+            outline-offset: 3px;
+            border-color: #a78bfa;
+        }
+
+        /* ––– Icône ––– */
+        .card-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            flex-shrink: 0;
+            background: var(--primary-light);
+            color: var(--primary);
+            transition: background var(--transition), color var(--transition);
+        }
+
+        .card:hover .card-icon {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Couleurs par catégorie */
+        .card-enonce .card-icon { background: #fcf1d6; color: #b47d1a; }
+        .card-enonce:hover .card-icon { background: var(--color-enonce); color: white; }
+        .card-enonce { border-left: 4px solid var(--color-enonce); }
+
+        .card-annexes .card-icon { background: #d9ecf7; color: #1f5a7a; }
+        .card-annexes:hover .card-icon { background: var(--color-annexes); color: white; }
+        .card-annexes { border-left: 4px solid var(--color-annexes); }
+
+        .card-cartes .card-icon { background: #dce6f7; color: #3a6c9e; }
+        .card-cartes:hover .card-icon { background: var(--color-cartes); color: white; }
+        .card-cartes { border-left: 4px solid var(--color-cartes); }
+
+        .card-copyright .card-icon { background: #f0e0ea; color: #884a6a; }
+        .card-copyright:hover .card-icon { background: var(--color-copyright); color: white; }
+        .card-copyright { border-left: 4px solid var(--color-copyright); }
+
+        /* ––– Contenu ––– */
+        .card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            flex: 1;
+            z-index: 1;
+        }
+
+        .card-tag {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-light);
+            opacity: 0.7;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            line-height: 1.3;
+            color: #1f1a10;
+            letter-spacing: -0.01em;
+        }
+
+        .card-desc {
+            font-size: 0.92rem;
+            color: var(--text-light);
+            line-height: 1.55;
+            flex: 1;
+        }
+
+        /* ––– Flèche « Ouvrir » ––– */
+        .card-arrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            transition: color var(--transition), gap var(--transition);
+            z-index: 1;
+            margin-top: 0.25rem;
+        }
+
+        .card-arrow svg {
+            width: 16px;
+            height: 16px;
+            transition: transform var(--transition);
+        }
+
+        .card:hover .card-arrow {
+            gap: 0.7rem;
+            color: var(--primary);
+        }
+
+        .card:hover .card-arrow svg {
+            transform: translateX(3px);
+        }
+
+        /* ––––––––––––––––––––––––––––––– */
+        /*  Pied de page                   */
+        /* ––––––––––––––––––––––––––––––– */
+        .footer {
+            text-align: center;
+            margin-top: 2.5rem;
+            font-size: 0.85rem;
+            color: #a09787;
+            letter-spacing: 0.02em;
+        }
+
+        .footer span {
+            opacity: 0.7;
+        }
+
+        /* ––––––––––––––––––––––––––––––– */
+        /*  Responsive                     */
+        /* ––––––––––––––––––––––––––––––– */
+        @media (max-width: 700px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            .header .subtitle {
+                font-size: 0.95rem;
+            }
+            .cards-grid {
+                grid-template-columns: 1fr;
+                gap: 1.25rem;
+            }
+            .card {
+                padding: 1.5rem 1.35rem 1.35rem;
+                gap: 0.75rem;
+            }
+            .card-icon {
+                width: 48px;
+                height: 48px;
+                font-size: 1.3rem;
+                border-radius: 10px;
+            }
+            .card-title {
+                font-size: 1.1rem;
+            }
+            .card-desc {
+                font-size: 0.88rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <!-- ====== EN‑TÊTE ====== -->
+        <header class="header">
+            <h1>
+                🏁 PBL
+                <span>⏺</span>
+            </h1>
+            <p class="subtitle">
+                Red Bull Sky &amp; Dirt Challenge · Toutes les ressources
+            </p>
+            <div class="home-link">
+                <a href="https://ldv78100ym-hub.github.io/HOME/" target="_blank">
+                    🏠 Accueil PBL
+                </a>
+            </div>
+        </header>
+
+        <!-- ====== GRILLE DE CARTES ====== -->
+        <div class="cards-grid">
+
+            <!-- ---- ÉNONCÉ PRINCIPAL ---- -->
+            <a href="RED_BULL_SKY_AND_DIRT_CHALLENGE_V2.pdf"
+               class="card card-enonce"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="Énoncé principal">
+                <div class="card-icon" aria-hidden="true">📄</div>
+                <div class="card-content">
+                    <span class="card-tag">Énoncé</span>
+                    <h2 class="card-title">L'énoncé du challenge</h2>
+                    <p class="card-desc">Dossier complet du projet PBL « Red Bull Sky &amp; Dirt Challenge ».</p>
+                </div>
+                <span class="card-arrow">
+                    Ouvrir
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </span>
+            </a>
+
+            <!-- ---- SOUS-DOCUMENTS : ÉNONCÉ ---- -->
+            <!-- Dossier synthèse maquette -->
+            <a href="DOSSIER_SYNTHESE_MAQUETTE.pdf"
+               class="card card-enonce"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="Dossier synthèse maquette">
+                <div class="card-icon" aria-hidden="true">📑</div>
+                <div class="card-content">
+                    <span class="card-tag">Énoncé</span>
+                    <h2 class="card-title">Dossier synthèse maquette</h2>
+                    <p class="card-desc">Synthèse de la maquette du projet.</p>
+                </div>
+                <span class="card-arrow">
+                    Ouvrir
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </span>
+            </a>
+
+            <!-- Critères évaluation profs -->
+            <a href="CRITERES_EVALUATION_PROFS.pdf"
+               class="card card-enonce"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="Critères d'évaluation">
+                <div class="card-icon" aria-hidden="true">📊</div>
+                <div class="card-content">
+                    <span class="card-tag">Énoncé</span>
+                    <h2 class="card-title">Critères d'évaluation</h2>
+                    <p class="card-desc">Grille d'évaluation pour les enseignants.</p>
+                </div>
+                <span class="card-arrow">
+                    Ouvrir
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </span>
+            </a>
+
+            <!-- Communication préparatoire -->
+            <a href="COMMUNICATION_PREPARATOIRE_VERS_ELEVES_ET_ENSEIGNANTS.pdf"
+               class="card card-enonce"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="Communication préparatoire">
+                <div class="card-icon" aria-hidden="true">📢</div>
+                <div class="card-content">
+                    <span class="card-tag">Énoncé</span>
+                    <h2 class="card-title">Communication préparatoire</h2>
+                    <p class="card-desc">Informations pour élèves et enseignants.</p>
+                </div>
+                <span class="card-arrow">
+                    Ouvrir
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </span>
+            </a>
+
+            <!-- Dossier synthèse sous-groupe -->
+            <a href="DOSSIER_SYNTHESE_SOUS_GROUPE_MAQUETTE.pdf"
+               class="card card-enonce"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="Dossier synthèse sous-groupe">
+                <div class="card-icon" aria-hidden="true">📂</div>
+                <div class="card-content">
+                    <span class="card-tag">Énoncé</span>
+                    <h2 class="card-title">Dossier synthèse sous-groupe</h2>
+                    <p class="card-desc">Travail en sous-groupes – maquette.</p>
+                </div>
+                <span class="card-arrow">
+                    Ouvrir
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </span>
+            </a>
+
+            <!-- ---- ANNEXES ---- -->
+            <!-- Trigonométrie tableau bilan -->
+            <a href="TRIGONOMETRIE_TABLEAU_BILAN.pdf"
+               class="card card-annexes"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="Trigonométrie tableau bilan">
+                <div class="card-icon" aria-hidden="true">📐</div>
+                <div class="card-content">
+                    <span class="card-tag">Annexes</span>
+                    <h2 class="card-title">Trigonométrie – tableau bilan</h2>
+                    <p class="card-desc">Récapitulatif des formules trigonométriques.</p>
+                </div>
+                <span class="card-arrow">
+                    Ouvrir
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </span>
+            </a>
+
+            <!-- Python V2 -->
+            <a href="PYTHON_V2.pdf"
+               class="card card-annexes"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="Python V2">
+                <div class="card-icon" aria-hidden="true">🐍</div>
+                <div class="card-content">
+                    <span class="card-tag">Annexes</span>
+                    <h2 class="card-title">Python V2</h2>
+                    <p class="card-desc">Documentation et code Python V2.</p>
+                </div>
+                <span class="card-arrow">
+                    Ouvrir
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </span>
+            </a>
+
+            <!-- Liaisons parties -->
+            <a href="LIAISONS_PARTIES.pdf"
+               class="card card-annexes"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="Liaisons parties">
+                <div class="card-icon" aria-hidden="true">🔗</div>
+                <div class="card-content">
+                    <span class="card-tag">Annexes</span>
+                    <h2 class="card-title">Liaisons parties</h2>
+                    <p class="card-desc">Articulation entre les différentes parties du projet.</p>
+                </div>
+                <span class="card-arrow">
+                    Ouvrir
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </span>
+            </a>
+
+            <!-- Liaisons documents -->
+            <a href="LIAISONS_DOCUMENTS.pdf"
+               class="card card-annexes"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="Liaisons documents">
+                <div class="card-icon" aria-hidden="true">📎</div>
+                <div class="card-content">
+                    <span class="card-tag">Annexes</span>
+                    <h2 class="card-title">Liaisons documents</h2>
+                    <p class="card-desc">Références croisées entre les documents.</p>
+                </div>
+                <span class="card-arrow">
+                    Ouvrir
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </span>
+            </a>
+
+            <!-- Fiche synthèse -->
+            <a href="FICHE_SYNTHESE.pdf"
+               class="card card-annexes"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="Fiche synthèse">
+                <div class="card-icon" aria-hidden="true">📋</div>
+                <div class="card-content">
+                    <span class="card-tag">Annexes</span>
+                    <h2 class="card-title">Fiche synthèse</h2>
+                    <p class="card-desc">Synthèse globale du projet.</p>
+                </div>
+                <span class="card-arrow">
+                    Ouvrir
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </span>
+            </a>
+
+            <!-- Dossier synthèse Python -->
+            <a href="DOSSIER_SYNTHESE_PYTHON.pdf"
+               class="card card-annexes"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="Dossier synthèse Python">
+                <div class="card-icon" aria-hidden="true">📘</div>
+                <div class="card-content">
+                    <span class="card-tag">Annexes</span>
+                    <h2 class="card-title">Dossier synthèse Python</h2>
+                    <p class="card-desc">Synthèse des travaux Python.</p>
+                </div>
+                <span class="card-arrow">
+                    Ouvrir
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </span>
+            </a>
+
+            <!-- ---- CARTES JOKER ---- -->
+            <!-- Dérivation -->
+            <a href="CARTES_JOKER_DERIVATION.pdf"
+               class="card card-cartes"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="Cartes Joker Dérivation">
+                <div class="card-icon" aria-hidden="true">🃏</div>
+                <div class="card-content">
+                    <span class="card-tag">Cartes Joker</span>
+                    <h2 class="card-title">Dérivation</h2>
+                    <p class="card-desc">Cartes Joker sur la dérivation.</p>
+                </div>
+                <span class="card-arrow">
+                    Ouvrir
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </span>
+            </a>
+
+            <!-- Dérivées PCM -->
+            <a href="CARTES_JOKER_DERIVEES_PCM.pdf"
+               class="card card-cartes"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="Cartes Joker Dérivées PCM">
+                <div class="card-icon" aria-hidden="true">🃏</div>
+                <div class="card-content">
+                    <span class="card-tag">Cartes Joker</span>
+                    <h2 class="card-title">Dérivées PCM</h2>
+                    <p class="card-desc">Cartes Joker sur les dérivées (PCM).</p>
+                </div>
+                <span class="card-arrow">
+                    Ouvrir
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </span>
+            </a>
+
+            <!-- Fonctions -->
+            <a href="CARTES_JOKER_FONCTIONS.pdf"
+               class="card card-cartes"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="Cartes Joker Fonctions">
+                <div class="card-icon" aria-hidden="true">🃏</div>
+                <div class="card-content">
+                    <span class="card-tag">Cartes Joker</span>
+                    <h2 class="card-title">Fonctions</h2>
+                    <p class="card-desc">Cartes Joker sur les fonctions.</p>
+                </div>
+                <span class="card-arrow">
+                    Ouvrir
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </span>
+            </a>
+
+            <!-- Produit scalaire -->
+            <a href="CARTES_JOKER_PRODUIT_SCALAIRE.pdf"
+               class="card card-cartes"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="Cartes Joker Produit scalaire">
+                <div class="card-icon" aria-hidden="true">🃏</div>
+                <div class="card-content">
+                    <span class="card-tag">Cartes Joker</span>
+                    <h2 class="card-title">Produit scalaire</h2>
+                    <p class="card-desc">Cartes Joker sur le produit scalaire.</p>
+                </div>
+                <span class="card-arrow">
+                    Ouvrir
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </span>
+            </a>
+
+            <!-- Second degré -->
+            <a href="CARTES_JOKER_SECOND_DEGRE.pdf"
+               class="card card-cartes"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="Cartes Joker Second degré">
+                <div class="card-icon" aria-hidden="true">🃏</div>
+                <div class="card-content">
+                    <span class="card-tag">Cartes Joker</span>
+                    <h2 class="card-title">Second degré</h2>
+                    <p class="card-desc">Cartes Joker sur le second degré.</p>
+                </div>
+                <span class="card-arrow">
+                    Ouvrir
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </span>
+            </a>
+
+            <!-- Statistiques probabilités -->
+            <a href="CARTES_JOKER_STATISTIQUES_PROBABILITES.pdf"
+               class="card card-cartes"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="Cartes Joker Statistiques Probabilités">
+                <div class="card-icon" aria-hidden="true">🃏</div>
+                <div class="card-content">
+                    <span class="card-tag">Cartes Joker</span>
+                    <h2 class="card-title">Statistiques &amp; Probabilités</h2>
+                    <p class="card-desc">Cartes Joker sur les statistiques et probabilités.</p>
+                </div>
+                <span class="card-arrow">
+                    Ouvrir
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </span>
+            </a>
+
+            <!-- Suites -->
+            <a href="CARTES_JOKER_SUITES.pdf"
+               class="card card-cartes"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="Cartes Joker Suites">
+                <div class="card-icon" aria-hidden="true">🃏</div>
+                <div class="card-content">
+                    <span class="card-tag">Cartes Joker</span>
+                    <h2 class="card-title">Suites</h2>
+                    <p class="card-desc">Cartes Joker sur les suites.</p>
+                </div>
+                <span class="card-arrow">
+                    Ouvrir
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </span>
+            </a>
+
+            <!-- Trigonométrie -->
+            <a href="CARTES_JOKER_TRIGONOMETRIE.pdf"
+               class="card card-cartes"
+               target="_blank"
+               rel="noopener noreferrer"
+               aria-label="Cartes Joker Trigonométrie">
+                <div class="card-icon" aria-hidden="true">🃏</div>
+                <div class="card-content">
+                    <span class="card-tag">Cartes Joker</span>
+                    <h2 class="card-title">Trigonométrie</h2>
+                    <p class="card-desc">Cartes Joker sur la trigonométrie.</p>
+                </div>
+                <span class="card-arrow">
+                    Ouvrir
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </span>
+            </a>
+
+            <!-- ---- DROITS D'AUTEUR (clic → alerte) ---- -->
+            <div class="card card-copyright" style="cursor:pointer;" onclick="showCopyright()">
+                <div class="card-icon" aria-hidden="true">⚖️</div>
+                <div class="card-content">
+                    <span class="card-tag">Droits d'auteur</span>
+                    <h2 class="card-title">Licence &amp; Droits</h2>
+                    <p class="card-desc">Auteur : Yann Merdy · Utilisation non commerciale.</p>
+                </div>
+                <span class="card-arrow">
+                    Lire
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </span>
+            </div>
+
+        </div>
+
+        <!-- ====== PIED DE PAGE ====== -->
+        <footer class="footer">
+            <span>Ressources PBL · Red Bull Sky &amp; Dirt Challenge · 2026–2027</span>
+        </footer>
+
+    </div>
+
+    <!-- ====== SCRIPT POUR LE COPYRIGHT ====== -->
+    <script>
+        function showCopyright() {
+            const text = `⚖️ Droits d'Auteur et Licence d'Utilisation
+
+Auteur : Yann Merdy (yann.merdy@gmail.com) - Novembre 2025
+
+Licence d'Utilisation Non Commerciale
+
+Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application ("Cours et Exercices Dynamiques : Le Produit Scalaire") sont la propriété intellectuelle exclusive de l'auteur, Yann Merdy.
+
+Conditions :
+Utilisation Privée et Éducative (Autorisée) : Vous êtes autorisé.e à utiliser, copier, modifier et distribuer ce code et son contenu **uniquement** à des fins **personnelles, éducatives et non lucratives.**
+Utilisation Commerciale (Interdite) : Toute utilisation, distribution, intégration ou reproduction du code ou du contenu (total ou partiel) à des fins **commerciales, lucratives ou professionnelles** est **strictement interdite** sans un accord écrit préalable et explicite de l'auteur.
+Attribution : Toute reproduction ou modification doit conserver la mention de l'auteur originale (Yann Merdy) et la présente notice de droits d'auteur.
+
+Pour toute demande d'utilisation commerciale ou de licence spécifique, veuillez contacter l'auteur à l'adresse indiquée ci-dessus.
+
+⚠️ Tous les documents PDF référencés dans cette page (énoncé, annexes, cartes joker, etc.) sont également couverts par les mêmes conditions de droits d'auteur.`;
+            alert(text);
+        }
+    </script>
+</body>
+</html>
