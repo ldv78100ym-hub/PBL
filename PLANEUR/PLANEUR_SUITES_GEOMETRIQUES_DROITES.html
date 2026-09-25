@@ -1,0 +1,3045 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planeurs à 2 et 3 anneaux — Dossier complet (Première STI2D)</title>
+
+<!-- ================= MathJax 3 ================= -->
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['\\(', '\\)'], ['$', '$']],
+      displayMath: [['\\[', '\\]'], ['$$', '$$']],
+      processEscapes: true
+    },
+    svg: { fontCache: 'global' },
+    options: {
+      skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+  };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<style>
+/* ============================================================
+   VARIABLES & BASE
+   ============================================================ */
+:root{
+  --bleu:#1f5fbf;
+  --bleu-bg:#eef4ff;
+  --bleu-fonce:#123d7a;
+
+  --vert:#2e7d32;
+  --vert-bg:#eefbf0;
+  --vert-fonce:#1b5e20;
+
+  --orange:#b45309;
+  --orange-bg:#fff6e8;
+  --orange-fonce:#8a3d05;
+
+  --rouge:#b91c1c;
+  --rouge-bg:#fdecec;
+
+  --gris:#2b3440;
+  --gris-clair:#e3e8ef;
+  --gris-fonce:#1a2230;
+
+  --rayon:10px;
+  --ombre:0 2px 8px rgba(15,30,60,.10);
+}
+
+*{box-sizing:border-box;}
+
+html{scroll-behavior:smooth;}
+
+body{
+  margin:0;
+  font-family:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  font-size:16px;
+  line-height:1.55;
+  color:var(--gris);
+  background:#f4f6fa;
+}
+
+h1,h2,h3,h4{line-height:1.25; margin:0 0 .5em 0;}
+h2{font-size:1.55rem; color:var(--bleu-fonce); border-bottom:3px solid var(--bleu); padding-bottom:.25em;}
+h3{font-size:1.25rem; color:var(--gris-fonce);}
+h4{font-size:1.05rem; margin:0 0 .6em 0;}
+p{margin:.45em 0;}
+ul,ol{margin:.4em 0 .6em 1.2em; padding:0;}
+li{margin:.2em 0;}
+
+a{color:var(--bleu);}
+
+code, .mono{
+  font-family:"Consolas","SFMono-Regular",Menlo,monospace;
+  background:#eef1f6;
+  padding:.08em .35em;
+  border-radius:4px;
+  font-size:.92em;
+}
+
+/* ============================================================
+   MISE EN PAGE
+   ============================================================ */
+header.entete-site{
+  background:linear-gradient(135deg,#123d7a,#1f5fbf 55%,#3f86e0);
+  color:#fff;
+  padding:1.6rem 1.2rem 1.4rem;
+  text-align:center;
+  box-shadow:var(--ombre);
+}
+header.entete-site h1{font-size:1.8rem; margin-bottom:.25em;}
+header.entete-site .sous{opacity:.92; font-size:1rem;}
+
+nav.sommaire{
+  position:sticky; top:0; z-index:40;
+  background:#ffffff;
+  border-bottom:1px solid var(--gris-clair);
+  box-shadow:0 2px 6px rgba(15,30,60,.06);
+  padding:.5rem .8rem;
+  display:flex; flex-wrap:wrap; gap:.4rem;
+  justify-content:center;
+}
+nav.sommaire a{
+  text-decoration:none;
+  font-size:.83rem;
+  padding:.32rem .6rem;
+  border-radius:999px;
+  background:var(--bleu-bg);
+  color:var(--bleu-fonce);
+  border:1px solid #cfdffb;
+  white-space:nowrap;
+  transition:.15s;
+}
+nav.sommaire a:hover{background:var(--bleu); color:#fff; border-color:var(--bleu);}
+
+main{
+  max-width:1180px;
+  margin:0 auto;
+  padding:1.2rem .9rem 5rem;
+}
+
+section.bloc{
+  background:#fff;
+  border-radius:var(--rayon);
+  box-shadow:var(--ombre);
+  padding:1.2rem 1.3rem 1.5rem;
+  margin-bottom:1.6rem;
+}
+
+/* ============================================================
+   ENCADRÉS (équivalents tcolorbox)
+   ============================================================ */
+.box{
+  border-radius:8px;
+  padding:.85rem 1rem;
+  margin:.9rem 0;
+  border-left:6px solid;
+  break-inside:avoid;
+}
+.box > h4:first-child{margin-top:0;}
+
+.box-orange{background:var(--orange-bg); border-color:var(--orange);}
+.box-orange h4{color:var(--orange-fonce);}
+
+.box-bleu{background:var(--bleu-bg); border-color:var(--bleu);}
+.box-bleu h4{color:var(--bleu-fonce);}
+
+.box-vert{background:var(--vert-bg); border-color:var(--vert);}
+.box-vert h4{color:var(--vert-fonce);}
+
+.box-rouge{background:var(--rouge-bg); border-color:var(--rouge);}
+.box-rouge h4{color:var(--rouge);}
+
+/* ============================================================
+   TABLEAUX
+   ============================================================ */
+table{
+  border-collapse:collapse;
+  width:100%;
+  margin:.7rem 0;
+  font-size:.92rem;
+  background:#fff;
+}
+th,td{
+  border:1px solid #c9d2e0;
+  padding:.35rem .5rem;
+  text-align:center;
+  vertical-align:middle;
+}
+th{background:#eaf0fa; color:var(--bleu-fonce); font-weight:600;}
+tbody tr:nth-child(even){background:#f8fafd;}
+td.gauche, th.gauche{text-align:left;}
+
+/* Tableau de relevé des fiches d'amélioration */
+table.releve{font-size:.86rem;}
+table.releve input{
+  width:100%;
+  border:none;
+  background:transparent;
+  text-align:center;
+  font:inherit;
+  font-size:.86rem;
+  padding:.18rem .1rem;
+  outline:none;
+}
+table.releve input:focus{background:#fff8dc; box-shadow:inset 0 0 0 2px #f0c36d; border-radius:3px;}
+table.releve td.c-n{width:2.4rem; font-weight:600; color:var(--bleu-fonce); background:#f2f6fd;}
+table.releve td.c-diff{color:#7a4a00;}
+table.releve td.c-R{color:#1b5e20;}
+table.releve td.c-S{color:#123d7a;}
+table.releve tbody tr:nth-child(even){background:#fbfcfe;}
+
+/* ============================================================
+   FICHES
+   ============================================================ */
+article.fiche{
+  border:2px solid var(--bleu);
+  border-radius:var(--rayon);
+  padding:1rem 1.1rem 1.3rem;
+  margin:1.4rem 0;
+  background:#fff;
+  break-inside:avoid-page;
+}
+article.fiche > h3.fiche-title{
+  background:var(--bleu);
+  color:#fff;
+  margin:-1rem -1.1rem 1rem;
+  padding:.6rem 1.1rem;
+  border-radius:7px 7px 0 0;
+  font-size:1.1rem;
+}
+
+.entete-fiche{
+  display:flex; flex-wrap:wrap; gap:1rem 1.6rem;
+  font-size:.9rem;
+  margin-bottom:.8rem;
+  padding:.5rem .7rem;
+  background:#f7f9fc;
+  border:1px dashed #b9c6da;
+  border-radius:6px;
+}
+.dots{
+  display:inline-block;
+  border-bottom:1.6px dotted #6a7686;
+  height:1.05em;
+  vertical-align:bottom;
+  min-width:60px;
+}
+.dots.lg{width:13cm; max-width:100%;}
+.dots.md{width:8cm; max-width:100%;}
+.dots.sm{width:3cm;}
+
+/* ============================================================
+   GRAPHIQUES / CANVAS
+   ============================================================ */
+.canvas-wrap{
+  width:100%;
+  margin:.8rem 0;
+  background:#fff;
+  border:1px solid var(--gris-clair);
+  border-radius:8px;
+  padding:.4rem;
+}
+.canvas-wrap canvas{display:block; width:100%; border-radius:6px;}
+
+.resume-graphe{
+  display:flex; flex-wrap:wrap; gap:.5rem .9rem;
+  font-size:.86rem;
+  background:#f7f9fc;
+  border:1px solid var(--gris-clair);
+  border-radius:8px;
+  padding:.6rem .8rem;
+  margin-top:.5rem;
+}
+.resume-graphe .item{
+  background:#fff;
+  border:1px solid #dbe3ee;
+  border-radius:6px;
+  padding:.25rem .55rem;
+}
+.resume-graphe .item b{color:var(--bleu-fonce);}
+
+/* ============================================================
+   SCHÉMAS SVG
+   ============================================================ */
+.schema{
+  display:block;
+  width:100%;
+  max-width:560px;
+  margin:.6rem auto;
+  height:auto;
+  background:#fff;
+  border:1px solid var(--gris-clair);
+  border-radius:8px;
+}
+.schema-large{max-width:660px;}
+.schema-txt{font-family:"Segoe UI",system-ui,sans-serif; fill:#2b3440;}
+
+.figure-legende{
+  text-align:center;
+  font-size:.85rem;
+  color:#5a6474;
+  font-style:italic;
+  margin-top:-.2rem;
+}
+
+/* ============================================================
+   BOUTONS
+   ============================================================ */
+button.btn{
+  font:inherit;
+  font-size:.85rem;
+  padding:.35rem .8rem;
+  border-radius:6px;
+  border:1px solid var(--bleu);
+  background:#fff;
+  color:var(--bleu);
+  cursor:pointer;
+  transition:.15s;
+}
+button.btn:hover{background:var(--bleu); color:#fff;}
+
+.barre-outils{
+  display:flex; flex-wrap:wrap; gap:.5rem; align-items:center;
+  margin:.3rem 0 .6rem;
+}
+
+/* ============================================================
+   BARRE DE SURVEILLANCE
+   ============================================================ */
+#surv-bar{
+  position:fixed;
+  right:12px; bottom:12px;
+  z-index:60;
+  background:#123d7a;
+  color:#fff;
+  font-size:.78rem;
+  padding:.5rem .75rem;
+  border-radius:10px;
+  box-shadow:0 4px 16px rgba(0,0,0,.28);
+  display:flex; align-items:center; gap:.55rem;
+  max-width:calc(100vw - 24px);
+  flex-wrap:wrap;
+}
+#surv-bar.off{background:#5a6474;}
+#surv-bar .pastille{
+  width:9px; height:9px; border-radius:50%;
+  background:#37d67a;
+  box-shadow:0 0 0 0 rgba(55,214,122,.7);
+  animation:pulse 1.8s infinite;
+}
+#surv-bar.off .pastille{background:#c9d2e0; animation:none;}
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 rgba(55,214,122,.6);}
+  70%{box-shadow:0 0 0 8px rgba(55,214,122,0);}
+  100%{box-shadow:0 0 0 0 rgba(55,214,122,0);}
+}
+#surv-bar label{display:flex; align-items:center; gap:.25rem; cursor:pointer;}
+
+/* ============================================================
+   PAGE D'ALERTE PLEIN ÉCRAN ROUGE
+   ============================================================ */
+#surv-modal{
+  position:fixed;
+  inset:0;
+  background:#b00020;
+  background:radial-gradient(circle at 50% 40%, #d32f2f 0%, #b00020 55%, #6a0013 100%);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  padding:2rem 1.5rem;
+  text-align:center;
+  overflow:auto;
+  animation:alerte-apparait .18s ease-out;
+}
+#surv-modal.show{display:flex;}
+@keyframes alerte-apparait{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+
+#surv-modal .boite{
+  background:transparent;
+  border:none;
+  box-shadow:none;
+  padding:0;
+  max-width:1000px;
+  width:100%;
+  color:#fff;
+  font-family:"Segoe UI",system-ui,sans-serif;
+}
+
+#surv-modal .panneau{
+  display:inline-block;
+  border:6px solid #ffffff;
+  border-radius:20px;
+  padding:1.6rem 1.8rem 1.4rem;
+  background:rgba(0,0,0,.18);
+  box-shadow:0 20px 60px rgba(0,0,0,.45);
+  animation:alerte-pulse 1.2s ease-in-out infinite;
+}
+@keyframes alerte-pulse{
+  0%,100%{transform:scale(1); box-shadow:0 20px 60px rgba(0,0,0,.45);}
+  50%{transform:scale(1.012); box-shadow:0 20px 80px rgba(0,0,0,.6);}
+}
+
+#surv-modal .icone-alerte{
+  font-size:clamp(3rem, 10vw, 6.5rem);
+  line-height:1;
+  display:block;
+  margin-bottom:.3rem;
+  filter:drop-shadow(0 4px 0 rgba(0,0,0,.35));
+  animation:alerte-clignote 1s steps(2, end) infinite;
+}
+@keyframes alerte-clignote{
+  0%,49%{opacity:1;}
+  50%,100%{opacity:.55;}
+}
+
+#surv-modal h2{
+  color:#ffffff;
+  border:none;
+  font-size:clamp(2rem, 7vw, 4.2rem);
+  font-weight:900;
+  letter-spacing:.02em;
+  margin:.1rem 0 .6rem;
+  text-transform:uppercase;
+  text-shadow:4px 4px 0 rgba(0,0,0,.35);
+  line-height:1.05;
+}
+
+#surv-modal .message-principal{
+  font-size:clamp(1rem, 2.4vw, 1.45rem);
+  font-weight:600;
+  margin:.5rem 0 1rem;
+  text-shadow:2px 2px 0 rgba(0,0,0,.35);
+}
+
+#surv-modal .bloc-enseignant{
+  background:rgba(255,255,255,.95);
+  color:#7a0016;
+  border-radius:14px;
+  padding:.9rem 1.1rem;
+  margin:1rem auto 1.1rem;
+  max-width:720px;
+  text-align:left;
+  font-size:.98rem;
+  box-shadow:0 6px 18px rgba(0,0,0,.25);
+}
+#surv-modal .bloc-enseignant h3{
+  color:#b00020;
+  font-size:1.15rem;
+  margin:0 0 .5rem;
+  text-align:center;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+#surv-modal .bloc-enseignant ul{
+  margin:.4rem 0 .4rem 1.2rem;
+}
+#surv-modal .bloc-enseignant li{margin:.2em 0;}
+#surv-modal .bloc-enseignant .champ{
+  display:inline-block;
+  border-bottom:1.6px dotted #b00020;
+  min-width:170px;
+  height:1.05em;
+  vertical-align:bottom;
+}
+
+#surv-modal .compteur{
+  display:inline-block;
+  background:#fff;
+  color:#b00020;
+  font-weight:900;
+  font-size:1.6rem;
+  border-radius:50%;
+  width:3.2rem;
+  height:3.2rem;
+  line-height:3.2rem;
+  margin:.2rem .3rem;
+  box-shadow:0 4px 0 rgba(0,0,0,.25);
+}
+
+#surv-modal .journal{
+  background:rgba(0,0,0,.28);
+  border-radius:10px;
+  padding:.5rem .8rem;
+  max-width:820px;
+  margin:.6rem auto 1.1rem;
+  font-size:.82rem;
+  text-align:left;
+  max-height:130px;
+  overflow:auto;
+  font-family:"Consolas",Menlo,monospace;
+}
+#surv-modal .journal:empty{display:none;}
+#surv-modal .journal div{padding:.1rem 0; border-bottom:1px dashed rgba(255,255,255,.2);}
+#surv-modal .journal div:last-child{border-bottom:none;}
+
+#surv-modal button{
+  font:inherit;
+  font-size:1.05rem;
+  font-weight:700;
+  background:#ffffff;
+  color:#b00020;
+  border:3px solid #ffffff;
+  border-radius:12px;
+  padding:.8rem 1.6rem;
+  cursor:pointer;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  box-shadow:0 6px 0 rgba(0,0,0,.35);
+  transition:.12s;
+}
+#surv-modal button:hover{
+  background:#ffe9ec;
+  transform:translateY(-2px);
+  box-shadow:0 8px 0 rgba(0,0,0,.35);
+}
+#surv-modal button:active{
+  transform:translateY(2px);
+  box-shadow:0 2px 0 rgba(0,0,0,.35);
+}
+
+#surv-modal .info-secondaire{
+  margin-top:1rem;
+  font-size:.85rem;
+  opacity:.9;
+}
+
+/* ============================================================
+   DIVERS
+   ============================================================ */
+.grille-2{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:1rem;
+}
+.petit{font-size:.86rem; color:#5a6474;}
+.centre{text-align:center;}
+hr.sep{border:none; border-top:1px dashed #c9d2e0; margin:1.2rem 0;}
+
+.url-box{
+  background:#fff;
+  border:1px dashed var(--vert);
+  border-radius:6px;
+  padding:.4rem .7rem;
+  display:inline-block;
+  font-size:.9rem;
+  word-break:break-all;
+}
+
+.check-list{list-style:none; margin-left:0;}
+.check-list li::before{content:"☐ "; font-weight:700; color:var(--bleu);}
+
+/* ============================================================
+   IMPRESSION
+   ============================================================ */
+@media print{
+  body{background:#fff; font-size:11pt;}
+  nav.sommaire, #surv-bar, #surv-modal, .barre-outils, button.btn{display:none !important;}
+  main{max-width:none; padding:0;}
+  section.bloc, article.fiche{box-shadow:none; border:1px solid #999; page-break-inside:avoid;}
+  .canvas-wrap{border:1px solid #999;}
+  a{color:#000; text-decoration:none;}
+}
+
+@media (max-width:640px){
+  body{font-size:15px;}
+  header.entete-site h1{font-size:1.35rem;}
+  h2{font-size:1.25rem;}
+  section.bloc{padding:.9rem .8rem 1.1rem;}
+  article.fiche{padding:.8rem .7rem 1rem;}
+  article.fiche > h3.fiche-title{margin:-.8rem -.7rem .8rem; padding:.5rem .7rem;}
+  table.releve{font-size:.78rem;}
+  #surv-modal .panneau{padding:1rem .8rem;}
+}
+</style>
+
+<!-- ============================================================
+     AJOUT — STYLE DU PORTIQUE D'AUTHENTIFICATION
+     ============================================================ -->
+<style>
+#auth-gate{
+  position:fixed; inset:0;
+  z-index:10000;
+  background:linear-gradient(135deg,#0f2a52,#123d7a 55%,#1f5fbf);
+  display:flex; align-items:center; justify-content:center;
+  padding:1.5rem;
+  font-family:"Segoe UI",system-ui,sans-serif;
+  color:#fff;
+  overflow:auto;
+}
+#auth-gate.hidden{display:none;}
+#auth-gate .carte{
+  background:#fff; color:#2b3440;
+  border-radius:14px;
+  padding:1.6rem 1.8rem 1.6rem;
+  max-width:560px; width:100%;
+  box-shadow:0 24px 60px rgba(0,0,0,.35);
+}
+#auth-gate h2{
+  color:#123d7a; border:none; margin:0 0 .3rem;
+  font-size:1.4rem; text-align:center;
+  padding:0;
+}
+#auth-gate .sous-titre{
+  text-align:center; font-size:.9rem; color:#5a6474;
+  margin-bottom:1rem;
+}
+#auth-gate .etape{display:none;}
+#auth-gate .etape.active{display:block;}
+#auth-gate label{
+  display:block; font-weight:600; margin:.6rem 0 .3rem;
+  color:#123d7a;
+}
+#auth-gate input[type="text"],
+#auth-gate input[type="password"]{
+  width:100%; font:inherit; font-size:1rem;
+  padding:.6rem .8rem;
+  border:1.5px solid #c9d2e0; border-radius:8px;
+  background:#f7f9fc;
+  transition:.15s;
+}
+#auth-gate input:focus{
+  outline:none; border-color:#1f5fbf; background:#fff;
+  box-shadow:0 0 0 3px rgba(31,95,191,.15);
+}
+#auth-gate .aide{
+  font-size:.8rem; color:#5a6474; margin-top:.3rem;
+}
+#auth-gate .aide code{
+  background:#eef1f6; color:#123d7a;
+  padding:.05em .35em; border-radius:4px; font-size:.95em;
+}
+#auth-gate .erreur{
+  display:none;
+  margin-top:.6rem;
+  padding:.55rem .8rem;
+  background:#fdecec; color:#b91c1c;
+  border-left:4px solid #b91c1c; border-radius:6px;
+  font-size:.9rem;
+}
+#auth-gate .erreur.show{display:block;}
+#auth-gate .actions{
+  margin-top:1rem; text-align:right;
+}
+#auth-gate button{
+  font:inherit; font-size:.95rem; font-weight:600;
+  padding:.6rem 1.2rem;
+  border:none; border-radius:8px;
+  background:#1f5fbf; color:#fff;
+  cursor:pointer; transition:.15s;
+}
+#auth-gate button:hover{background:#123d7a;}
+#auth-gate .petit-info{
+  text-align:center; font-size:.75rem; color:#8a94a3;
+  margin-top:1rem;
+}
+@media print{
+  #auth-gate{display:none !important;}
+}
+</style>
+
+<!-- ============================================================
+     AJOUT — STYLE DU BOUTON ET DE LA MODALE « DROITS D'AUTEUR »
+     ============================================================ -->
+<style>
+#copyright-btn{
+  display:block;
+  margin:2rem auto 1.2rem;
+  font:inherit;
+  font-size:.85rem;
+  padding:.5rem 1.1rem;
+  border:1px solid var(--gris-clair);
+  background:#fff;
+  color:var(--gris);
+  border-radius:999px;
+  cursor:pointer;
+  box-shadow:var(--ombre);
+  transition:.15s;
+}
+#copyright-btn:hover{
+  background:var(--bleu-bg);
+  color:var(--bleu-fonce);
+  border-color:var(--bleu);
+}
+
+#copyright-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(15,30,60,.65);
+  display:none;
+  align-items:flex-start;
+  justify-content:center;
+  z-index:10001;
+  padding:2rem 1rem;
+  overflow:auto;
+}
+#copyright-modal.show{display:flex;}
+#copyright-modal .carte{
+  background:#fff;
+  color:var(--gris);
+  border-radius:14px;
+  max-width:780px;
+  width:100%;
+  padding:1.6rem 1.8rem 1.4rem;
+  box-shadow:0 24px 60px rgba(0,0,0,.4);
+  position:relative;
+  animation:cp-apparait .18s ease-out;
+}
+@keyframes cp-apparait{
+  from{opacity:0; transform:translateY(12px);}
+  to{opacity:1; transform:translateY(0);}
+}
+#copyright-modal h2{
+  color:var(--bleu-fonce);
+  border-bottom:3px solid var(--bleu);
+  padding-bottom:.35em;
+  margin:0 0 .8em;
+  font-size:1.3rem;
+}
+#copyright-modal h3{
+  color:var(--gris-fonce);
+  font-size:1.05rem;
+  margin:1.1em 0 .4em;
+}
+#copyright-modal p{margin:.5em 0;}
+#copyright-modal ul{margin:.4em 0 .7em 1.2em;}
+#copyright-modal li{margin:.3em 0;}
+#copyright-modal .auteur{
+  background:var(--bleu-bg);
+  border-left:5px solid var(--bleu);
+  border-radius:6px;
+  padding:.7rem .9rem;
+  margin:.6rem 0 1rem;
+  font-size:.95rem;
+}
+#copyright-modal .auteur b{color:var(--bleu-fonce);}
+#copyright-modal .fermer{
+  position:absolute;
+  top:.7rem; right:.8rem;
+  background:transparent;
+  border:none;
+  font-size:1.4rem;
+  line-height:1;
+  color:#8a94a3;
+  cursor:pointer;
+  padding:.2rem .5rem;
+  border-radius:6px;
+  transition:.15s;
+}
+#copyright-modal .fermer:hover{background:#f2f4f8; color:var(--rouge);}
+#copyright-modal .licence-titre{
+  text-align:center;
+  font-weight:700;
+  color:var(--bleu-fonce);
+  margin:.9rem 0 .4rem;
+  font-size:1.05rem;
+}
+#copyright-modal .pied{
+  margin-top:1.2rem;
+  padding-top:.8rem;
+  border-top:1px dashed var(--gris-clair);
+  font-size:.85rem;
+  color:#5a6474;
+  text-align:center;
+}
+@media print{
+  #copyright-btn, #copyright-modal{display:none !important;}
+}
+</style>
+</head>
+
+<body>
+
+<!-- ============================================================
+     AJOUT — PORTIQUE D'AUTHENTIFICATION (avant tout le reste)
+     ============================================================ -->
+<div id="auth-gate" role="dialog" aria-modal="true" aria-labelledby="auth-titre">
+  <div class="carte">
+    <h2 id="auth-titre">Authentification enseignant</h2>
+    <p class="sous-titre">Dossier Planeurs 2 &amp; 3 anneaux — accès protégé</p>
+
+    <!-- Étape 1 : phrase de passe -->
+    <div class="etape active" id="auth-etape-1">
+      <label for="auth-pass">Phrase de passe</label>
+      <input type="password" id="auth-pass" autocomplete="off" spellcheck="false"
+             placeholder="Saisir la phrase de passe…">
+      <div class="aide">
+        Une des six phrases officielles. Les apostrophes droites et courbes sont équivalentes,
+        la ponctuation finale est requise.
+      </div>
+      <div class="erreur" id="auth-pass-erreur">Phrase de passe incorrecte.</div>
+      <div class="actions">
+        <button type="button" id="auth-pass-valider">Valider</button>
+      </div>
+    </div>
+
+    <!-- Étape 2 : nom du groupe -->
+    <div class="etape" id="auth-etape-2">
+      <label for="auth-groupe">Nom du groupe</label>
+      <input type="text" id="auth-groupe" autocomplete="off" spellcheck="false"
+             placeholder="GROUPE 1 … GROUPE 9">
+      <div class="aide">
+        Format strict : <code>GROUPE 1</code> à <code>GROUPE 9</code> — majuscules,
+        un seul espace, chiffre entre 1 et 9.
+      </div>
+      <div class="erreur" id="auth-groupe-erreur">
+        Format invalide. Attendu : GROUPE suivi d'un chiffre entre 1 et 9.
+      </div>
+      <div class="actions">
+        <button type="button" id="auth-groupe-valider">Commencer l'activité</button>
+      </div>
+    </div>
+
+    <p class="petit-info">
+      Toutes les actions sont enregistrées dans ipsofacto.json —
+      <code>Ctrl+Shift+E</code> pour exporter, <code>Ctrl+Shift+I</code> pour importer.
+    </p>
+  </div>
+</div>
+
+<!-- ============================================================
+     AJOUT — SCRIPT D'AUTHENTIFICATION
+     Exécuté avant le script de surveillance : positionne
+     window.__authPending = true pour neutraliser la journalisation
+     tant que l'enseignant n'est pas authentifié.
+     ============================================================ -->
+<script>
+(function(){
+  "use strict";
+
+  window.__authPending = true;
+
+  /* ---------- Phrases de passe officielles ---------- */
+  const PHRASES = [
+    { code: "FR",  texte: "L'écho des étoiles berce mes rêves d'éternité." },
+    { code: "EN",  texte: "The echo of the stars cradles my dreams of eternity." },
+    { code: "ES",  texte: "El eco de las estrellas mece mis sueños de eternidad." },
+    { code: "BR",  texte: "An ahouezh ar stered a gousk ma hunvreoù a vank." },
+    { code: "DE",  texte: "Das Echo der Sterne wiegt meine Träume der Ewigkeit." },
+    { code: "CLE", texte: "7429168305." }
+  ];
+
+  /* ---------- Normalisation tolérante aux variantes typographiques ---------- */
+  function normaliser(s){
+    return String(s == null ? "" : s)
+      .replace(/[\u2018\u2019\u02BC\u0060\u00B4\u2032]/g, "'")  // apostrophes → '
+      .replace(/\u00A0/g, " ")                                   // NBSP → espace
+      .replace(/[\u2013\u2014]/g, "-")                           // tirets longs → -
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  /* ---------- Raccourcis DOM ---------- */
+  const gate       = document.getElementById("auth-gate");
+  const etape1     = document.getElementById("auth-etape-1");
+  const etape2     = document.getElementById("auth-etape-2");
+  const passInput  = document.getElementById("auth-pass");
+  const passBtn    = document.getElementById("auth-pass-valider");
+  const passErreur = document.getElementById("auth-pass-erreur");
+  const grpInput   = document.getElementById("auth-groupe");
+  const grpBtn     = document.getElementById("auth-groupe-valider");
+  const grpErreur  = document.getElementById("auth-groupe-erreur");
+
+  /* ---------- Horodatage ---------- */
+  function horodatage(){
+    const d = new Date();
+    return {
+      date: d.toLocaleDateString("fr-FR", { day:"2-digit", month:"2-digit", year:"numeric" }),
+      heure: d.toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit", second:"2-digit" }),
+      date_heure_iso: d.toISOString()
+    };
+  }
+
+  /* ---------- Journalisation via le module ipsofacto (chargé plus bas) ---------- */
+  function journaliserAuth(info){
+    if(window.ipsofacto && typeof window.ipsofacto.journaliserAuth === "function"){
+      try{ window.ipsofacto.journaliserAuth(info); }catch(e){}
+    }
+  }
+
+  function montrerErreur(el, msg){ if(msg) el.textContent = msg; el.classList.add("show"); }
+  function masquerErreur(el){ el.classList.remove("show"); }
+
+  /* ---------- Étape 1 : mot de passe ---------- */
+  function validerMotDePasse(){
+    const saisie = normaliser(passInput.value);
+    if(!saisie){
+      montrerErreur(passErreur, "Saisie vide.");
+      passInput.focus();
+      return;
+    }
+    let trouve = null;
+    for(let i = 0; i < PHRASES.length; i++){
+      if(normaliser(PHRASES[i].texte) === saisie){ trouve = PHRASES[i]; break; }
+    }
+    if(trouve){
+      journaliserAuth(Object.assign({
+        type: "authentification",
+        resultat: "succes",
+        methode: trouve.code
+      }, horodatage()));
+      masquerErreur(passErreur);
+      passInput.value = "";
+
+      // Pré-remplir le groupe avec la dernière valeur connue
+      try{
+        if(window.ipsofacto && typeof window.ipsofacto.groupeActuel === "function"){
+          const g = window.ipsofacto.groupeActuel();
+          if(g) grpInput.value = g;
+        }
+      }catch(e){}
+
+      etape1.classList.remove("active");
+      etape2.classList.add("active");
+      setTimeout(function(){ try{ grpInput.focus(); grpInput.select(); }catch(e){} }, 40);
+    } else {
+      journaliserAuth(Object.assign({
+        type: "authentification",
+        resultat: "echec",
+        methode: null,
+        saisie_longueur: saisie.length
+      }, horodatage()));
+      montrerErreur(passErreur, "Phrase de passe incorrecte.");
+      passInput.value = "";
+      passInput.focus();
+    }
+  }
+
+  /* ---------- Étape 2 : nom du groupe ---------- */
+  function validerGroupe(){
+    const brut = grpInput.value || "";
+    const v = brut.trim().replace(/\s+/g, " ").toUpperCase();
+    if(!/^GROUPE [1-9]$/.test(v)){
+      montrerErreur(grpErreur);
+      grpInput.focus();
+      grpInput.select();
+      return;
+    }
+    masquerErreur(grpErreur);
+
+    if(window.ipsofacto && typeof window.ipsofacto.definirGroupe === "function"){
+      try{ window.ipsofacto.definirGroupe(v); }catch(e){}
+    }
+    journaliserAuth(Object.assign({
+      type: "definition_groupe",
+      resultat: "succes",
+      groupe: v
+    }, horodatage()));
+
+    // Lever le verrou de surveillance
+    window.__authPending = false;
+
+    gate.classList.add("hidden");
+    try{
+      window.dispatchEvent(new CustomEvent("auth-ok", { detail: { groupe: v } }));
+    }catch(e){}
+  }
+
+  /* ---------- Écouteurs ---------- */
+  passBtn.addEventListener("click", validerMotDePasse);
+  passInput.addEventListener("keydown", function(e){
+    if(e.key === "Enter"){ e.preventDefault(); validerMotDePasse(); }
+  });
+
+  grpBtn.addEventListener("click", validerGroupe);
+  grpInput.addEventListener("keydown", function(e){
+    if(e.key === "Enter"){ e.preventDefault(); validerGroupe(); }
+  });
+
+  // Forcer la mise en majuscules en direct pendant la saisie du groupe
+  grpInput.addEventListener("input", function(){
+    const pos = grpInput.selectionStart;
+    grpInput.value = grpInput.value.toUpperCase();
+    try{ grpInput.setSelectionRange(pos, pos); }catch(e){}
+  });
+
+  // Focus initial
+  setTimeout(function(){ try{ passInput.focus(); }catch(e){} }, 80);
+
+})();
+</script>
+
+<!-- ============================================================
+     BARRE DE SURVEILLANCE
+     ============================================================ -->
+<div id="surv-bar" role="status" aria-live="polite">
+  <span class="pastille" aria-hidden="true"></span>
+  <span>Surveillance : <strong id="surv-state">active</strong></span>
+  <span>· sorties : <strong id="surv-count">0</strong></span>
+  <label><input type="checkbox" id="surv-toggle" checked> activer</label>
+</div>
+
+<!-- ============================================================
+     PAGE D'ALERTE PLEIN ÉCRAN ROUGE (enseignant)
+     ============================================================ -->
+<div id="surv-modal" role="alertdialog" aria-modal="true" aria-labelledby="surv-modal-titre">
+  <div class="boite">
+    <div class="panneau">
+      <span class="icone-alerte" aria-hidden="true">⛔</span>
+      <h2 id="surv-modal-titre">Sortie non autorisée</h2>
+      <p class="message-principal">
+        L'élève a <strong>quitté la fenêtre</strong>, <strong>changé d'onglet</strong>
+        ou <strong>ouvert une autre application</strong>.
+      </p>
+      <p class="message-principal" style="font-size:clamp(.95rem,2vw,1.15rem); font-weight:500;">
+        Raison détectée : <strong id="surv-raison">—</strong>
+      </p>
+
+      <div class="bloc-enseignant">
+        <h3>Fiche de signalement — Enseignant</h3>
+        <ul>
+          <li>Date et heure de l'incident : <strong id="surv-heure">—</strong></li>
+          <li>Nombre total de sorties détectées : <span class="compteur" id="surv-count-modal">0</span></li>
+          <li>Document concerné : <em>Dossier Planeurs 2 &amp; 3 anneaux</em></li>
+          <li>Élève / groupe : <span class="champ"></span></li>
+          <li>Observation : <span class="champ" style="min-width:260px;"></span></li>
+        </ul>
+      </div>
+
+      <p class="petit" style="color:#fff; opacity:.85;">Journal des sorties :</p>
+      <div class="journal" id="surv-log"></div>
+
+      <button type="button" id="surv-close">Je reviens au travail</button>
+
+      <p class="info-secondaire">
+        Cet écran se refermera uniquement lorsque l'élève cliquera sur le bouton
+        ci-dessus. Prévenez l'enseignant avant de reprendre.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     EN-TÊTE
+     ============================================================ -->
+<header class="entete-site">
+  <h1>Fiches d'amélioration — Planeurs à 2 et 3 anneaux</h1>
+  <div class="sous">Mathématiques — Première STI2D · Durée : 100 minutes · Superviseur : enseignant de mathématiques</div>
+</header>
+
+<!-- ============================================================
+     SOMMAIRE
+     ============================================================ -->
+<nav class="sommaire" aria-label="Sommaire">
+  <a href="#organisation">Organisation</a>
+  <a href="#rappels">Rappels mathématiques</a>
+  <a href="#repartition">Répartition</a>
+  <a href="#fiche-A">Fiche A</a>
+  <a href="#fiche-B">Fiche B</a>
+  <a href="#fiche-C">Fiche C</a>
+  <a href="#technique-2">Fiche technique 2 anneaux</a>
+  <a href="#technique-3">Fiche technique 3 anneaux</a>
+  <a href="#decoupes-2">Découpes 2 anneaux</a>
+  <a href="#decoupes-3">Découpes 3 anneaux</a>
+</nav>
+
+<main>
+
+<!-- ============================================================
+     1. ORGANISATION
+     ============================================================ -->
+<section class="bloc" id="organisation">
+  <h2>Organisation de l'activité</h2>
+  <div class="box box-bleu">
+    <ul>
+      <li><strong>2 grandes équipes</strong> :
+        <ul>
+          <li>Équipe A : planeur à <strong>2 anneaux</strong> ;</li>
+          <li>Équipe B : planeur à <strong>3 anneaux</strong>.</li>
+        </ul>
+      </li>
+      <li>Chaque équipe est subdivisée en <strong>3 groupes de 3 élèves</strong>.</li>
+      <li>Chaque groupe choisit <strong>un point d'amélioration</strong> dans la partie
+        « 8. Pistes d'amélioration » du document
+        <code>FICHES_TECHNIQUES_PLANEURS</code>.</li>
+      <li>Chaque groupe remplit <strong>une fiche d'amélioration</strong> (fiche A, B ou C).</li>
+      <li>Les trois fiches mobilisent les mêmes outils mathématiques :
+        suites numériques, points \(M_n(n;u_n)\), variation, récurrence et droites.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================
+     2. RAPPELS MATHÉMATIQUES
+     ============================================================ -->
+<section class="bloc" id="rappels">
+  <h2>Rappels mathématiques utiles</h2>
+  <div class="box box-vert">
+    <ul>
+      <li>Une <strong>suite numérique</strong> est une liste indexée de réels :
+        \(u_1, u_2, \ldots, u_{20}\).</li>
+      <li>Le <strong>terme général</strong> \(u_n\) peut être vu comme l'image de l'indice \(n\)
+        par une fonction.</li>
+      <li>On peut représenter la suite par les points \(M_n(n;u_n)\) dans un repère.</li>
+      <li>Une suite peut être définie <strong>par récurrence</strong> :
+        \(u_{n+1}=f(u_n)\) ou \(R_{n+1}=\max(R_n;u_{n+1})\).</li>
+      <li>La <strong>variation</strong> d'une suite se lit avec le signe de \(u_{n+1}-u_n\).</li>
+      <li>Une <strong>droite</strong> horizontale \((D):y=k\) permet de comparer les termes
+        à un objectif.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================
+     3. RÉPARTITION DES ÉQUIPES
+     ============================================================ -->
+<section class="bloc" id="repartition">
+  <h2>Répartition des équipes, groupes et fiches</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Équipe</th>
+        <th>Groupe</th>
+        <th>Fiche</th>
+        <th class="gauche">Piste choisie</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>A (2 anneaux)</td><td>A1</td><td>A</td><td class="gauche"></td></tr>
+      <tr><td>A (2 anneaux)</td><td>A2</td><td>B</td><td class="gauche"></td></tr>
+      <tr><td>A (2 anneaux)</td><td>A3</td><td>C</td><td class="gauche"></td></tr>
+      <tr><td>B (3 anneaux)</td><td>B1</td><td>A</td><td class="gauche"></td></tr>
+      <tr><td>B (3 anneaux)</td><td>B2</td><td>B</td><td class="gauche"></td></tr>
+      <tr><td>B (3 anneaux)</td><td>B3</td><td>C</td><td class="gauche"></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============================================================
+     4. FICHE D'AMÉLIORATION A
+     ============================================================ -->
+<article class="fiche" id="fiche-A">
+  <h3 class="fiche-title">Fiche d'amélioration A — Modifier l'anneau avant</h3>
+
+  <div class="entete-fiche">
+    <span>Équipe : <span class="dots sm"></span></span>
+    <span>Groupe : <span class="dots sm"></span></span>
+    <span>Planeur : <label><input type="checkbox"> 2 anneaux</label> &nbsp;
+      <label><input type="checkbox"> 3 anneaux</label></span>
+  </div>
+
+  <div class="box box-orange">
+    <h4>1. Piste choisie</h4>
+    <p><strong>2 anneaux :</strong> agrandir l'anneau avant.</p>
+    <p><strong>3 anneaux :</strong> renforcer l'anneau avant (plier la bande en deux
+      dans la longueur avant de la rouler).</p>
+    <p><strong>Modification réalisée :</strong> <span class="dots lg"></span></p>
+  </div>
+
+  <div class="box box-bleu">
+    <h4>2. Hypothèse</h4>
+    <p>Si l'anneau avant est plus grand ou renforcé, alors la portance augmente ;
+      la distance moyenne devrait augmenter et la dispersion diminuer.</p>
+    <p><strong>Hypothèse rédigée :</strong> <span class="dots lg" style="width:15cm;"></span></p>
+  </div>
+
+  <div class="box box-bleu">
+    <h4>3. Outils mathématiques mobilisés</h4>
+    <ul>
+      <li>Suite \(u\) : \(u_n\) = distance du \(n\)-ième lancer, pour \(n=1,\ldots,20\).</li>
+      <li>Points \(M_n(n;u_n)\) dans un repère.</li>
+      <li>Variation : signe de \(u_{n+1}-u_n\).</li>
+      <li>Récurrence : \(R_{n+1}=\max(R_n;u_{n+1})\) et \(S_n=S_{n-1}+u_n\).</li>
+      <li>Droites : \((D_m):y=\bar u\) (moyenne) et \((D):y=12\,\text{m}\) (objectif).</li>
+    </ul>
+  </div>
+
+  <div class="box box-vert">
+    <h4>4. Protocole de test</h4>
+    <p>Effectuer <strong>20 lancers</strong> dans les mêmes conditions : même lanceur,
+      même geste, même lieu. Mesurer \(u_n\) au décamètre.</p>
+
+    <div class="barre-outils">
+      <button type="button" class="btn" data-clear="A">Effacer les valeurs</button>
+      <span class="petit">Saisis les distances dans la colonne \(u_n\) : les colonnes
+        \(u_{n+1}-u_n\), \(R_n\) et \(S_n\) ainsi que le graphique se mettent à jour automatiquement.</span>
+    </div>
+
+    <table class="releve">
+      <thead>
+        <tr>
+          <th>\(n\)</th>
+          <th>\(u_n\) (m)</th>
+          <th>\(u_{n+1}-u_n\)</th>
+          <th>\(R_n\)</th>
+          <th>\(S_n\)</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-A"></tbody>
+    </table>
+
+    <div class="canvas-wrap">
+      <canvas id="canvas-A" aria-label="Graphique des 20 lancers — fiche A"></canvas>
+    </div>
+    <div class="resume-graphe" id="summary-A"></div>
+  </div>
+
+  <div class="box box-bleu">
+    <h4>5. Exploitation mathématique</h4>
+    <ol>
+      <li>Définir la suite \(u\) : \(u_n = \) <span class="dots md"></span>, pour \(n=1,\ldots,20\).</li>
+      <li>Calculer les écarts \(u_{n+1}-u_n\). Quel est leur signe ?
+        La suite \(u\) est-elle croissante, décroissante ou non monotone ? Justifier.</li>
+      <li>Placer les points \(M_n(n;u_n)\) dans le repère ci-dessus.
+        Tracer la droite \((D_m):y=\bar u\) et la droite \((D):y=12\,\text{m}\).
+        Combien de points sont au-dessus de \((D)\) ?</li>
+      <li>Définir la suite \(R\) par récurrence : \(R_1=u_1\) et
+        \(R_{n+1}=\max(R_n;u_{n+1})\). Calculer \(R_{20}\).
+        Que représente \(R_{20}\) ?</li>
+      <li>Définir la suite \(S\) par récurrence : \(S_0=0\) et
+        \(S_n=S_{n-1}+u_n\). Calculer \(S_{20}\).
+        Vérifier que \(S_{20}/20=\bar u\).</li>
+      <li>Conclure : la modification a-t-elle amélioré la moyenne ?
+        La dispersion ? L'hypothèse est-elle validée ?</li>
+    </ol>
+  </div>
+</article>
+
+<!-- ============================================================
+     5. FICHE D'AMÉLIORATION B
+     ============================================================ -->
+<article class="fiche" id="fiche-B">
+  <h3 class="fiche-title">Fiche d'amélioration B — Réduire l'anneau arrière</h3>
+
+  <div class="entete-fiche">
+    <span>Équipe : <span class="dots sm"></span></span>
+    <span>Groupe : <span class="dots sm"></span></span>
+    <span>Planeur : <label><input type="checkbox"> 2 anneaux</label> &nbsp;
+      <label><input type="checkbox"> 3 anneaux</label></span>
+  </div>
+
+  <div class="box box-orange">
+    <h4>1. Piste choisie</h4>
+    <p>Réduire l'anneau arrière (2 anneaux et 3 anneaux).</p>
+    <p><strong>Modification réalisée :</strong> <span class="dots lg"></span></p>
+  </div>
+
+  <div class="box box-bleu">
+    <h4>2. Hypothèse</h4>
+    <p>Si l'anneau arrière est réduit, alors la stabilité augmente ;
+      la distance moyenne devrait augmenter et la dispersion diminuer.</p>
+    <p><strong>Hypothèse rédigée :</strong> <span class="dots lg" style="width:15cm;"></span></p>
+  </div>
+
+  <div class="box box-bleu">
+    <h4>3. Outils mathématiques mobilisés</h4>
+    <ul>
+      <li>Suite \(u\) : \(u_n\) = distance du \(n\)-ième lancer, pour \(n=1,\ldots,20\).</li>
+      <li>Points \(M_n(n;u_n)\) dans un repère.</li>
+      <li>Variation : signe de \(u_{n+1}-u_n\).</li>
+      <li>Récurrence : \(R_{n+1}=\max(R_n;u_{n+1})\) et \(S_n=S_{n-1}+u_n\).</li>
+      <li>Droites : \((D_m):y=\bar u\) (moyenne) et \((D):y=12\,\text{m}\) (objectif).</li>
+    </ul>
+  </div>
+
+  <div class="box box-vert">
+    <h4>4. Protocole de test</h4>
+    <p>Effectuer <strong>20 lancers</strong> dans les mêmes conditions : même lanceur,
+      même geste, même lieu. Mesurer \(u_n\) au décamètre.</p>
+
+    <div class="barre-outils">
+      <button type="button" class="btn" data-clear="B">Effacer les valeurs</button>
+      <span class="petit">Saisis les distances dans la colonne \(u_n\) : les colonnes
+        \(u_{n+1}-u_n\), \(R_n\) et \(S_n\) ainsi que le graphique se mettent à jour automatiquement.</span>
+    </div>
+
+    <table class="releve">
+      <thead>
+        <tr>
+          <th>\(n\)</th>
+          <th>\(u_n\) (m)</th>
+          <th>\(u_{n+1}-u_n\)</th>
+          <th>\(R_n\)</th>
+          <th>\(S_n\)</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-B"></tbody>
+    </table>
+
+    <div class="canvas-wrap">
+      <canvas id="canvas-B" aria-label="Graphique des 20 lancers — fiche B"></canvas>
+    </div>
+    <div class="resume-graphe" id="summary-B"></div>
+  </div>
+
+  <div class="box box-bleu">
+    <h4>5. Exploitation mathématique</h4>
+    <ol>
+      <li>Définir la suite \(u\) : \(u_n = \) <span class="dots md"></span>, pour \(n=1,\ldots,20\).</li>
+      <li>Calculer les écarts \(u_{n+1}-u_n\). Quel est le signe ?
+        La suite \(u\) est-elle croissante, décroissante ou non monotone ? Justifier.</li>
+      <li>Placer les points \(M_n(n;u_n)\) dans le repère ci-dessus.
+        Tracer la droite \((D_m):y=\bar u\) et la droite \((D):y=12\,\text{m}\).
+        Combien de points sont au-dessus de \((D)\) ?</li>
+      <li>Définir la suite \(R\) par récurrence : \(R_1=u_1\) et
+        \(R_{n+1}=\max(R_n;u_{n+1})\). Calculer \(R_{20}\).
+        Que représente \(R_{20}\) ?</li>
+      <li>Définir la suite \(S\) par récurrence : \(S_0=0\) et
+        \(S_n=S_{n-1}+u_n\). Calculer \(S_{20}\).
+        Vérifier que \(S_{20}/20=\bar u\).</li>
+      <li>Conclure : la modification a-t-elle amélioré la moyenne ?
+        La dispersion ? L'hypothèse est-elle validée ?</li>
+    </ol>
+  </div>
+</article>
+
+<!-- ============================================================
+     6. FICHE D'AMÉLIORATION C
+     ============================================================ -->
+<article class="fiche" id="fiche-C">
+  <h3 class="fiche-title">Fiche d'amélioration C — Alourdir l'avant</h3>
+
+  <div class="entete-fiche">
+    <span>Équipe : <span class="dots sm"></span></span>
+    <span>Groupe : <span class="dots sm"></span></span>
+    <span>Planeur : <label><input type="checkbox"> 2 anneaux</label> &nbsp;
+      <label><input type="checkbox"> 3 anneaux</label></span>
+  </div>
+
+  <div class="box box-orange">
+    <h4>1. Piste choisie</h4>
+    <p>Alourdir l'avant avec un trombone au nez (2 anneaux et 3 anneaux).</p>
+    <p><strong>Modification réalisée :</strong> <span class="dots lg"></span></p>
+  </div>
+
+  <div class="box box-bleu">
+    <h4>2. Hypothèse</h4>
+    <p>Si le centre de gravité avance, alors le planeur pique moins du nez ;
+      la distance moyenne devrait augmenter et la dispersion diminuer.</p>
+    <p><strong>Hypothèse rédigée :</strong> <span class="dots lg" style="width:15cm;"></span></p>
+  </div>
+
+  <div class="box box-bleu">
+    <h4>3. Outils mathématiques mobilisés</h4>
+    <ul>
+      <li>Suite \(u\) : \(u_n\) = distance du \(n\)-ième lancer, pour \(n=1,\ldots,20\).</li>
+      <li>Points \(M_n(n;u_n)\) dans un repère.</li>
+      <li>Variation : signe de \(u_{n+1}-u_n\).</li>
+      <li>Récurrence : \(R_{n+1}=\max(R_n;u_{n+1})\) et \(S_n=S_{n-1}+u_n\).</li>
+      <li>Droites : \((D_m):y=\bar u\) (moyenne) et \((D):y=12\,\text{m}\) (objectif).</li>
+    </ul>
+  </div>
+
+  <div class="box box-vert">
+    <h4>4. Protocole de test</h4>
+    <p>Effectuer <strong>20 lancers</strong> dans les mêmes conditions : même lanceur,
+      même geste, même lieu. Mesurer \(u_n\) au décamètre.</p>
+
+    <div class="barre-outils">
+      <button type="button" class="btn" data-clear="C">Effacer les valeurs</button>
+      <span class="petit">Saisis les distances dans la colonne \(u_n\) : les colonnes
+        \(u_{n+1}-u_n\), \(R_n\) et \(S_n\) ainsi que le graphique se mettent à jour automatiquement.</span>
+    </div>
+
+    <table class="releve">
+      <thead>
+        <tr>
+          <th>\(n\)</th>
+          <th>\(u_n\) (m)</th>
+          <th>\(u_{n+1}-u_n\)</th>
+          <th>\(R_n\)</th>
+          <th>\(S_n\)</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-C"></tbody>
+    </table>
+
+    <div class="canvas-wrap">
+      <canvas id="canvas-C" aria-label="Graphique des 20 lancers — fiche C"></canvas>
+    </div>
+    <div class="resume-graphe" id="summary-C"></div>
+  </div>
+
+  <div class="box box-bleu">
+    <h4>5. Exploitation mathématique</h4>
+    <ol>
+      <li>Définir la suite \(u\) : \(u_n = \) <span class="dots md"></span>, pour \(n=1,\ldots,20\).</li>
+      <li>Calculer les écarts \(u_{n+1}-u_n\). Quel est le signe ?
+        La suite \(u\) est-elle croissante, décroissante ou non monotone ? Justifier.</li>
+      <li>Placer les points \(M_n(n;u_n)\) dans le repère ci-dessus.
+        Tracer la droite \((D_m):y=\bar u\) et la droite \((D):y=12\,\text{m}\).
+        Combien de points sont au-dessus de \((D)\) ?</li>
+      <li>Définir la suite \(R\) par récurrence : \(R_1=u_1\) et
+        \(R_{n+1}=\max(R_n;u_{n+1})\). Calculer \(R_{20}\).
+        Que représente \(R_{20}\) ?</li>
+      <li>Définir la suite \(S\) par récurrence : \(S_0=0\) et
+        \(S_n=S_{n-1}+u_n\). Calculer \(S_{20}\).
+        Vérifier que \(S_{20}/20=\bar u\).</li>
+      <li>Conclure : la modification a-t-elle amélioré la moyenne ?
+        La dispersion ? L'hypothèse est-elle validée ?</li>
+    </ol>
+  </div>
+</article>
+
+<!-- ============================================================
+     7. FICHE TECHNIQUE 1 — PLANEUR À 2 ANNEAUX
+     ============================================================ -->
+<section class="bloc" id="technique-2">
+  <h2>Fiche technique 1 — Planeur à 2 anneaux « Le Classique »</h2>
+  <p class="petit">Première STI2D</p>
+
+  <div class="box box-bleu">
+    <h4>Matériel nécessaire</h4>
+    <ul>
+      <li>Les bandes prédécoupées à la maison (voir patron ci-dessous).</li>
+      <li>1 crayon rond (mandrin pour rouler le fuselage).</li>
+      <li>Bâton de colle ou ruban adhésif.</li>
+      <li>Ciseaux, règle graduée, crayon.</li>
+      <li>1 trombone (pour le centrage).</li>
+      <li>1 décamètre.</li>
+    </ul>
+  </div>
+
+  <h3>1. Vue d'ensemble</h3>
+  <svg class="schema" viewBox="0 0 430 130" role="img" aria-label="Vue en perspective du planeur à 2 anneaux">
+    <rect x="20" y="52" width="300" height="14" rx="7" fill="#b8b8b8" stroke="#4a5568" stroke-width="1.6"/>
+    <ellipse cx="50" cy="59" rx="15" ry="44" fill="#7fb3ff" fill-opacity="0.7" stroke="#2b3440" stroke-width="1.6"/>
+    <ellipse cx="245" cy="59" rx="11" ry="26" fill="#ff9a9a" fill-opacity="0.7" stroke="#2b3440" stroke-width="1.6"/>
+    <line x1="336" y1="59" x2="392" y2="59" stroke="#2b3440" stroke-width="2.4"/>
+    <polygon points="392,59 380,53 380,65" fill="#2b3440"/>
+    <text class="schema-txt" x="364" y="47" font-size="13" text-anchor="middle">vol</text>
+    <text class="schema-txt" x="215" y="108" font-size="12.5" text-anchor="middle">Vue en perspective</text>
+  </svg>
+
+  <h3>2. Plan technique</h3>
+
+  <h4>Vue de côté</h4>
+  <svg class="schema schema-large" viewBox="0 0 470 200" role="img" aria-label="Vue de côté cotée du planeur à 2 anneaux">
+    <rect x="30" y="58" width="300" height="14" rx="7" fill="#b8b8b8" stroke="#4a5568" stroke-width="1.6"/>
+    <ellipse cx="60" cy="65" rx="15" ry="44" fill="#7fb3ff" fill-opacity="0.7" stroke="#2b3440" stroke-width="1.6"/>
+    <ellipse cx="255" cy="65" rx="11" ry="26" fill="#ff9a9a" fill-opacity="0.7" stroke="#2b3440" stroke-width="1.6"/>
+    <line x1="346" y1="65" x2="402" y2="65" stroke="#2b3440" stroke-width="2.4"/>
+    <polygon points="402,65 390,59 390,71" fill="#2b3440"/>
+    <text class="schema-txt" x="374" y="53" font-size="13" text-anchor="middle">vol</text>
+
+    <line x1="30" y1="130" x2="60" y2="130" stroke="#6a7686" stroke-width="1.3"/>
+    <line x1="30" y1="124" x2="30" y2="136" stroke="#6a7686" stroke-width="1.3"/>
+    <line x1="60" y1="124" x2="60" y2="136" stroke="#6a7686" stroke-width="1.3"/>
+    <text class="schema-txt" x="45" y="149" font-size="12" text-anchor="middle">1,5</text>
+
+    <line x1="30" y1="162" x2="255" y2="162" stroke="#6a7686" stroke-width="1.3"/>
+    <line x1="30" y1="156" x2="30" y2="168" stroke="#6a7686" stroke-width="1.3"/>
+    <line x1="255" y1="156" x2="255" y2="168" stroke="#6a7686" stroke-width="1.3"/>
+    <text class="schema-txt" x="142" y="181" font-size="12" text-anchor="middle">15 cm</text>
+
+    <line x1="255" y1="130" x2="330" y2="130" stroke="#6a7686" stroke-width="1.3"/>
+    <line x1="255" y1="124" x2="255" y2="136" stroke="#6a7686" stroke-width="1.3"/>
+    <line x1="330" y1="124" x2="330" y2="136" stroke="#6a7686" stroke-width="1.3"/>
+    <text class="schema-txt" x="292" y="149" font-size="12" text-anchor="middle">6</text>
+
+    <text class="schema-txt" x="410" y="150" font-size="12.5" text-anchor="middle">Cotes en cm</text>
+  </svg>
+
+  <h4>Vue de face</h4>
+  <svg class="schema" viewBox="0 0 320 230" role="img" aria-label="Vue de face du planeur à 2 anneaux">
+    <circle cx="160" cy="100" r="52" fill="#7fb3ff" fill-opacity="0.7" stroke="#2b3440" stroke-width="1.6"/>
+    <circle cx="160" cy="100" r="30" fill="#ff9a9a" fill-opacity="0.45" stroke="#2b3440" stroke-width="1.6"/>
+    <rect x="152" y="92" width="16" height="16" fill="#8a94a3"/>
+
+    <line x1="108" y1="30" x2="212" y2="30" stroke="#6a7686" stroke-width="1.3"/>
+    <line x1="108" y1="24" x2="108" y2="36" stroke="#6a7686" stroke-width="1.3"/>
+    <line x1="212" y1="24" x2="212" y2="36" stroke="#6a7686" stroke-width="1.3"/>
+    <text class="schema-txt" x="160" y="20" font-size="12.5" text-anchor="middle">Ø 6,7 cm</text>
+
+    <line x1="130" y1="185" x2="190" y2="185" stroke="#6a7686" stroke-width="1.3"/>
+    <line x1="130" y1="179" x2="130" y2="191" stroke="#6a7686" stroke-width="1.3"/>
+    <line x1="190" y1="179" x2="190" y2="191" stroke="#6a7686" stroke-width="1.3"/>
+    <text class="schema-txt" x="160" y="206" font-size="12.5" text-anchor="middle">Ø 3,8 cm</text>
+
+    <text class="schema-txt" x="160" y="224" font-size="12.5" text-anchor="middle">Vue de face</text>
+  </svg>
+
+  <h3>3. Patron de découpe (à faire à la maison)</h3>
+  <svg class="schema" viewBox="0 0 240 330" role="img" aria-label="Patron de découpe sur feuille A4 — planeur à 2 anneaux">
+    <rect x="10" y="10" width="210" height="297" fill="#ffffff" stroke="#2b3440" stroke-width="1.6"/>
+    <rect x="10" y="10" width="210" height="80" fill="#ffd9a3" stroke="#8a3d05" stroke-width="1"/>
+    <text class="schema-txt" x="115" y="54" font-size="12" text-anchor="middle">Fuselage : 21 × 8 cm (à rouler)</text>
+    <rect x="10" y="90" width="210" height="30" fill="#7fb3ff" fill-opacity="0.75" stroke="#123d7a" stroke-width="1"/>
+    <text class="schema-txt" x="115" y="110" font-size="12" text-anchor="middle">Anneau avant : 21 × 3 cm</text>
+    <rect x="10" y="120" width="120" height="25" fill="#ff9a9a" fill-opacity="0.8" stroke="#8a1f1f" stroke-width="1"/>
+    <text class="schema-txt" x="70" y="137" font-size="11" text-anchor="middle">Anneau arrière : 12 × 2,5 cm</text>
+    <text class="schema-txt" x="115" y="230" font-size="12.5" text-anchor="middle" fill="#6a7686">Chutes (à recycler)</text>
+  </svg>
+
+  <h3>4. Tableau des dimensions</h3>
+  <table>
+    <thead>
+      <tr><th class="gauche">Élément</th><th>Longueur</th><th>Largeur</th><th>Diamètre final</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="gauche">Fuselage (roulé)</td><td>21 cm</td><td>8 cm</td><td>Ø 7–8 mm</td></tr>
+      <tr><td class="gauche">Anneau avant</td><td>21 cm</td><td>3 cm</td><td>6,7 cm</td></tr>
+      <tr><td class="gauche">Anneau arrière</td><td>12 cm</td><td>2,5 cm</td><td>3,8 cm</td></tr>
+    </tbody>
+  </table>
+
+  <h3>5. Assemblage en classe</h3>
+
+  <h4>Étape 1 — Rouler le fuselage</h4>
+  <svg class="schema" viewBox="0 0 460 130" role="img" aria-label="Pliage du fuselage autour du crayon">
+    <rect x="30" y="55" width="240" height="34" fill="#ffd9a3" stroke="#8a3d05" stroke-width="1.6"/>
+    <text class="schema-txt" x="150" y="77" font-size="13" text-anchor="middle">Bande fuselage</text>
+    <rect x="272" y="62" width="70" height="20" rx="4" fill="#b0b8c4" stroke="#4a5568" stroke-width="1.4"/>
+    <text class="schema-txt" x="307" y="105" font-size="12" text-anchor="middle">crayon</text>
+    <path d="M 200 52 C 170 20, 120 18, 90 40" fill="none" stroke="#1f5fbf" stroke-width="2.6"/>
+    <polygon points="90,40 100,33 102,45" fill="#1f5fbf"/>
+    <text class="schema-txt" x="150" y="24" font-size="12.5" text-anchor="middle" fill="#123d7a">enrouler</text>
+  </svg>
+
+  <ol>
+    <li>Poser la bande fuselage (21 × 8 cm) sur une surface plane.</li>
+    <li>Poser le crayon en haut de la bande, parallèle au petit côté.</li>
+    <li>Enrouler la bande autour du crayon, en serrant bien à chaque tour.</li>
+    <li>Quand on arrive au bout, coller la dernière épaisseur avec un
+      bâton de colle ou un morceau de ruban adhésif.</li>
+    <li>Retirer le crayon en tournant doucement.</li>
+    <li>Le tube doit être <strong>rigide</strong>, <strong>droit</strong> et de
+      diamètre régulier.</li>
+  </ol>
+
+  <div class="box box-orange">
+    <h4>Point d'attention</h4>
+    <p>Un tube mal roulé se pliera au lancement. Bien serrer à chaque tour
+      et coller la dernière épaisseur. Si le tube est trop souple, rouler
+      une deuxième bande par-dessus.</p>
+  </div>
+
+  <h4>Étape 2 — Rouler et positionner les anneaux</h4>
+  <ol>
+    <li><strong>Rouler la bande avant</strong> (21 × 3 cm) en anneau. Former
+      un cercle et maintenir avec un morceau de ruban adhésif.</li>
+    <li><strong>Rouler la bande arrière</strong> (12 × 2,5 cm) en anneau.
+      Fixer avec du ruban adhésif.</li>
+    <li><strong>Enfiler les anneaux</strong> sur le fuselage.</li>
+    <li><strong>Positionner</strong> l'anneau avant à 1,5 cm du nez et
+      l'anneau arrière à 15 cm du nez.</li>
+    <li><strong>Fixer</strong> chaque anneau avec un petit morceau de ruban
+      adhésif à la jonction fuselage/anneau.</li>
+    <li><strong>Vérifier la symétrie</strong> : les deux anneaux doivent être
+      perpendiculaires au fuselage et bien centrés.</li>
+  </ol>
+
+  <svg class="schema" viewBox="0 0 460 160" role="img" aria-label="Positionnement des anneaux sur le fuselage">
+    <rect x="30" y="72" width="300" height="14" rx="7" fill="#b8b8b8" stroke="#4a5568" stroke-width="1.6"/>
+    <ellipse cx="60" cy="79" rx="15" ry="44" fill="#7fb3ff" fill-opacity="0.7" stroke="#2b3440" stroke-width="1.6"/>
+    <ellipse cx="255" cy="79" rx="11" ry="26" fill="#ff9a9a" fill-opacity="0.7" stroke="#2b3440" stroke-width="1.6"/>
+    <line x1="60" y1="20" x2="60" y2="140" stroke="#8a94a3" stroke-width="1.2" stroke-dasharray="5 4"/>
+    <line x1="255" y1="20" x2="255" y2="140" stroke="#8a94a3" stroke-width="1.2" stroke-dasharray="5 4"/>
+    <text class="schema-txt" x="60" y="16" font-size="12.5" text-anchor="middle">1,5 cm</text>
+    <text class="schema-txt" x="255" y="16" font-size="12.5" text-anchor="middle">15 cm</text>
+  </svg>
+
+  <h4>Étape 3 — Contre-vérification de l'équilibrage</h4>
+  <div class="box box-orange">
+    <h4>Contre-vérification de l'équilibrage</h4>
+    <ul>
+      <li>Poser le planeur sur deux doigts : le point d'équilibre doit
+        se situer au premier tiers du fuselage (entre 5 et 7 cm du nez).</li>
+      <li>Si le planeur pique du nez : ajouter un trombone à l'avant.</li>
+      <li>Si le planeur part en vrille : vérifier la symétrie des anneaux.</li>
+    </ul>
+  </div>
+
+  <div class="box box-vert">
+    <h4>Ressource complémentaire — Comportement en vol</h4>
+    <p>Pour approfondir l'analyse du comportement de votre planeur en vol
+      (équilibrage, trajectoire, stabilité), consultez la page interactive suivante :</p>
+    <p class="centre"><span class="url-box"><a href="http://urlr.me/8UqKfH" target="_blank" rel="noopener">http://urlr.me/8UqKfH</a></span></p>
+    <p>Cette page vous permettra de visualiser les effets des réglages sur
+      le comportement en vol et de mieux comprendre les phénomènes
+      aérodynamiques en jeu.</p>
+  </div>
+
+  <h3>6. Méthode de lancer</h3>
+  <p>Pour que les essais soient comparables, il faut lancer
+    <strong>toujours de la même façon</strong>. Voici la méthode à appliquer.</p>
+
+  <div class="grille-2">
+    <div class="box box-bleu">
+      <h4>Position du corps</h4>
+      <ul>
+        <li>Se placer <strong>debout</strong>, pieds légèrement écartés.</li>
+        <li>Placer l'<strong>épaule du bras lanceur</strong> face à la direction du lancer.</li>
+        <li>Le corps reste <strong>droit</strong>, sans se pencher en avant.</li>
+      </ul>
+    </div>
+    <div class="box box-bleu">
+      <h4>Prise en main</h4>
+      <ul>
+        <li>Tenir le planeur par le <strong>fuselage</strong>, entre le pouce et l'index.</li>
+        <li>Le pouce se place <strong>au-dessus</strong> du fuselage, l'index <strong>en dessous</strong>.</li>
+        <li>La prise se fait au niveau du <strong>centre de gravité</strong> (premier tiers du fuselage).</li>
+      </ul>
+    </div>
+    <div class="box box-bleu">
+      <h4>Position de départ</h4>
+      <ul>
+        <li>Le planeur est tenu à <strong>hauteur d'épaule</strong>.</li>
+        <li>Le <strong>nez</strong> du planeur est légèrement incliné <strong>vers le haut</strong> (10 à 15°).</li>
+        <li>Le bras est <strong>tendu vers l'arrière</strong>.</li>
+      </ul>
+    </div>
+    <div class="box box-bleu">
+      <h4>Gestuelle</h4>
+      <ol>
+        <li>Effectuer un mouvement <strong>fluide et continu</strong> du bras vers l'avant.</li>
+        <li><strong>Ne pas</strong> donner de coup de poignet brusque.</li>
+        <li>Relâcher le planeur au moment où le bras est <strong>tendu vers l'avant</strong>.</li>
+        <li>La main reste <strong>ouverte</strong> après le lâcher.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="box box-rouge">
+    <h4>Erreurs à éviter</h4>
+    <ul>
+      <li><strong>Lancer trop fort</strong> : le planeur part en vrille.</li>
+      <li><strong>Lancer vers le haut</strong> : le planeur monte puis retombe brutalement.</li>
+      <li><strong>Donner un coup de poignet</strong> : la trajectoire n'est pas reproductible.</li>
+      <li><strong>Changer de lanceur</strong> entre les essais : les résultats ne sont plus comparables.</li>
+    </ul>
+  </div>
+
+  <svg class="schema" viewBox="0 0 460 260" role="img" aria-label="Schéma du geste de lancer">
+    <line x1="10" y1="220" x2="450" y2="220" stroke="#4a5568" stroke-width="2.4"/>
+    <circle cx="90" cy="70" r="20" fill="#8a94a3"/>
+    <line x1="90" y1="90" x2="90" y2="165" stroke="#8a94a3" stroke-width="9" stroke-linecap="round"/>
+    <line x1="90" y1="165" x2="62" y2="220" stroke="#8a94a3" stroke-width="9" stroke-linecap="round"/>
+    <line x1="90" y1="165" x2="118" y2="220" stroke="#8a94a3" stroke-width="9" stroke-linecap="round"/>
+    <line x1="90" y1="115" x2="58" y2="140" stroke="#8a94a3" stroke-width="8" stroke-linecap="round"/>
+    <line x1="90" y1="115" x2="150" y2="128" stroke="#8a94a3" stroke-width="8" stroke-linecap="round"/>
+    <polygon points="150,120 205,128 150,136" fill="#7fb3ff" stroke="#123d7a" stroke-width="1.6"/>
+    <path d="M 205 122 C 260 60, 340 55, 420 90" fill="none" stroke="#1f5fbf" stroke-width="2.6" stroke-dasharray="8 5"/>
+    <polygon points="420,90 408,82 410,95" fill="#1f5fbf"/>
+    <text class="schema-txt" x="330" y="52" font-size="13" text-anchor="middle" fill="#123d7a">trajectoire</text>
+    <line x1="205" y1="128" x2="300" y2="128" stroke="#6a7686" stroke-width="1.2" stroke-dasharray="5 4"/>
+    <path d="M 250 128 A 45 45 0 0 0 244 106" fill="none" stroke="#b45309" stroke-width="2"/>
+    <text class="schema-txt" x="276" y="112" font-size="12.5" fill="#8a3d05">10–15°</text>
+    <text class="schema-txt" x="46" y="115" font-size="12.5" fill="#4a5568">épaule</text>
+  </svg>
+
+  <div class="box box-bleu">
+    <h4>Règle d'or</h4>
+    <p>Un seul lanceur par série d'essais. Si le lanceur change, les
+      mesures ne sont plus comparables. Choisir un lanceur dans le groupe
+      et s'y tenir.</p>
+  </div>
+
+  <h3>7. Protocole de test</h3>
+  <ol>
+    <li>Effectuer <strong>20 lancers</strong> dans les mêmes conditions
+      (même lanceur, même geste, même lieu), en appliquant la
+      méthode de lancer de la section 6.</li>
+    <li>Mesurer la <strong>distance parcourue</strong> à chaque lancer avec
+      le décamètre.</li>
+    <li>Calculer la <strong>moyenne</strong> des distances.</li>
+    <li>Repérer la <strong>distance minimale</strong> et la
+      <strong>distance maximale</strong> : elles mesurent la dispersion
+      des résultats.</li>
+  </ol>
+
+  <div class="box box-bleu">
+    <h4>Tableau de relevé</h4>
+    <div class="box box-vert" style="margin-top:.4rem;">
+      <h4>Ressource complémentaire — Relevé des valeurs</h4>
+      <p>Pour enregistrer et comparer vos mesures de distance, utilisez la
+        page de relevé des valeurs :</p>
+      <p class="centre"><span class="url-box"><a href="http://urlr.me/weAxZX" target="_blank" rel="noopener">http://urlr.me/weAxZX</a></span></p>
+      <p>Cette page vous permettra de consigner les résultats des essais
+        et de calculer automatiquement la moyenne, le minimum et le maximum.</p>
+    </div>
+    <p style="margin-top:.8rem;">
+      <strong>Moyenne</strong> : <span class="dots sm"></span> &nbsp;&nbsp;
+      <strong>Minimum</strong> : <span class="dots sm"></span> &nbsp;&nbsp;
+      <strong>Maximum</strong> : <span class="dots sm"></span>
+    </p>
+  </div>
+
+  <h3>8. Pistes d'amélioration</h3>
+  <p>Pour chaque piste, compléter la ligne <strong>« Effet attendu »</strong>, puis
+    tester et noter l'effet réellement observé.</p>
+  <ul>
+    <li><strong>Agrandir l'anneau avant</strong> : plus de portance.
+      <br><em>Effet attendu :</em> <span class="dots md"></span></li>
+    <li><strong>Réduire l'anneau arrière</strong> : plus de stabilité.
+      <br><em>Effet attendu :</em> <span class="dots md"></span></li>
+    <li><strong>Allonger le fuselage</strong> : plus de stabilité en tangage.
+      <br><em>Effet attendu :</em> <span class="dots md"></span></li>
+    <li><strong>Renforcer l'anneau avant</strong> (plier la bande en deux
+      dans la longueur avant de la rouler).
+      <br><em>Effet attendu :</em> <span class="dots md"></span></li>
+    <li><strong>Ajouter une dérive</strong> (un petit plan vertical à
+      l'arrière pour stabiliser le lacet).
+      <br><em>Effet attendu :</em> <span class="dots md"></span></li>
+    <li><strong>Alourdir l'avant</strong> (un trombone au nez pour avancer
+      le centre de gravité).
+      <br><em>Effet attendu :</em> <span class="dots md"></span></li>
+  </ul>
+
+  <h3>9. Check-list de fin de séance</h3>
+  <ul class="check-list">
+    <li>Le fuselage est rigide et droit.</li>
+    <li>Les anneaux sont symétriques et perpendiculaires au fuselage.</li>
+    <li>Le point d'équilibre est au premier tiers du fuselage.</li>
+    <li>La méthode de lancer a été respectée pour tous les essais.</li>
+    <li>Les mesures sont notées dans le tableau de relevé.</li>
+    <li>Le matériel est rangé.</li>
+  </ul>
+</section>
+
+<!-- ============================================================
+     8. FICHE TECHNIQUE 2 — PLANEUR À 3 ANNEAUX
+     ============================================================ -->
+<section class="bloc" id="technique-3">
+  <h2>Fiche technique 2 — Planeur à 3 anneaux « Le Trio »</h2>
+  <p class="petit">Première STI2D</p>
+
+  <div class="box box-bleu">
+    <h4>Matériel nécessaire</h4>
+    <ul>
+      <li>Les bandes prédécoupées à la maison (voir patron ci-dessous).</li>
+      <li>1 crayon rond (mandrin pour rouler le fuselage).</li>
+      <li>Bâton de colle ou ruban adhésif.</li>
+      <li>Ciseaux, règle graduée, crayon.</li>
+      <li>1 trombone (pour le centrage).</li>
+      <li>1 décamètre.</li>
+    </ul>
+  </div>
+
+  <h3>1. Vue d'ensemble</h3>
+  <svg class="schema" viewBox="0 0 430 130" role="img" aria-label="Vue en perspective du planeur à 3 anneaux">
+    <rect x="20" y="52" width="300" height="14" rx="7" fill="#b8b8b8" stroke="#4a5568" stroke-width="1.6"/>
+    <ellipse cx="50" cy="59" rx="15" ry="44" fill="#7fb3ff" fill-opacity="0.7" stroke="#2b3440" stroke-width="1.6"/>
+    <ellipse cx="165" cy="59" rx="12" ry="33" fill="#8fe0a4" fill-opacity="0.75" stroke="#2b3440" stroke-width="1.6"/>
+    <ellipse cx="265" cy="59" rx="9" ry="23" fill="#ff9a9a" fill-opacity="0.7" stroke="#2b3440" stroke-width="1.6"/>
+    <line x1="336" y1="59" x2="392" y2="59" stroke="#2b3440" stroke-width="2.4"/>
+    <polygon points="392,59 380,53 380,65" fill="#2b3440"/>
+    <text class="schema-txt" x="364" y="47" font-size="13" text-anchor="middle">vol</text>
+    <text class="schema-txt" x="215" y="110" font-size="12.5" text-anchor="middle">Vue en perspective</text>
+  </svg>
+
+  <h3>2. Plan technique</h3>
+
+  <h4>Vue de côté</h4>
+  <svg class="schema schema-large" viewBox="0 0 470 200" role="img" aria-label="Vue de côté cotée du planeur à 3 anneaux">
+    <rect x="30" y="58" width="300" height="14" rx="7" fill="#b8b8b8" stroke="#4a5568" stroke-width="1.6"/>
+    <ellipse cx="60" cy="65" rx="15" ry="44" fill="#7fb3ff" fill-opacity="0.7" stroke="#2b3440" stroke-width="1.6"/>
+    <ellipse cx="170" cy="65" rx="12" ry="33" fill="#8fe0a4" fill-opacity="0.75" stroke="#2b3440" stroke-width="1.6"/>
+    <ellipse cx="275" cy="65" rx="9" ry="23" fill="#ff9a9a" fill-opacity="0.7" stroke="#2b3440" stroke-width="1.6"/>
+    <line x1="346" y1="65" x2="402" y2="65" stroke="#2b3440" stroke-width="2.4"/>
+    <polygon points="402,65 390,59 390,71" fill="#2b3440"/>
+    <text class="schema-txt" x="374" y="53" font-size="13" text-anchor="middle">vol</text>
+
+    <line x1="30" y1="130" x2="60" y2="130" stroke="#6a7686" stroke-width="1.3"/>
+    <line x1="30" y1="124" x2="30" y2="136" stroke="#6a7686" stroke-width="1.3"/>
+    <line x1="60" y1="124" x2="60" y2="136" stroke="#6a7686" stroke-width="1.3"/>
+    <text class="schema-txt" x="45" y="149" font-size="12" text-anchor="middle">1,5</text>
+
+    <line x1="30" y1="162" x2="170" y2="162" stroke="#6a7686" stroke-width="1.3"/>
+    <line x1="30" y1="156" x2="30" y2="168" stroke="#6a7686" stroke-width="1.3"/>
+    <line x1="170" y1="156" x2="170" y2="168" stroke="#6a7686" stroke-width="1.3"/>
+    <text class="schema-txt" x="100" y="181" font-size="12" text-anchor="middle">9 cm</text>
+
+    <line x1="170" y1="162" x2="275" y2="162" stroke="#6a7686" stroke-width="1.3"/>
+    <line x1="275" y1="156" x2="275" y2="168" stroke="#6a7686" stroke-width="1.3"/>
+    <text class="schema-txt" x="222" y="181" font-size="12" text-anchor="middle">7,5 cm</text>
+
+    <line x1="275" y1="130" x2="330" y2="130" stroke="#6a7686" stroke-width="1.3"/>
+    <line x1="275" y1="124" x2="275" y2="136" stroke="#6a7686" stroke-width="1.3"/>
+    <line x1="330" y1="124" x2="330" y2="136" stroke="#6a7686" stroke-width="1.3"/>
+    <text class="schema-txt" x="302" y="149" font-size="12" text-anchor="middle">4,5</text>
+
+    <text class="schema-txt" x="412" y="150" font-size="12.5" text-anchor="middle">Cotes en cm</text>
+  </svg>
+
+  <h4>Vue de face</h4>
+  <svg class="schema" viewBox="0 0 320 260" role="img" aria-label="Vue de face du planeur à 3 anneaux">
+    <circle cx="160" cy="110" r="52" fill="#7fb3ff" fill-opacity="0.7" stroke="#2b3440" stroke-width="1.6"/>
+    <circle cx="160" cy="110" r="40" fill="#8fe0a4" fill-opacity="0.6" stroke="#2b3440" stroke-width="1.6"/>
+    <circle cx="160" cy="110" r="27" fill="#ff9a9a" fill-opacity="0.45" stroke="#2b3440" stroke-width="1.6"/>
+    <rect x="152" y="102" width="16" height="16" fill="#8a94a3"/>
+
+    <line x1="108" y1="34" x2="212" y2="34" stroke="#6a7686" stroke-width="1.3"/>
+    <line x1="108" y1="28" x2="108" y2="40" stroke="#6a7686" stroke-width="1.3"/>
+    <line x1="212" y1="28" x2="212" y2="40" stroke="#6a7686" stroke-width="1.3"/>
+    <text class="schema-txt" x="160" y="24" font-size="12.5" text-anchor="middle">Ø 6,7 cm</text>
+
+    <line x1="120" y1="200" x2="200" y2="200" stroke="#6a7686" stroke-width="1.3"/>
+    <line x1="120" y1="194" x2="120" y2="206" stroke="#6a7686" stroke-width="1.3"/>
+    <line x1="200" y1="194" x2="200" y2="206" stroke="#6a7686" stroke-width="1.3"/>
+    <text class="schema-txt" x="160" y="220" font-size="12.5" text-anchor="middle">Ø 5,1 cm</text>
+
+    <line x1="133" y1="236" x2="187" y2="236" stroke="#6a7686" stroke-width="1.3"/>
+    <line x1="133" y1="230" x2="133" y2="242" stroke="#6a7686" stroke-width="1.3"/>
+    <line x1="187" y1="230" x2="187" y2="242" stroke="#6a7686" stroke-width="1.3"/>
+    <text class="schema-txt" x="160" y="256" font-size="12.5" text-anchor="middle">Ø 3,5 cm</text>
+  </svg>
+
+  <h3>3. Patron de découpe (à faire à la maison)</h3>
+  <svg class="schema" viewBox="0 0 240 330" role="img" aria-label="Patron de découpe sur feuille A4 — planeur à 3 anneaux">
+    <rect x="10" y="10" width="210" height="297" fill="#ffffff" stroke="#2b3440" stroke-width="1.6"/>
+    <rect x="10" y="10" width="210" height="80" fill="#ffd9a3" stroke="#8a3d05" stroke-width="1"/>
+    <text class="schema-txt" x="115" y="54" font-size="12" text-anchor="middle">Fuselage : 21 × 8 cm (à rouler)</text>
+    <rect x="10" y="90" width="210" height="30" fill="#7fb3ff" fill-opacity="0.75" stroke="#123d7a" stroke-width="1"/>
+    <text class="schema-txt" x="115" y="110" font-size="12" text-anchor="middle">Anneau avant : 21 × 3 cm</text>
+    <rect x="10" y="120" width="100" height="25" fill="#8fe0a4" fill-opacity="0.8" stroke="#1b5e20" stroke-width="1"/>
+    <text class="schema-txt" x="60" y="137" font-size="10.5" text-anchor="middle">Anneau milieu : 16 × 2,5 cm</text>
+    <rect x="10" y="145" width="110" height="20" fill="#ff9a9a" fill-opacity="0.8" stroke="#8a1f1f" stroke-width="1"/>
+    <text class="schema-txt" x="65" y="159" font-size="10.5" text-anchor="middle">Anneau arrière : 11 × 2 cm</text>
+    <text class="schema-txt" x="115" y="240" font-size="12.5" text-anchor="middle" fill="#6a7686">Chutes (à recycler)</text>
+  </svg>
+
+  <h3>4. Tableau des dimensions</h3>
+  <table>
+    <thead>
+      <tr><th class="gauche">Élément</th><th>Longueur</th><th>Largeur</th><th>Diamètre final</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="gauche">Fuselage (roulé)</td><td>21 cm</td><td>8 cm</td><td>Ø 7–8 mm</td></tr>
+      <tr><td class="gauche">Anneau avant</td><td>21 cm</td><td>3 cm</td><td>6,7 cm</td></tr>
+      <tr><td class="gauche">Anneau milieu</td><td>16 cm</td><td>2,5 cm</td><td>5,1 cm</td></tr>
+      <tr><td class="gauche">Anneau arrière</td><td>11 cm</td><td>2 cm</td><td>3,5 cm</td></tr>
+    </tbody>
+  </table>
+
+  <h3>5. Assemblage en classe</h3>
+
+  <h4>Étape 1 — Rouler le fuselage</h4>
+  <svg class="schema" viewBox="0 0 460 130" role="img" aria-label="Pliage du fuselage autour du crayon">
+    <rect x="30" y="55" width="240" height="34" fill="#ffd9a3" stroke="#8a3d05" stroke-width="1.6"/>
+    <text class="schema-txt" x="150" y="77" font-size="13" text-anchor="middle">Bande fuselage</text>
+    <rect x="272" y="62" width="70" height="20" rx="4" fill="#b0b8c4" stroke="#4a5568" stroke-width="1.4"/>
+    <text class="schema-txt" x="307" y="105" font-size="12" text-anchor="middle">crayon</text>
+    <path d="M 200 52 C 170 20, 120 18, 90 40" fill="none" stroke="#1f5fbf" stroke-width="2.6"/>
+    <polygon points="90,40 100,33 102,45" fill="#1f5fbf"/>
+    <text class="schema-txt" x="150" y="24" font-size="12.5" text-anchor="middle" fill="#123d7a">enrouler</text>
+  </svg>
+
+  <ol>
+    <li>Poser la bande fuselage (21 × 8 cm) sur une surface plane.</li>
+    <li>Poser le crayon en haut de la bande, parallèle au petit côté.</li>
+    <li>Enrouler la bande autour du crayon, en serrant bien à chaque tour.</li>
+    <li>Quand on arrive au bout, coller la dernière épaisseur avec un
+      bâton de colle ou un morceau de ruban adhésif.</li>
+    <li>Retirer le crayon en tournant doucement.</li>
+    <li>Le tube doit être <strong>rigide</strong>, <strong>droit</strong> et de
+      diamètre régulier.</li>
+  </ol>
+
+  <div class="box box-orange">
+    <h4>Point d'attention</h4>
+    <p>Le fuselage du 3 anneaux doit être particulièrement <strong>rigide</strong>,
+      car il portera trois anneaux au lieu de deux. Si le tube est trop
+      souple, rouler une deuxième bande par-dessus.</p>
+  </div>
+
+  <h4>Étape 2 — Rouler et positionner les anneaux</h4>
+  <ol>
+    <li><strong>Rouler les trois bandes</strong> en anneaux et les fixer avec
+      du ruban adhésif.</li>
+    <li><strong>Enfiler les anneaux</strong> sur le fuselage.</li>
+    <li><strong>Positionner</strong> les anneaux :
+      <ul>
+        <li>anneau avant à 1,5 cm du nez ;</li>
+        <li>anneau milieu à 9 cm du nez ;</li>
+        <li>anneau arrière à 16,5 cm du nez.</li>
+      </ul>
+    </li>
+    <li><strong>Fixer</strong> chaque anneau avec un petit morceau de ruban adhésif.</li>
+    <li><strong>Vérifier la symétrie</strong> et l'alignement des trois anneaux.</li>
+  </ol>
+
+  <svg class="schema" viewBox="0 0 460 160" role="img" aria-label="Positionnement des trois anneaux sur le fuselage">
+    <rect x="30" y="72" width="300" height="14" rx="7" fill="#b8b8b8" stroke="#4a5568" stroke-width="1.6"/>
+    <ellipse cx="60" cy="79" rx="15" ry="44" fill="#7fb3ff" fill-opacity="0.7" stroke="#2b3440" stroke-width="1.6"/>
+    <ellipse cx="170" cy="79" rx="12" ry="33" fill="#8fe0a4" fill-opacity="0.75" stroke="#2b3440" stroke-width="1.6"/>
+    <ellipse cx="275" cy="79" rx="9" ry="23" fill="#ff9a9a" fill-opacity="0.7" stroke="#2b3440" stroke-width="1.6"/>
+    <line x1="60" y1="20" x2="60" y2="140" stroke="#8a94a3" stroke-width="1.2" stroke-dasharray="5 4"/>
+    <line x1="170" y1="20" x2="170" y2="140" stroke="#8a94a3" stroke-width="1.2" stroke-dasharray="5 4"/>
+    <line x1="275" y1="20" x2="275" y2="140" stroke="#8a94a3" stroke-width="1.2" stroke-dasharray="5 4"/>
+    <text class="schema-txt" x="60" y="16" font-size="12.5" text-anchor="middle">1,5</text>
+    <text class="schema-txt" x="170" y="16" font-size="12.5" text-anchor="middle">9</text>
+    <text class="schema-txt" x="275" y="16" font-size="12.5" text-anchor="middle">16,5</text>
+  </svg>
+
+  <h4>Étape 3 — Contre-vérification de l'équilibrage</h4>
+  <div class="box box-orange">
+    <h4>Contre-vérification de l'équilibrage</h4>
+    <p>Avec trois anneaux, le centrage est plus délicat. Tester plusieurs
+      positions du trombone avant de valider le modèle. Un planeur mal
+      centré part en vrille quel que soit son profil aérodynamique.</p>
+    <ul>
+      <li>Poser le planeur sur deux doigts : le point d'équilibre doit
+        se situer au premier tiers du fuselage (entre 5 et 7 cm du nez).</li>
+      <li>Si le planeur pique du nez : ajouter un trombone à l'avant.</li>
+      <li>Si le planeur part en vrille : vérifier la symétrie des anneaux.</li>
+    </ul>
+  </div>
+
+  <div class="box box-vert">
+    <h4>Ressource complémentaire — Comportement en vol</h4>
+    <p>Pour approfondir l'analyse du comportement de votre planeur en vol
+      (équilibrage, trajectoire, stabilité), consultez la page interactive suivante :</p>
+    <p class="centre"><span class="url-box"><a href="http://urlr.me/8UqKfH" target="_blank" rel="noopener">http://urlr.me/8UqKfH</a></span></p>
+    <p>Cette page vous permettra de visualiser les effets des réglages sur
+      le comportement en vol et de mieux comprendre les phénomènes
+      aérodynamiques en jeu.</p>
+  </div>
+
+  <h3>6. Méthode de lancer</h3>
+  <p>Pour que les essais soient comparables, il faut lancer
+    <strong>toujours de la même façon</strong>. Voici la méthode à appliquer.</p>
+
+  <div class="grille-2">
+    <div class="box box-bleu">
+      <h4>Position du corps</h4>
+      <ul>
+        <li>Se placer <strong>debout</strong>, pieds légèrement écartés.</li>
+        <li>Placer l'<strong>épaule du bras lanceur</strong> face à la direction du lancer.</li>
+        <li>Le corps reste <strong>droit</strong>, sans se pencher en avant.</li>
+      </ul>
+    </div>
+    <div class="box box-bleu">
+      <h4>Prise en main</h4>
+      <ul>
+        <li>Tenir le planeur par le <strong>fuselage</strong>, entre le pouce et l'index.</li>
+        <li>Le pouce se place <strong>au-dessus</strong> du fuselage, l'index <strong>en dessous</strong>.</li>
+        <li>La prise se fait au niveau du <strong>centre de gravité</strong> (premier tiers du fuselage).</li>
+      </ul>
+    </div>
+    <div class="box box-bleu">
+      <h4>Position de départ</h4>
+      <ul>
+        <li>Le planeur est tenu à <strong>hauteur d'épaule</strong>.</li>
+        <li>Le <strong>nez</strong> du planeur est légèrement incliné <strong>vers le haut</strong> (10 à 15°).</li>
+        <li>Le bras est <strong>tendu vers l'arrière</strong>.</li>
+      </ul>
+    </div>
+    <div class="box box-bleu">
+      <h4>Gestuelle</h4>
+      <ol>
+        <li>Effectuer un mouvement <strong>fluide et continu</strong> du bras vers l'avant.</li>
+        <li><strong>Ne pas</strong> donner de coup de poignet brusque.</li>
+        <li>Relâcher le planeur au moment où le bras est <strong>tendu vers l'avant</strong>.</li>
+        <li>La main reste <strong>ouverte</strong> après le lâcher.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="box box-rouge">
+    <h4>Erreurs à éviter</h4>
+    <ul>
+      <li><strong>Lancer trop fort</strong> : le planeur part en vrille.</li>
+      <li><strong>Lancer vers le haut</strong> : le planeur monte puis retombe brutalement.</li>
+      <li><strong>Donner un coup de poignet</strong> : la trajectoire n'est pas reproductible.</li>
+      <li><strong>Changer de lanceur</strong> entre les essais : les résultats ne sont plus comparables.</li>
+    </ul>
+  </div>
+
+  <svg class="schema" viewBox="0 0 460 260" role="img" aria-label="Schéma du geste de lancer">
+    <line x1="10" y1="220" x2="450" y2="220" stroke="#4a5568" stroke-width="2.4"/>
+    <circle cx="90" cy="70" r="20" fill="#8a94a3"/>
+    <line x1="90" y1="90" x2="90" y2="165" stroke="#8a94a3" stroke-width="9" stroke-linecap="round"/>
+    <line x1="90" y1="165" x2="62" y2="220" stroke="#8a94a3" stroke-width="9" stroke-linecap="round"/>
+    <line x1="90" y1="165" x2="118" y2="220" stroke="#8a94a3" stroke-width="9" stroke-linecap="round"/>
+    <line x1="90" y1="115" x2="58" y2="140" stroke="#8a94a3" stroke-width="8" stroke-linecap="round"/>
+    <line x1="90" y1="115" x2="150" y2="128" stroke="#8a94a3" stroke-width="8" stroke-linecap="round"/>
+    <polygon points="150,120 205,128 150,136" fill="#7fb3ff" stroke="#123d7a" stroke-width="1.6"/>
+    <path d="M 205 122 C 260 60, 340 55, 420 90" fill="none" stroke="#1f5fbf" stroke-width="2.6" stroke-dasharray="8 5"/>
+    <polygon points="420,90 408,82 410,95" fill="#1f5fbf"/>
+    <text class="schema-txt" x="330" y="52" font-size="13" text-anchor="middle" fill="#123d7a">trajectoire</text>
+    <line x1="205" y1="128" x2="300" y2="128" stroke="#6a7686" stroke-width="1.2" stroke-dasharray="5 4"/>
+    <path d="M 250 128 A 45 45 0 0 0 244 106" fill="none" stroke="#b45309" stroke-width="2"/>
+    <text class="schema-txt" x="276" y="112" font-size="12.5" fill="#8a3d05">10–15°</text>
+    <text class="schema-txt" x="46" y="115" font-size="12.5" fill="#4a5568">épaule</text>
+  </svg>
+
+  <div class="box box-bleu">
+    <h4>Règle d'or</h4>
+    <p>Un seul lanceur par série d'essais. Si le lanceur change, les
+      mesures ne sont plus comparables. Choisir un lanceur dans le groupe
+      et s'y tenir.</p>
+  </div>
+
+  <h3>7. Protocole de test</h3>
+  <ol>
+    <li>Effectuer <strong>20 lancers</strong> dans les mêmes conditions
+      (même lanceur, même geste, même lieu), en appliquant la
+      méthode de lancer de la section 6.</li>
+    <li>Mesurer la <strong>distance parcourue</strong> à chaque lancer avec
+      le décamètre.</li>
+    <li>Calculer la <strong>moyenne</strong> des distances.</li>
+    <li>Repérer la <strong>distance minimale</strong> et la
+      <strong>distance maximale</strong> : elles mesurent la dispersion
+      des résultats.</li>
+  </ol>
+
+  <div class="box box-bleu">
+    <h4>Tableau de relevé</h4>
+    <div class="box box-vert" style="margin-top:.4rem;">
+      <h4>Ressource complémentaire — Relevé des valeurs</h4>
+      <p>Pour enregistrer et comparer vos mesures de distance, utilisez la
+        page de relevé des valeurs :</p>
+      <p class="centre"><span class="url-box"><a href="http://urlr.me/weAxZX" target="_blank" rel="noopener">http://urlr.me/weAxZX</a></span></p>
+      <p>Cette page vous permettra de consigner les résultats des essais
+        et de calculer automatiquement la moyenne, le minimum et le maximum.</p>
+    </div>
+    <p style="margin-top:.8rem;">
+      <strong>Moyenne</strong> : <span class="dots sm"></span> &nbsp;&nbsp;
+      <strong>Minimum</strong> : <span class="dots sm"></span> &nbsp;&nbsp;
+      <strong>Maximum</strong> : <span class="dots sm"></span>
+    </p>
+  </div>
+
+  <h3>8. Pistes d'amélioration</h3>
+  <p>Pour chaque piste, compléter la ligne <strong>« Effet attendu »</strong>, puis
+    tester et noter l'effet réellement observé.</p>
+  <ul>
+    <li><strong>Agrandir l'anneau avant</strong> : plus de portance.
+      <br><em>Effet attendu :</em> <span class="dots md"></span></li>
+    <li><strong>Réduire l'anneau arrière</strong> : plus de stabilité.
+      <br><em>Effet attendu :</em> <span class="dots md"></span></li>
+    <li><strong>Renforcer l'anneau avant</strong> (plier la bande en deux
+      dans la longueur avant de la rouler).
+      <br><em>Effet attendu :</em> <span class="dots md"></span></li>
+    <li><strong>Ajouter une dérive</strong> (un petit plan vertical à
+      l'arrière pour stabiliser le lacet).
+      <br><em>Effet attendu :</em> <span class="dots md"></span></li>
+    <li><strong>Alourdir l'avant</strong> (un trombone au nez pour avancer
+      le centre de gravité).
+      <br><em>Effet attendu :</em> <span class="dots md"></span></li>
+    <li><strong>Combiner</strong> : anneau avant renforcé + anneau arrière
+      réduit + dérive.
+      <br><em>Effet attendu :</em> <span class="dots md"></span></li>
+  </ul>
+
+  <h3>9. Check-list de fin de séance</h3>
+  <ul class="check-list">
+    <li>Le fuselage est rigide et droit.</li>
+    <li>Les trois anneaux sont symétriques et perpendiculaires au fuselage.</li>
+    <li>Le point d'équilibre est au premier tiers du fuselage.</li>
+    <li>La méthode de lancer a été respectée pour tous les essais.</li>
+    <li>Les mesures sont notées dans le tableau de relevé.</li>
+    <li>Le matériel est rangé.</li>
+  </ul>
+</section>
+
+<!-- ============================================================
+     9. DÉCOUPES EN AMONT — 2 ANNEAUX
+     ============================================================ -->
+<section class="bloc" id="decoupes-2">
+  <h2>Découpes en amont — Planeur à 2 anneaux</h2>
+  <p class="petit">Document exclusivement consacré aux découpes à réaliser avant la séance.
+    Variante sans doubler les ailes, puis variante en doublant les ailes.</p>
+
+  <div class="box box-bleu">
+    <h4>Principe</h4>
+    <p>Ce document ne traite <strong>que</strong> des bandes de papier à découper en amont pour un planeur à 2 anneaux.
+      Deux cas sont détaillés :</p>
+    <ul>
+      <li><strong>Cas 1 — sans doubler les ailes</strong> : les anneaux sont réalisés avec une seule épaisseur de papier.</li>
+      <li><strong>Cas 2 — en doublant les ailes</strong> : les anneaux sont réalisés avec une épaisseur double, obtenue en pliant la bande en deux dans la longueur avant de la rouler. Les largeurs de coupe sont doublées pour conserver la largeur finale souhaitée.</li>
+    </ul>
+    <p>Pour l'assemblage, se référer à la fiche technique du planeur à 2 anneaux.</p>
+  </div>
+
+  <h3>1. Matériel et papier</h3>
+  <ul>
+    <li>Papier A4 ordinaire (80 g/m²) ou légèrement plus rigide (120 g/m²).</li>
+    <li>Ciseaux ou cutter, règle graduée, crayon.</li>
+    <li>Les dimensions sont données en centimètres.</li>
+  </ul>
+
+  <h3>2. Cas 1 — Sans doubler les ailes</h3>
+  <p><em>Chaque anneau est constitué d'une seule bande de papier, sans pliage en deux dans la longueur.</em></p>
+  <table>
+    <thead>
+      <tr><th class="gauche">Élément</th><th>Longueur</th><th>Largeur</th><th>Quantité par planeur</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="gauche">Fuselage (à rouler)</td><td>21 cm</td><td>8 cm</td><td>1</td></tr>
+      <tr><td class="gauche">Anneau avant</td><td>21 cm</td><td>3 cm</td><td>1</td></tr>
+      <tr><td class="gauche">Anneau arrière</td><td>12 cm</td><td>2,5 cm</td><td>1</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Total des bandes à découper pour un planeur (cas 1) :</strong> 3 bandes.</p>
+
+  <h3>3. Cas 2 — En doublant les ailes</h3>
+  <p><em>Pour doubler l'épaisseur d'un anneau, on plie la bande en deux dans la longueur avant de la rouler. La largeur finale de l'anneau est alors la moitié de la largeur coupée. Pour obtenir la même largeur finale que dans le cas 1, il faut donc couper des bandes de largeur double.</em></p>
+  <table>
+    <thead>
+      <tr><th class="gauche">Élément</th><th>Longueur</th><th>Largeur coupée</th><th>Quantité par planeur</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="gauche">Fuselage (à rouler)</td><td>21 cm</td><td>8 cm</td><td>1</td></tr>
+      <tr><td class="gauche">Anneau avant doublé</td><td>21 cm</td><td>6 cm</td><td>1</td></tr>
+      <tr><td class="gauche">Anneau arrière doublé</td><td>12 cm</td><td>5 cm</td><td>1</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Largeur finale après pliage :</strong> anneau avant : 3 cm ; anneau arrière : 2,5 cm.<br>
+    <strong>Total des bandes à découper pour un planeur (cas 2) :</strong> 3 bandes.</p>
+
+  <div class="box box-orange">
+    <h4>Remarque pratique</h4>
+    <p>Il est également possible de couper <strong>deux bandes identiques</strong> (par exemple deux fois 21 cm × 3 cm pour l'anneau avant) et de les coller l'une sur l'autre avant de les rouler. Dans ce cas, les dimensions de coupe sont celles du cas 1, mais les quantités sont doublées pour les anneaux concernés. Cette méthode est plus simple si le pliage en deux dans la longueur est difficile à réaliser proprement.</p>
+  </div>
+
+  <h3>4. Récapitulatif des quantités pour un groupe de 3 planeurs</h3>
+  <p><em>Si un groupe doit construire 3 planeurs identiques, multiplier les quantités par 3.</em></p>
+  <table>
+    <thead>
+      <tr><th class="gauche">Élément</th><th>Cas 1 (sans doubler)</th><th>Cas 2 (en doublant)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="gauche">Fuselage 21 × 8 cm</td><td>3</td><td>3</td></tr>
+      <tr><td class="gauche">Anneau avant</td><td>3 bandes 21 × 3 cm</td><td>3 bandes 21 × 6 cm</td></tr>
+      <tr><td class="gauche">Anneau arrière</td><td>3 bandes 12 × 2,5 cm</td><td>3 bandes 12 × 5 cm</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box box-vert">
+    <h4>Check-list avant la séance</h4>
+    <ul class="check-list">
+      <li>Les bandes du cas 1 sont découpées et étiquetées.</li>
+      <li>Les bandes du cas 2 sont découpées et étiquetées.</li>
+      <li>Les largeurs ont été vérifiées à la règle.</li>
+      <li>Les bandes sont rangées à plat, sans plis parasites.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================
+     10. DÉCOUPES EN AMONT — 3 ANNEAUX
+     ============================================================ -->
+<section class="bloc" id="decoupes-3">
+  <h2>Découpes en amont — Planeur à 3 anneaux</h2>
+  <p class="petit">Document exclusivement consacré aux découpes à réaliser avant la séance.
+    Variante sans doubler les ailes, puis variante en doublant les ailes.</p>
+
+  <div class="box box-bleu">
+    <h4>Principe</h4>
+    <p>Ce document ne traite <strong>que</strong> des bandes de papier à découper en amont pour un planeur à 3 anneaux.
+      Deux cas sont détaillés :</p>
+    <ul>
+      <li><strong>Cas 1 — sans doubler les ailes</strong> : les trois anneaux sont réalisés avec une seule épaisseur de papier.</li>
+      <li><strong>Cas 2 — en doublant les ailes</strong> : les anneaux sont réalisés avec une épaisseur double, obtenue en pliant la bande en deux dans la longueur avant de la rouler. Les largeurs de coupe sont doublées pour conserver la largeur finale souhaitée.</li>
+    </ul>
+    <p>Pour l'assemblage, se référer à la fiche technique du planeur à 3 anneaux.</p>
+  </div>
+
+  <h3>1. Matériel et papier</h3>
+  <ul>
+    <li>Papier A4 ordinaire (80 g/m²) ou légèrement plus rigide (120 g/m²).</li>
+    <li>Ciseaux ou cutter, règle graduée, crayon.</li>
+    <li>Les dimensions sont données en centimètres.</li>
+  </ul>
+
+  <h3>2. Cas 1 — Sans doubler les ailes</h3>
+  <p><em>Chaque anneau est constitué d'une seule bande de papier, sans pliage en deux dans la longueur.</em></p>
+  <table>
+    <thead>
+      <tr><th class="gauche">Élément</th><th>Longueur</th><th>Largeur</th><th>Quantité par planeur</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="gauche">Fuselage (à rouler)</td><td>21 cm</td><td>8 cm</td><td>1</td></tr>
+      <tr><td class="gauche">Anneau avant</td><td>21 cm</td><td>3 cm</td><td>1</td></tr>
+      <tr><td class="gauche">Anneau milieu</td><td>16 cm</td><td>2,5 cm</td><td>1</td></tr>
+      <tr><td class="gauche">Anneau arrière</td><td>11 cm</td><td>2 cm</td><td>1</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Total des bandes à découper pour un planeur (cas 1) :</strong> 4 bandes.</p>
+
+  <h3>3. Cas 2 — En doublant les ailes</h3>
+  <p><em>Pour doubler l'épaisseur d'un anneau, on plie la bande en deux dans la longueur avant de la rouler. La largeur finale de l'anneau est alors la moitié de la largeur coupée. Pour obtenir la même largeur finale que dans le cas 1, il faut donc couper des bandes de largeur double.</em></p>
+  <table>
+    <thead>
+      <tr><th class="gauche">Élément</th><th>Longueur</th><th>Largeur coupée</th><th>Quantité par planeur</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="gauche">Fuselage (à rouler)</td><td>21 cm</td><td>8 cm</td><td>1</td></tr>
+      <tr><td class="gauche">Anneau avant doublé</td><td>21 cm</td><td>6 cm</td><td>1</td></tr>
+      <tr><td class="gauche">Anneau milieu doublé</td><td>16 cm</td><td>5 cm</td><td>1</td></tr>
+      <tr><td class="gauche">Anneau arrière doublé</td><td>11 cm</td><td>4 cm</td><td>1</td></tr>
+    </tbody>
+  </table>
+  <p><strong>Largeur finale après pliage :</strong> anneau avant : 3 cm ; anneau milieu : 2,5 cm ; anneau arrière : 2 cm.<br>
+    <strong>Total des bandes à découper pour un planeur (cas 2) :</strong> 4 bandes.</p>
+
+  <div class="box box-orange">
+    <h4>Remarque pratique</h4>
+    <p>Il est également possible de couper <strong>deux bandes identiques</strong> (par exemple deux fois 21 cm × 3 cm pour l'anneau avant) et de les coller l'une sur l'autre avant de les rouler. Dans ce cas, les dimensions de coupe sont celles du cas 1, mais les quantités sont doublées pour les anneaux concernés. Cette méthode est plus simple si le pliage en deux dans la longueur est difficile à réaliser proprement.</p>
+  </div>
+
+  <h3>4. Récapitulatif des quantités pour un groupe de 3 planeurs</h3>
+  <p><em>Si un groupe doit construire 3 planeurs identiques, multiplier les quantités par 3.</em></p>
+  <table>
+    <thead>
+      <tr><th class="gauche">Élément</th><th>Cas 1 (sans doubler)</th><th>Cas 2 (en doublant)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="gauche">Fuselage 21 × 8 cm</td><td>3</td><td>3</td></tr>
+      <tr><td class="gauche">Anneau avant</td><td>3 bandes 21 × 3 cm</td><td>3 bandes 21 × 6 cm</td></tr>
+      <tr><td class="gauche">Anneau milieu</td><td>3 bandes 16 × 2,5 cm</td><td>3 bandes 16 × 5 cm</td></tr>
+      <tr><td class="gauche">Anneau arrière</td><td>3 bandes 11 × 2 cm</td><td>3 bandes 11 × 4 cm</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box box-vert">
+    <h4>Check-list avant la séance</h4>
+    <ul class="check-list">
+      <li>Les bandes du cas 1 sont découpées et étiquetées.</li>
+      <li>Les bandes du cas 2 sont découpées et étiquetées.</li>
+      <li>Les largeurs ont été vérifiées à la règle.</li>
+      <li>Les bandes sont rangées à plat, sans plis parasites.</li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<!-- ============================================================
+     AJOUT — BOUTON ET MODALE « DROITS D'AUTEUR »
+     ============================================================ -->
+<button type="button" id="copyright-btn" aria-haspopup="dialog" aria-controls="copyright-modal">
+  ⚖️ Droits d'auteur
+</button>
+
+<div id="copyright-modal" role="dialog" aria-modal="true" aria-labelledby="copyright-titre">
+  <div class="carte">
+    <button type="button" class="fermer" id="copyright-fermer" aria-label="Fermer">✕</button>
+
+    <h2 id="copyright-titre">⚖️ Droits d'Auteur et Licence d'Utilisation</h2>
+
+    <div class="auteur">
+      <b>Auteur :</b> Yann Merdy (yann.merdy@gmail.com) — Septembre 2026
+    </div>
+
+    <p class="licence-titre">Licence d'Utilisation Non Commerciale</p>
+
+    <p>
+      Ce code HTML/CSS/JavaScript ainsi que le contenu généré par l'application
+      («&nbsp;Dossier Planeurs à 2 et 3 anneaux&nbsp;») sont la propriété
+      intellectuelle exclusive de l'auteur, Yann Merdy.
+    </p>
+
+    <h3>Conditions</h3>
+    <ul>
+      <li>
+        <b>Utilisation Privée et Éducative (Autorisée) :</b> vous êtes autorisé·e
+        à utiliser, copier, modifier et distribuer ce code et son contenu
+        uniquement à des fins personnelles, éducatives et non lucratives.
+      </li>
+      <li>
+        <b>Utilisation Commerciale (Interdite) :</b> toute utilisation,
+        distribution, intégration ou reproduction du code ou du contenu
+        (total ou partiel) à des fins commerciales, lucratives ou
+        professionnelles est strictement interdite sans un accord écrit
+        préalable et explicite de l'auteur.
+      </li>
+      <li>
+        <b>Attribution :</b> toute reproduction ou modification doit conserver
+        la mention de l'auteur d'origine (Yann Merdy) et la présente notice
+        de droits d'auteur.
+      </li>
+    </ul>
+
+    <p>
+      Pour toute demande d'utilisation commerciale ou de licence spécifique,
+      veuillez contacter l'auteur à l'adresse indiquée ci-dessus.
+    </p>
+
+    <p class="pied">
+      Document : <em>Dossier Planeurs à 2 et 3 anneaux — Première STI2D</em> · Septembre 2026
+    </p>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var btn    = document.getElementById("copyright-btn");
+  var modal  = document.getElementById("copyright-modal");
+  var fermer = document.getElementById("copyright-fermer");
+
+  function ouvrir(){
+    modal.classList.add("show");
+    document.body.style.overflow = "hidden";
+    try{ fermer.focus(); }catch(e){}
+  }
+  function fermerFn(){
+    modal.classList.remove("show");
+    document.body.style.overflow = "";
+    try{ btn.focus(); }catch(e){}
+  }
+
+  btn.addEventListener("click", ouvrir);
+  fermer.addEventListener("click", fermerFn);
+
+  // Clic sur le fond sombre → fermeture
+  modal.addEventListener("click", function(e){
+    if(e.target === modal) fermerFn();
+  });
+
+  // Échap → fermeture (en capture pour passer avant d'autres gestionnaires)
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape" && modal.classList.contains("show")){
+      e.preventDefault();
+      e.stopPropagation();
+      fermerFn();
+    }
+  }, true);
+})();
+</script>
+
+<!-- ============================================================
+     JAVASCRIPT — FICHES + SURVEILLANCE
+     Seule modification : dans declencher(), un garde-fou
+     « window.__authPending » neutralise toute journalisation
+     tant que le portique d'authentification n'est pas franchi.
+     ============================================================ -->
+<script>
+(function(){
+  "use strict";
+
+  /* ==========================================================
+     1. TABLEAUX DE RELEVÉ + GRAPHIQUES (fiches A, B, C)
+     ========================================================== */
+  const OBJECTIF = 12;         // droite (D) : y = 12 m
+  const NB_LANCERS = 20;
+
+  const fiches = ["A", "B", "C"];
+
+  const state = {
+    A: new Array(NB_LANCERS).fill(""),
+    B: new Array(NB_LANCERS).fill(""),
+    C: new Array(NB_LANCERS).fill("")
+  };
+
+  /* ---------- Construction des lignes du tableau ---------- */
+  function construireTableau(lettre){
+    const tbody = document.getElementById("tbody-" + lettre);
+    if(!tbody) return;
+    let html = "";
+    for(let i = 0; i < NB_LANCERS; i++){
+      const n = i + 1;
+      html += `<tr>
+        <td class="c-n">${n}</td>
+        <td><input type="number" step="0.1" min="0" inputmode="decimal"
+                   data-fiche="${lettre}" data-index="${i}" aria-label="Distance du lancer ${n}"></td>
+        <td class="c-diff" data-role="diff-${lettre}-${i}">—</td>
+        <td class="c-R"    data-role="R-${lettre}-${i}">—</td>
+        <td class="c-S"    data-role="S-${lettre}-${i}">—</td>
+      </tr>`;
+    }
+    tbody.innerHTML = html;
+  }
+
+  fiches.forEach(construireTableau);
+
+  /* ---------- Calculs ---------- */
+  function nombre(v){
+    if(v === "" || v === null || v === undefined) return null;
+    const x = parseFloat(String(v).replace(",", "."));
+    return isFinite(x) ? x : null;
+  }
+
+  function calculer(lettre){
+    const u = state[lettre].map(nombre);
+    const n = u.length;
+
+    const diffs = new Array(n).fill(null);
+    for(let i = 0; i < n - 1; i++){
+      if(u[i] !== null && u[i+1] !== null) diffs[i] = u[i+1] - u[i];
+    }
+
+    const R = new Array(n).fill(null);
+    let courant = null;
+    for(let i = 0; i < n; i++){
+      if(u[i] !== null){
+        courant = (courant === null) ? u[i] : Math.max(courant, u[i]);
+        R[i] = courant;
+      } else {
+        R[i] = courant;
+      }
+    }
+
+    const S = new Array(n).fill(null);
+    let somme = 0, sommeValide = false;
+    for(let i = 0; i < n; i++){
+      if(u[i] !== null){ somme += u[i]; sommeValide = true; }
+      S[i] = sommeValide ? somme : null;
+    }
+
+    const valeurs = u.filter(x => x !== null);
+    const moyenne = valeurs.length ? valeurs.reduce((a,b)=>a+b,0) / valeurs.length : null;
+    const max = valeurs.length ? Math.max(...valeurs) : null;
+    const min = valeurs.length ? Math.min(...valeurs) : null;
+    const nbAuDessusObjectif = valeurs.filter(x => x > OBJECTIF).length;
+
+    return { u, diffs, R, S, moyenne, max, min, nbAuDessusObjectif, valeurs };
+  }
+
+  /* ---------- Mise à jour du tableau ---------- */
+  function majTableau(lettre){
+    const calc = calculer(lettre);
+    for(let i = 0; i < NB_LANCERS; i++){
+      const cellDiff = document.querySelector(`[data-role="diff-${lettre}-${i}"]`);
+      const cellR    = document.querySelector(`[data-role="R-${lettre}-${i}"]`);
+      const cellS    = document.querySelector(`[data-role="S-${lettre}-${i}"]`);
+
+      if(i < NB_LANCERS - 1){
+        cellDiff.textContent = (calc.diffs[i] === null) ? "—" : formatFr(calc.diffs[i]);
+      } else {
+        cellDiff.textContent = "—";
+      }
+      cellR.textContent = (calc.R[i] === null) ? "—" : formatFr(calc.R[i]);
+      cellS.textContent = (calc.S[i] === null) ? "—" : formatFr(calc.S[i]);
+    }
+  }
+
+  function formatFr(x){
+    return (Math.round(x * 100) / 100).toLocaleString("fr-FR", {maximumFractionDigits: 2});
+  }
+
+  /* ---------- Mise à jour du résumé ---------- */
+  function majResume(lettre){
+    const calc = calculer(lettre);
+    const box = document.getElementById("summary-" + lettre);
+    if(!box) return;
+
+    if(calc.valeurs.length === 0){
+      box.innerHTML = '<span class="item">Aucune valeur saisie pour le moment.</span>';
+      return;
+    }
+    box.innerHTML = `
+      <span class="item"><b>Nombre de lancers :</b> ${calc.valeurs.length}</span>
+      <span class="item"><b>Moyenne \\(\\bar u\\) :</b> ${formatFr(calc.moyenne)} m</span>
+      <span class="item"><b>Minimum :</b> ${formatFr(calc.min)} m</span>
+      <span class="item"><b>Maximum :</b> ${formatFr(calc.max)} m</span>
+      <span class="item"><b>Points au-dessus de \\((D):y=${OBJECTIF}\\) m :</b> ${calc.nbAuDessusObjectif}</span>
+    `;
+    if(window.MathJax && MathJax.typesetPromise){
+      MathJax.typesetPromise([box]).catch(()=>{});
+    }
+  }
+
+  /* ---------- Graphique canvas ---------- */
+  function dessinerGraphe(lettre){
+    const canvas = document.getElementById("canvas-" + lettre);
+    if(!canvas) return;
+
+    const calc = calculer(lettre);
+    const dpr = window.devicePixelRatio || 1;
+    const largeurCSS = canvas.parentElement.clientWidth - 8;
+    const hauteurCSS = Math.max(260, Math.round(largeurCSS * 0.55));
+
+    canvas.width  = Math.round(largeurCSS * dpr);
+    canvas.height = Math.round(hauteurCSS * dpr);
+    canvas.style.width  = largeurCSS + "px";
+    canvas.style.height = hauteurCSS + "px";
+
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, largeurCSS, hauteurCSS);
+
+    const m = { gauche: 46, droite: 18, haut: 18, bas: 34 };
+    const zoneL = largeurCSS - m.gauche - m.droite;
+    const zoneH = hauteurCSS - m.haut - m.bas;
+
+    const yMaxDonnee = calc.valeurs.length ? Math.max(...calc.valeurs, OBJECTIF) : OBJECTIF;
+    const yMax = Math.max(15, Math.ceil(yMaxDonnee / 5) * 5 + 5);
+
+    const xToPx = x => m.gauche + (x / NB_LANCERS) * zoneL;
+    const yToPx = y => m.haut + zoneH - (y / yMax) * zoneH;
+
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, largeurCSS, hauteurCSS);
+
+    ctx.strokeStyle = "#e3e8ef";
+    ctx.lineWidth = 1;
+    ctx.font = "11px Segoe UI, sans-serif";
+    ctx.fillStyle = "#5a6474";
+
+    const pasY = yMax <= 20 ? 1 : Math.ceil(yMax / 20);
+    for(let y = 0; y <= yMax; y += pasY){
+      const py = yToPx(y);
+      ctx.beginPath();
+      ctx.moveTo(m.gauche, py);
+      ctx.lineTo(m.gauche + zoneL, py);
+      ctx.stroke();
+      ctx.textAlign = "right";
+      ctx.fillText(String(y), m.gauche - 6, py + 4);
+    }
+    for(let x = 0; x <= NB_LANCERS; x++){
+      const px = xToPx(x);
+      ctx.beginPath();
+      ctx.moveTo(px, m.haut);
+      ctx.lineTo(px, m.haut + zoneH);
+      ctx.stroke();
+    }
+    ctx.textAlign = "center";
+    for(let x = 2; x <= NB_LANCERS; x += 2){
+      ctx.fillText(String(x), xToPx(x), m.haut + zoneH + 16);
+    }
+    ctx.fillText("n", m.gauche + zoneL + 8, m.haut + zoneH + 16);
+
+    ctx.strokeStyle = "#2b3440";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(m.gauche, m.haut);
+    ctx.lineTo(m.gauche, m.haut + zoneH);
+    ctx.lineTo(m.gauche + zoneL, m.haut + zoneH);
+    ctx.stroke();
+
+    ctx.strokeStyle = "#b91c1c";
+    ctx.setLineDash([6, 4]);
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(m.gauche, yToPx(OBJECTIF));
+    ctx.lineTo(m.gauche + zoneL, yToPx(OBJECTIF));
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#b91c1c";
+    ctx.font = "12px Segoe UI, sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(`(D) : y = ${OBJECTIF} m`, m.gauche + 6, yToPx(OBJECTIF) - 5);
+
+    if(calc.moyenne !== null){
+      ctx.strokeStyle = "#1f5fbf";
+      ctx.setLineDash([3, 3]);
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(m.gauche, yToPx(calc.moyenne));
+      ctx.lineTo(m.gauche + zoneL, yToPx(calc.moyenne));
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#1f5fbf";
+      ctx.fillText(`(Dm) : y = ${formatFr(calc.moyenne)} m`, m.gauche + 6, yToPx(calc.moyenne) + 14);
+    }
+
+    ctx.fillStyle = "#2e7d32";
+    for(let i = 0; i < NB_LANCERS; i++){
+      const val = calc.u[i];
+      if(val === null) continue;
+      const px = xToPx(i + 1);
+      const py = yToPx(val);
+      ctx.beginPath();
+      ctx.arc(px, py, 4.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = "#123d7a";
+    ctx.font = "bold 13px Segoe UI, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(`Fiche ${lettre} — nuage de points Mₙ(n ; uₙ)`, largeurCSS / 2, 13);
+  }
+
+  /* ---------- Rafraîchissement global ---------- */
+  function rafraichir(lettre){
+    majTableau(lettre);
+    majResume(lettre);
+    dessinerGraphe(lettre);
+  }
+
+  /* ---------- Écouteurs sur les champs ---------- */
+  document.querySelectorAll('table.releve input[type="number"]').forEach(input => {
+    input.addEventListener("input", e => {
+      const lettre = e.target.dataset.fiche;
+      const index = parseInt(e.target.dataset.index, 10);
+      state[lettre][index] = e.target.value;
+      rafraichir(lettre);
+    });
+  });
+
+  /* ---------- Boutons d'effacement ---------- */
+  document.querySelectorAll("[data-clear]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const lettre = btn.dataset.clear;
+      state[lettre] = new Array(NB_LANCERS).fill("");
+      document.querySelectorAll(`table.releve input[data-fiche="${lettre}"]`).forEach(inp => {
+        inp.value = "";
+      });
+      rafraichir(lettre);
+    });
+  });
+
+  /* ---------- Redessiner les graphiques au redimensionnement ---------- */
+  let resizeTimer = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      fiches.forEach(dessinerGraphe);
+    }, 150);
+  });
+
+  /* ---------- Initialisation des fiches ---------- */
+  fiches.forEach(rafraichir);
+
+  /* ==========================================================
+     2. CONTRÔLEUR : SORTIE DU NAVIGATEUR / CHANGEMENT D'ONGLET
+        -> page d'alerte plein écran ROUGE pour l'enseignant
+     ========================================================== */
+
+  const modal        = document.getElementById("surv-modal");
+  const raisonEl     = document.getElementById("surv-raison");
+  const heureEl      = document.getElementById("surv-heure");
+  const logEl        = document.getElementById("surv-log");
+  const compteurEl   = document.getElementById("surv-count");
+  const compteurModal= document.getElementById("surv-count-modal");
+  const stateEl      = document.getElementById("surv-state");
+  const barEl        = document.getElementById("surv-bar");
+  const toggleEl     = document.getElementById("surv-toggle");
+  const closeBtn     = document.getElementById("surv-close");
+
+  // Restauration du compteur depuis localStorage : si l'élève a fermé
+  // puis rouvert la page, on repart du nombre de fraudes déjà enregistrées
+  // (hors marqueurs de reprise) au lieu de repartir de zéro.
+  let compteur = (function(){
+    try{
+      const brut = localStorage.getItem("ipsofacto_planeurs");
+      if(!brut) return 0;
+      const obj = JSON.parse(brut);
+      if(!obj || !Array.isArray(obj.tentatives)) return 0;
+      return obj.tentatives.filter(function(t){
+        return t && t.type !== "reprise_apres_fermeture";
+      }).length;
+    }catch(e){ return 0; }
+  })();
+
+  let actif = true;
+  let dernierTimestamp = 0;
+
+  compteurEl.textContent = String(compteur);
+  compteurModal.textContent = String(compteur);
+
+  function journaliser(raison){
+    const maintenant = new Date();
+    const hh = String(maintenant.getHours()).padStart(2, "0");
+    const mm = String(maintenant.getMinutes()).padStart(2, "0");
+    const ss = String(maintenant.getSeconds()).padStart(2, "0");
+    const ligne = document.createElement("div");
+    ligne.textContent = `[${hh}:${mm}:${ss}] ${raison}`;
+    logEl.appendChild(ligne);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function declencher(raison){
+    if(!actif) return;
+
+    // AJOUT — verrou d'authentification : ne rien journaliser tant que
+    // l'enseignant n'a pas saisi la phrase de passe ET le nom du groupe.
+    if(window.__authPending) return;
+
+    const now = Date.now();
+    if(now - dernierTimestamp < 400) return;
+    dernierTimestamp = now;
+
+    compteur += 1;
+    compteurEl.textContent = String(compteur);
+    compteurModal.textContent = String(compteur);
+
+    raisonEl.textContent = raison;
+
+    const d = new Date();
+    heureEl.textContent = d.toLocaleString("fr-FR", {
+      weekday: "long", day: "2-digit", month: "long",
+      year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit"
+    });
+
+    journaliser(raison);
+
+    modal.classList.add("show");
+    document.body.style.overflow = "hidden";
+
+    setTimeout(() => { try{ closeBtn.focus(); }catch(e){} }, 50);
+  }
+
+  function fermerModal(){
+    modal.classList.remove("show");
+    document.body.style.overflow = "";
+  }
+
+  closeBtn.addEventListener("click", fermerModal);
+
+  document.addEventListener("keydown", e => {
+    if(modal.classList.contains("show") && e.key === "Escape"){
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, true);
+
+  toggleEl.addEventListener("change", () => {
+    actif = toggleEl.checked;
+    if(actif){
+      barEl.classList.remove("off");
+      stateEl.textContent = "active";
+    } else {
+      barEl.classList.add("off");
+      stateEl.textContent = "désactivée";
+      fermerModal();
+    }
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if(document.hidden){
+      declencher("Changement d'onglet ou fenêtre minimisée (document.hidden)");
+    }
+  });
+
+  window.addEventListener("blur", () => {
+    declencher("Perte de focus de la fenêtre du navigateur (window.blur)");
+  });
+
+  window.addEventListener("pagehide", () => {
+    declencher("Sortie de la page (pagehide)");
+  });
+
+  window.addEventListener("beforeunload", (e) => {
+    if(!actif) return;
+    declencher("Tentative de fermeture ou de navigation (beforeunload)");
+    e.preventDefault();
+    e.returnValue = "La sortie de cette page est surveillée par l'enseignant.";
+    return e.returnValue;
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if(!document.hidden && actif && compteur > 0 && !modal.classList.contains("show")){
+      // Optionnel : ne rien faire — laisser l'élève cliquer sur le bouton.
+    }
+  });
+
+})();
+</script>
+
+<!-- ============================================================
+     MODULE IPSOFACTO — persistance locale discrète (version 2)
+     ------------------------------------------------------------
+     Contenu désormais persisté dans localStorage :
+       • groupe                 → nom du groupe (GROUPE 1 … 9)
+       • authentifications[]    → succès / échecs de la phrase de passe
+       • tentatives[]           → fraudes et reprises de session
+       • mesures {A,B,C}        → valeurs saisies dans les tableaux
+       • premiere_ouverture     → horodatage initial
+       • derniere_maj           → horodatage de la dernière écriture
+
+     Export : Ctrl+Shift+E  →  ipsofacto.json
+     Import : Ctrl+Shift+I  →  ipsofacto.json
+     ============================================================ -->
+<script>
+(function(){
+  "use strict";
+
+  const CLE     = "ipsofacto_planeurs";
+  const VERSION = 2;
+
+  /* ---------- Utilitaires de formatage ---------- */
+  function dateFr(d){ return d.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit",year:"numeric"}); }
+  function heureFr(d){ return d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit",second:"2-digit"}); }
+  function iso(d){ return d.toISOString(); }
+
+  function dureeLisible(ms){
+    const t = Math.floor(ms/1000);
+    const h = Math.floor(t/3600);
+    const m = Math.floor((t%3600)/60);
+    const s = t%60;
+    if(h>0) return h+" h "+String(m).padStart(2,"0")+" min "+String(s).padStart(2,"0")+" s";
+    if(m>0) return m+" min "+String(s).padStart(2,"0")+" s";
+    return s+" s";
+  }
+
+  /* ---------- localStorage : lecture / écriture ---------- */
+  function charger(){
+    try{
+      const brut = localStorage.getItem(CLE);
+      if(!brut) return null;
+      const obj = JSON.parse(brut);
+      if(!obj || typeof obj !== "object") return null;
+      if(!Array.isArray(obj.tentatives)) obj.tentatives = [];
+      if(!Array.isArray(obj.authentifications)) obj.authentifications = [];
+      if(!obj.mesures || typeof obj.mesures !== "object") obj.mesures = { A: [], B: [], C: [] };
+      if(typeof obj.groupe !== "string") obj.groupe = null;
+      return obj;
+    }catch(e){ return null; }
+  }
+
+  function sauver(obj){
+    try{
+      obj.derniere_maj = {
+        date: dateFr(new Date()),
+        heure: heureFr(new Date()),
+        date_heure_iso: iso(new Date())
+      };
+      localStorage.setItem(CLE, JSON.stringify(obj));
+      return true;
+    }catch(e){
+      return false;
+    }
+  }
+
+  /* ---------- État initial ---------- */
+  let donnees = charger();
+  const maintenant = new Date();
+
+  if(!donnees){
+    donnees = {
+      version: VERSION,
+      document: "Dossier Planeurs 2 & 3 anneaux — Première STI2D",
+      groupe: null,
+      authentifications: [],
+      premiere_ouverture: {
+        date: dateFr(maintenant),
+        heure: heureFr(maintenant),
+        date_heure_iso: iso(maintenant)
+      },
+      derniere_maj: null,
+      tentatives: [],
+      mesures: { A: [], B: [], C: [] }
+    };
+    sauver(donnees);
+  } else if(donnees.tentatives.length > 0){
+    // Reprise après fermeture : on journalise un marqueur non-fraude.
+    const nbFraudes = donnees.tentatives.filter(function(t){
+      return t && t.type !== "reprise_apres_fermeture";
+    }).length;
+    donnees.tentatives.push({
+      numero: donnees.tentatives.length + 1,
+      type: "reprise_apres_fermeture",
+      date: dateFr(maintenant),
+      heure: heureFr(maintenant),
+      date_heure_iso: iso(maintenant),
+      raison_detectee: "Reprise de session — " + nbFraudes + " tentative(s) de fraude déjà enregistrée(s)",
+      nombre_de_tentatives: nbFraudes
+    });
+    sauver(donnees);
+  }
+
+  /* ---------- Enregistrement d'une alerte ---------- */
+  function enregistrerAlerte(){
+    const instant = new Date();
+    const raisonEl   = document.getElementById("surv-raison");
+    const compteurEl = document.getElementById("surv-count");
+
+    const raison   = raisonEl   ? raisonEl.textContent.trim() : "";
+    const compteur = compteurEl ? (parseInt(compteurEl.textContent,10)||0) : 0;
+
+    const dernier = donnees.tentatives[donnees.tentatives.length-1];
+    if(dernier && dernier.date_heure_iso === iso(instant) && dernier.raison_detectee === raison){
+      return;
+    }
+
+    const ouv    = new Date(donnees.premiere_ouverture.date_heure_iso);
+    const lapsMs = instant.getTime() - ouv.getTime();
+
+    donnees.tentatives.push({
+      numero: donnees.tentatives.length + 1,
+      type: "fraude",
+      date: dateFr(instant),
+      heure: heureFr(instant),
+      date_heure_iso: iso(instant),
+      groupe: donnees.groupe || null,
+      laps_de_temps_entre_ouverture_et_alerte: {
+        millisecondes: lapsMs,
+        secondes: Math.round(lapsMs/100)/10,
+        lisible: dureeLisible(lapsMs)
+      },
+      raison_detectee: raison,
+      nombre_de_tentatives: compteur
+    });
+
+    sauver(donnees);
+  }
+
+  /* ---------- Observation du journal (#surv-log) ---------- */
+  const log = document.getElementById("surv-log");
+  if(log && window.MutationObserver){
+    const obs = new MutationObserver(function(muts){
+      for(let i=0;i<muts.length;i++){
+        const m = muts[i];
+        if(m.type === "childList" && m.addedNodes && m.addedNodes.length > 0){
+          enregistrerAlerte();
+        }
+      }
+    });
+    obs.observe(log, { childList: true });
+  }
+
+  /* ---------- Sauvegarde de secours ---------- */
+  window.addEventListener("pagehide", function(){ sauver(donnees); });
+  document.addEventListener("visibilitychange", function(){
+    if(document.hidden) sauver(donnees);
+  });
+
+  /* ---------- Export ipsofacto.json — à la demande ---------- */
+  function exporter(){
+    try{
+      const contenu = JSON.stringify(donnees, null, 2);
+      const blob = new Blob([contenu], {type:"application/json;charset=utf-8"});
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement("a");
+      a.href = url;
+      a.download = "ipsofacto.json";
+      a.rel = "noopener";
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+    }catch(e){
+      if(window.console && console.warn) console.warn("ipsofacto export :", e);
+    }
+  }
+
+  /* ---------- Import ipsofacto.json — à la demande ---------- */
+  function importer(){
+    const inp = document.createElement("input");
+    inp.type = "file";
+    inp.accept = "application/json,.json";
+    inp.style.display = "none";
+    inp.addEventListener("change", function(){
+      const f = inp.files && inp.files[0];
+      if(!f){ document.body.removeChild(inp); return; }
+      const reader = new FileReader();
+      reader.onload = function(){
+        try{
+          const obj = JSON.parse(String(reader.result));
+          if(obj && Array.isArray(obj.tentatives)){
+            donnees.tentatives = (donnees.tentatives || []).concat(obj.tentatives);
+            if(Array.isArray(obj.authentifications)){
+              donnees.authentifications = (donnees.authentifications || []).concat(obj.authentifications);
+            }
+            if(obj.mesures && typeof obj.mesures === "object"){
+              ["A","B","C"].forEach(function(k){
+                if(Array.isArray(obj.mesures[k])){
+                  donnees.mesures[k] = (donnees.mesures[k] || []).concat(obj.mesures[k]);
+                }
+              });
+            }
+            if(obj.premiere_ouverture && obj.premiere_ouverture.date_heure_iso){
+              const a = new Date(obj.premiere_ouverture.date_heure_iso);
+              const b = new Date(donnees.premiere_ouverture.date_heure_iso);
+              if(a < b) donnees.premiere_ouverture = obj.premiere_ouverture;
+            }
+            if(!donnees.groupe && obj.groupe) donnees.groupe = obj.groupe;
+            sauver(donnees);
+          }
+        }catch(e){
+          if(window.console && console.warn) console.warn("ipsofacto import :", e);
+        }finally{
+          if(inp.parentNode) inp.parentNode.removeChild(inp);
+        }
+      };
+      reader.readAsText(f, "utf-8");
+    });
+    document.body.appendChild(inp);
+    inp.click();
+  }
+
+  /* ---------- API programmatique ---------- */
+  window.ipsofacto = {
+    donnees: donnees,
+    exporter: exporter,
+    importer: importer,
+    charger: charger,
+    sauver: sauver,
+    reset: function(){
+      try{ localStorage.removeItem(CLE); }catch(e){}
+      donnees.tentatives = [];
+      donnees.authentifications = [];
+      donnees.mesures = { A: [], B: [], C: [] };
+      donnees.groupe = null;
+      sauver(donnees);
+    },
+    contenu: function(){ return JSON.parse(JSON.stringify(donnees)); }
+  };
+  window.genererIpsoFacto = exporter;
+
+  /* ---------- AJOUT — méthodes d'intégration au portique ---------- */
+  window.ipsofacto.definirGroupe = function(nom){
+    donnees.groupe = String(nom);
+    sauver(donnees);
+  };
+  window.ipsofacto.groupeActuel = function(){
+    return donnees.groupe || null;
+  };
+  window.ipsofacto.journaliserAuth = function(info){
+    if(!Array.isArray(donnees.authentifications)) donnees.authentifications = [];
+    donnees.authentifications.push(info);
+    sauver(donnees);
+  };
+  window.ipsofacto.enregistrerMesures = function(lettre, valeurs){
+    if(!donnees.mesures || typeof donnees.mesures !== "object"){
+      donnees.mesures = { A: [], B: [], C: [] };
+    }
+    if(lettre !== "A" && lettre !== "B" && lettre !== "C") return;
+    donnees.mesures[lettre] = Array.isArray(valeurs) ? valeurs.slice() : [];
+    sauver(donnees);
+  };
+
+  /* ---------- AJOUT — capture automatique des mesures ---------- */
+  document.addEventListener("input", function(e){
+    var t = e.target;
+    if(!t || !t.matches) return;
+    if(!t.matches('table.releve input[type="number"]')) return;
+    var lettre = t.dataset ? t.dataset.fiche : null;
+    if(!lettre) return;
+    var valeurs = [];
+    document.querySelectorAll('table.releve input[data-fiche="' + lettre + '"]').forEach(function(inp){
+      valeurs.push(inp.value);
+    });
+    if(window.ipsofacto && typeof window.ipsofacto.enregistrerMesures === "function"){
+      window.ipsofacto.enregistrerMesures(lettre, valeurs);
+    }
+  }, true);
+
+  document.addEventListener("click", function(e){
+    var t = e.target;
+    if(!t || !t.matches) return;
+    if(!t.matches("[data-clear]")) return;
+    var lettre = t.dataset ? t.dataset.clear : null;
+    if(!lettre) return;
+    setTimeout(function(){
+      var valeurs = [];
+      document.querySelectorAll('table.releve input[data-fiche="' + lettre + '"]').forEach(function(inp){
+        valeurs.push(inp.value);
+      });
+      if(window.ipsofacto && typeof window.ipsofacto.enregistrerMesures === "function"){
+        window.ipsofacto.enregistrerMesures(lettre, valeurs);
+      }
+    }, 30);
+  }, true);
+
+  /* ---------- Raccourcis enseignant ---------- */
+  //   Ctrl+Shift+E  → export ipsofacto.json
+  //   Ctrl+Shift+I  → import ipsofacto.json
+  //   Ctrl+Shift+R  → réinitialisation complète (compteur + historique)
+  document.addEventListener("keydown", function(e){
+    if(!e.ctrlKey || !e.shiftKey) return;
+    const k = e.key.toLowerCase();
+    if(k === "e"){ e.preventDefault(); exporter(); }
+    if(k === "i"){ e.preventDefault(); importer(); }
+    if(k === "r"){
+      e.preventDefault();
+      const ok = window.confirm(
+        "Réinitialiser complètement la surveillance ?\n\n" +
+        "Cette action efface le groupe, l'historique des fraudes et les mesures."
+      );
+      if(!ok) return;
+      try{ localStorage.removeItem(CLE); }catch(err){}
+      location.reload();
+    }
+  }, true);
+
+})();
+</script>
+</body>
+</html>
